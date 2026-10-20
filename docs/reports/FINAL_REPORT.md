@@ -35,7 +35,7 @@ Shell Linux, PostgreSQL 16.15 lokal, PostgREST 13.0.8 (biner resmi GitHub), gcc,
 | `flutter analyze` / `flutter test` / build APK | ⚠️ TIDAK DIJALANKAN | tanpa SDK — jalankan `tool\check.ps1` / CI |
 | Uji perangkat (STT, video, TalkBack, deep link) | ⚠️ TIDAK DIJALANKAN | butuh perangkat |
 
-Tes Flutter yang ditulis: 21 berkas (unit: validator, mapper error, sanitasi, uuid, tanggal, signed URL cache, media, laporan, controller kamus, controller transkripsi, redirect router; widget: Login, Register, Splash, boot app, responsif 360×640 @200% + guideline a11y, golden).
+Tes Flutter yang ditulis: 20 berkas (unit: validator, mapper error, sanitasi, uuid, tanggal, signed URL cache, media, laporan, controller kamus, controller transkripsi, redirect router; widget: Login, Register, Splash, boot app, responsif 360×640 @200% + guideline a11y, golden).
 
 ## Deviasi dari dokumen (dengan alasan)
 1. **0009/0010** ditambahkan (lihat atas). 2. `publishableKey` dipakai karena `anonKey` deprecated di supabase_flutter 2.18.3 (nilai anon key tetap sama). 3. `file_picker` ditahan di 11.x (v12 mengubah API). 4. `permission_handler` ditambahkan (alasan: "Buka Pengaturan" S13). 5. `flutter_localizations` ditambahkan (menu teks Indonesia). 6. `cached_network_image`/`shared_preferences` tidak ditambahkan (tidak diperlukan). 7. Path objek item percakapan: `conversations/{module}/items/{item}/video-{asset}.mp4`. 8. Hasil kuis ditampilkan di layar kuis yang sama (S17), bukan rute terpisah. 9. G-2: jarak tepi auth 20dp (mengikuti gambar).
