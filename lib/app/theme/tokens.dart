@@ -59,7 +59,7 @@ abstract final class AppSpacing {
   static const xxl = 32.0;
 
   /// Padding horizontal halaman auth (AUTH spec §5.2).
-  static const pageHorizontal = 24.0;
+  static const pageHorizontal = 20.0;
 }
 
 abstract final class AppRadius {
