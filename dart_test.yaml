@@ -1,0 +1,3 @@
+tags:
+  golden:
+    # Golden butuh baseline: flutter test --update-goldens test/goldens

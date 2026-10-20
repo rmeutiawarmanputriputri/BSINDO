@@ -38,8 +38,8 @@ flutter run --dart-define-from-file=env/dev.json
 ```bash
 dart format --output=none --set-exit-if-changed .
 flutter analyze
-flutter test
-flutter test --update-goldens test/goldens   # sekali, untuk membuat baseline golden
+flutter test --exclude-tags golden
+flutter test --update-goldens test/goldens   # sekali, membuat baseline golden (lalu `flutter test` penuh)
 flutter build apk --debug --dart-define-from-file=env/dev.json
 ```
 

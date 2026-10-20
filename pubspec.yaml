@@ -7,7 +7,7 @@ version: 0.1.0+1
 environment:
   # Flutter stable 3.47.x (Dart 3.12+). go_router 18 & flutter_riverpod 3.4 mensyaratkan Dart ^3.12.
   sdk: ^3.12.0
-  flutter: ">=3.44.0"
+  flutter: ">=3.47.0"   # go_router 18 → material_ui 1.x butuh Flutter ≥ 3.47
 
 # Versi dipilih dari rilis stabil terbaru yang terlihat di tag GitHub resmi
 # masing-masing paket per 2026-10-20 (pub.dev tidak dapat diakses dari
@@ -30,3 +30,29 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+
+  # Font dibundel (D-15). Inter 4.1 — SIL OFL 1.1 (assets/fonts/OFL.txt).
+  # Keluarga font final menunggu K-04.
+  fonts:
+    - family: Inter
+      fonts:
+        - asset: assets/fonts/Inter-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Inter-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Inter-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Inter-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Inter-ExtraBold.ttf
+          weight: 800
+
+# Native splash (AUTH spec §5.1). Generator BELUM dijalankan; jalankan:
+#   dart run flutter_native_splash:create
+# Logo putih ditambahkan setelah aset resmi tersedia (K-01).
+flutter_native_splash:
+  color: "#1C45B9"
+  android_12:
+    color: "#1C45B9"
+  ios: false
+  web: false

@@ -24,7 +24,7 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
-  testWidgets('konfigurasi valid → aplikasi ter-boot', (tester) async {
+  testWidgets('konfigurasi valid → Splash lalu Login', (tester) async {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
@@ -38,9 +38,14 @@ void main() {
         child: const BisindoApp(),
       ),
     );
-    await tester.pumpAndSettle();
-
-    expect(find.byType(MaterialApp), findsOneWidget);
+    await tester.pump();
+    expect(find.text('BISINDO'), findsOneWidget);
     expect(find.text('Konfigurasi aplikasi belum lengkap'), findsNothing);
+
+    // Splash minimal 600 ms → Login.
+    await tester.pump(const Duration(milliseconds: 700));
+    await tester.pumpAndSettle();
+    expect(find.text('Masuk ke Akun Anda'), findsOneWidget);
+    expect(find.byType(MaterialApp), findsOneWidget);
   });
 }
