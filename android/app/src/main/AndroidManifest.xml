@@ -1,8 +1,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Dibutuhkan untuk Supabase pada build release (debug/profile sudah punya). -->
+    <!-- Supabase (debug/profile sudah punya; release butuh eksplisit). -->
     <uses-permission android:name="android.permission.INTERNET"/>
-    <!-- TODO(P3): intent-filter deep link bisindo://auth-callback (FLUTTER_ARCHITECTURE.md §10). -->
-    <!-- TODO(P8): RECORD_AUDIO + <queries> RecognitionService untuk speech_to_text. -->
+    <!-- Transkripsi suara (S13, D-08). Audio tidak disimpan aplikasi. -->
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="BISINDO"
         android:name="${applicationName}"
@@ -28,6 +28,13 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Deep link auth: verifikasi email & reset sandi (D-09). -->
+            <intent-filter android:autoVerify="false">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+                <data android:scheme="bisindo" android:host="auth-callback"/>
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->
@@ -44,6 +51,10 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- speech_to_text: menemukan layanan pengenal ucapan sistem. -->
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
     </queries>
 </manifest>

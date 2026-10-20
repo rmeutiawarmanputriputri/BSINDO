@@ -2,8 +2,10 @@ import 'package:bisindo_app/app/router/routes.dart';
 import 'package:bisindo_app/app/theme/app_theme.dart';
 import 'package:bisindo_app/features/auth/data/auth_repository.dart';
 import 'package:bisindo_app/features/auth/data/fake_auth_repository.dart';
+import 'package:bisindo_app/features/auth/presentation/screens/forgot_password_screen.dart';
 import 'package:bisindo_app/features/auth/presentation/screens/login_screen.dart';
 import 'package:bisindo_app/features/auth/presentation/screens/register_screen.dart';
+import 'package:bisindo_app/features/auth/presentation/screens/verify_email_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,12 +39,29 @@ Future<FakeAuthRepository> pumpAuthApp(
           child: const RegisterScreen(),
         ),
       ),
+      GoRoute(
+        path: AppRoutes.forgotPassword,
+        pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: const ForgotPasswordScreen(),
+        ),
+      ),
+      GoRoute(
+        path: AppRoutes.verifyEmail,
+        pageBuilder: (context, state) => MaterialPage<void>(
+          key: state.pageKey,
+          child: VerifyEmailScreen(
+            email: state.uri.queryParameters['email'] ?? '',
+          ),
+        ),
+      ),
     ],
   );
   addTearDown(router.dispose);
 
   await tester.pumpWidget(
     ProviderScope(
+      retry: (retryCount, error) => null,
       overrides: [authRepositoryProvider.overrideWithValue(repo)],
       child: MaterialApp.router(
         debugShowCheckedModeBanner: false,

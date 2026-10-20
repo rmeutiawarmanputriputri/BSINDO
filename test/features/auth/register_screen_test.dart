@@ -70,7 +70,7 @@ void main() {
     expect(textFieldWidget(tester, 3).focusNode!.hasFocus, isTrue);
   });
 
-  testWidgets('AUTH-03: loading tidak ganda; signUp dipanggil sekali',
+  testWidgets('AUTH-03: loading tidak ganda; sukses → layar verifikasi email',
       (tester) async {
     final repo = await pumpAuthApp(tester, initialLocation: AppRoutes.register);
     await _fillValid(tester);
@@ -84,10 +84,10 @@ void main() {
     await tester.tap(find.byType(FilledButton), warnIfMissed: false);
 
     await tester.pump(kFakeLatency);
-    await tester.pump();
+    await tester.pumpAndSettle();
     expect(repo.signUpCalls, 1);
-    expect(find.textContaining('repository palsu'), findsOneWidget);
-    await settleSnackBars(tester);
+    expect(find.text('Verifikasi Email'), findsOneWidget);
+    expect(find.textContaining('budi@email.com'), findsOneWidget);
   });
 
   testWidgets('AUTH-04: dua toggle sandi bekerja terpisah', (tester) async {

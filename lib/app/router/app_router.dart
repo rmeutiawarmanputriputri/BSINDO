@@ -2,35 +2,148 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../core/utils/uuid.dart';
+import '../../core/widgets/state_views.dart';
+import '../../features/admin/presentation/admin_dashboard_screen.dart';
+import '../../features/admin/presentation/admin_routes.dart';
+import '../../features/auth/data/auth_repository.dart';
+import '../../features/auth/presentation/screens/forgot_password_screen.dart';
 import '../../features/auth/presentation/screens/login_screen.dart';
 import '../../features/auth/presentation/screens/register_screen.dart';
+import '../../features/auth/presentation/screens/reset_password_screen.dart';
 import '../../features/auth/presentation/screens/splash_screen.dart';
+import '../../features/auth/presentation/screens/verify_email_screen.dart';
+import '../../features/conversation/presentation/conversation_detail_screen.dart';
+import '../../features/conversation/presentation/conversation_list_screen.dart';
+import '../../features/dictionary/presentation/dictionary_screen.dart';
+import '../../features/dictionary/presentation/sign_detail_screen.dart';
+import '../../features/difficult_vocab/presentation/difficult_list_screen.dart';
+import '../../features/difficult_vocab/presentation/difficult_review_screen.dart';
+import '../../features/favorites/presentation/favorites_screen.dart';
+import '../../features/home/presentation/home_screen.dart';
+import '../../features/learning/presentation/lesson_detail_screen.dart';
+import '../../features/learning/presentation/lessons_screen.dart';
+import '../../features/learning/presentation/progress_screen.dart';
+import '../../features/learning/presentation/quiz_screen.dart';
+import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/reports/domain/report.dart';
+import '../../features/reports/presentation/report_form_screen.dart';
+import '../../features/reports/presentation/report_history_screen.dart';
+import '../../features/transcription/presentation/transcription_screen.dart';
+import '../shell/app_shell.dart';
+import 'auth_router_notifier.dart';
 import 'routes.dart';
 
-/// Router minimal Fase 1 (tanpa guard sesi). Redirect berbasis sesi/role
-/// (`refreshListenable: authState`) ditambahkan pada Fase 3 (D-02).
-///
+/// Navigator akar: rute detail/layar penuh tampil di atas NavigationBar.
+final rootNavigatorKey = GlobalKey<NavigatorState>(debugLabel: 'root');
+
+final authRouterNotifierProvider = Provider<AuthRouterNotifier>((ref) {
+  final notifier = AuthRouterNotifier(ref.watch(authRepositoryProvider));
+  ref.onDispose(notifier.dispose);
+  return notifier;
+});
+
 /// `pageBuilder` + `MaterialPage` eksplisit: go_router 18 mendeteksi
 /// `MaterialApp` dari paket `material_ui`, bukan `package:flutter/material`,
 /// sehingga tanpa ini transisi halaman jatuh ke `NoTransitionPage`.
+Page<void> _page(GoRouterState state, Widget child) =>
+    MaterialPage<void>(key: state.pageKey, child: child);
+
+/// Parameter ID rute divalidasi UUID (FLUTTER_ARCHITECTURE §6).
+Widget _withId(GoRouterState state, String name, Widget Function(String id) build) {
+  final id = state.pathParameters[name];
+  return isUuid(id) ? build(id!) : const _NotFoundScreen();
+}
+
+GoRoute _route(String path, Widget Function(GoRouterState state) build,
+        {List<RouteBase> routes = const [], bool root = false}) =>
+    GoRoute(
+      path: path,
+      parentNavigatorKey: root ? rootNavigatorKey : null,
+      pageBuilder: (context, state) => _page(state, build(state)),
+      routes: routes,
+    );
+
 final appRouterProvider = Provider<GoRouter>((ref) {
+  final auth = ref.watch(authRouterNotifierProvider);
   final router = GoRouter(
+    navigatorKey: rootNavigatorKey,
     initialLocation: AppRoutes.splash,
+    refreshListenable: auth,
+    redirect: (context, state) => auth.redirect(state.matchedLocation),
     routes: [
-      GoRoute(
-        path: AppRoutes.splash,
-        pageBuilder: (context, state) =>
-            _page(state, const SplashScreen()),
+      _route(AppRoutes.splash, (_) => const SplashScreen()),
+      _route(AppRoutes.login, (_) => const LoginScreen()),
+      _route(AppRoutes.register, (_) => const RegisterScreen()),
+      _route(AppRoutes.forgotPassword, (_) => const ForgotPasswordScreen()),
+      _route(
+        AppRoutes.verifyEmail,
+        (s) => VerifyEmailScreen(email: s.uri.queryParameters['email'] ?? ''),
       ),
-      GoRoute(
-        path: AppRoutes.login,
-        pageBuilder: (context, state) => _page(state, const LoginScreen()),
+      _route(AppRoutes.resetPassword, (_) => const ResetPasswordScreen()),
+      StatefulShellRoute.indexedStack(
+        builder: (context, state, shell) => AppShell(navigationShell: shell),
+        branches: [
+          StatefulShellBranch(routes: [
+            _route(AppRoutes.home, (_) => const HomeScreen()),
+          ]),
+          StatefulShellBranch(routes: [
+            _route(AppRoutes.dictionary, (_) => const DictionaryScreen(), routes: [
+              _route('sign/:id',
+                  (s) => _withId(s, 'id', (id) => SignDetailScreen(signId: id)),
+                  root: true),
+            ]),
+          ]),
+          StatefulShellBranch(routes: [
+            _route(AppRoutes.conversations, (_) => const ConversationListScreen(), routes: [
+              _route(':id',
+                  (s) => _withId(s, 'id', (id) => ConversationDetailScreen(moduleId: id)),
+                  root: true),
+            ]),
+          ]),
+          StatefulShellBranch(routes: [
+            _route(AppRoutes.learn, (_) => const LessonsScreen(), routes: [
+              _route('progress', (_) => const ProgressScreen(), root: true),
+              _route(':id',
+                  (s) => _withId(s, 'id', (id) => LessonDetailScreen(lessonId: id)),
+                  root: true,
+                  routes: [
+                    _route('quiz',
+                        (s) => _withId(s, 'id', (id) => QuizScreen(lessonId: id)),
+                        root: true),
+                  ]),
+            ]),
+          ]),
+          StatefulShellBranch(routes: [
+            _route(AppRoutes.profile, (_) => const ProfileScreen()),
+          ]),
+        ],
       ),
-      GoRoute(
-        path: AppRoutes.register,
-        pageBuilder: (context, state) =>
-            _page(state, const RegisterScreen()),
-      ),
+      _route(AppRoutes.transcribe, (_) => const TranscriptionScreen()),
+      _route(AppRoutes.favorites, (_) => const FavoritesScreen()),
+      _route(AppRoutes.difficult, (_) => const DifficultListScreen(), routes: [
+        _route('review/:signId',
+            (s) => _withId(s, 'signId', (id) => DifficultReviewScreen(signId: id))),
+      ]),
+      _route(AppRoutes.reports, (_) => const ReportHistoryScreen()),
+      _route(AppRoutes.reportNew, (s) {
+        final q = s.uri.queryParameters;
+        final id = q['id'];
+        return ReportFormScreen(
+          targetType: ReportTargetType.parse(q['type']),
+          targetId: isUuid(id) ? id : null,
+          targetTitle: q['title'] ?? '',
+        );
+      }),
+      _route(AppRoutes.admin, (_) => const AdminDashboardScreen(), routes: [
+        _route(':entity', (s) => adminEntityPage(s.pathParameters['entity'] ?? ''),
+            routes: [
+              _route(':id', (s) => adminEditPage(
+                    s.pathParameters['entity'] ?? '',
+                    s.pathParameters['id'] ?? '',
+                  )),
+            ]),
+      ]),
     ],
     errorBuilder: (context, state) => const _NotFoundScreen(),
   );
@@ -38,32 +151,18 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   return router;
 });
 
-Page<void> _page(GoRouterState state, Widget child) =>
-    MaterialPage<void>(key: state.pageKey, child: child);
-
 class _NotFoundScreen extends StatelessWidget {
   const _NotFoundScreen();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SafeArea(
-        child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Text('Halaman tidak ditemukan.'),
-                const SizedBox(height: 16),
-                FilledButton(
-                  onPressed: () => context.go(AppRoutes.login),
-                  child: const Text('Ke halaman Masuk'),
-                ),
-              ],
-            ),
-          ),
-        ),
+      appBar: AppBar(),
+      body: EmptyView(
+        icon: Icons.help_outline,
+        title: 'Halaman tidak ditemukan',
+        actionLabel: 'Ke Beranda',
+        onAction: () => context.go(AppRoutes.home),
       ),
     );
   }

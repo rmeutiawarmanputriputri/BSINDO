@@ -2,18 +2,20 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../app/router/routes.dart';
 import '../../../../app/theme/tokens.dart';
 import '../../../../core/widgets/brand_logo.dart';
+import '../../data/auth_repository.dart';
 
 /// S01 Splash (AUTH spec §1.1, §5.1): biru solid + wordmark putih.
 ///
-/// Fase 1: belum ada inisialisasi Supabase/cek sesi — hanya durasi minimum
-/// lalu ke `/login`. TODO(P3): tunggu `Supabase.initialize` + pemulihan sesi
-/// (maks 8 s), arahkan ke `/home` bila sesi valid.
-class SplashScreen extends StatefulWidget {
+/// `Supabase.initialize` (memulihkan sesi tersimpan) sudah selesai di
+/// `main.dart`; layar ini menahan minimal 600 ms agar tidak berkedip lalu
+/// mengarah ke `/home` (sesi ada, termasuk saat offline) atau `/login`.
+class SplashScreen extends ConsumerStatefulWidget {
   const SplashScreen({
     super.key,
     this.minDuration = AppDurations.splashMinimum,
@@ -22,10 +24,10 @@ class SplashScreen extends StatefulWidget {
   final Duration minDuration;
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
+  ConsumerState<SplashScreen> createState() => _SplashScreenState();
 }
 
-class _SplashScreenState extends State<SplashScreen> {
+class _SplashScreenState extends ConsumerState<SplashScreen> {
   Timer? _timer;
 
   @override
@@ -36,7 +38,8 @@ class _SplashScreenState extends State<SplashScreen> {
 
   void _goNext() {
     if (!mounted) return;
-    context.go(AppRoutes.login);
+    final signedIn = ref.read(authRepositoryProvider).isSignedIn;
+    context.go(signedIn ? AppRoutes.home : AppRoutes.login);
   }
 
   @override

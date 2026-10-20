@@ -99,12 +99,6 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
     }
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
     ref.listen<SubmitState<SignUpResult>>(registerControllerProvider, (
@@ -112,13 +106,13 @@ class _RegisterScreenState extends ConsumerState<RegisterScreen> {
       next,
     ) {
       if (next case SubmitSucceeded<SignUpResult>(:final value)) {
-        // TODO(P3): SignUpNeedsEmailVerification → /verify-email,
-        // SignUpSignedIn → /home.
-        _showSnackBar(switch (value) {
-          SignUpNeedsEmailVerification() =>
-            AuthStrings.fakeRegisterNeedsVerification,
-          SignUpSignedIn() => AuthStrings.fakeRegisterSignedIn,
-        });
+        switch (value) {
+          case SignUpNeedsEmailVerification(:final email):
+            context.go(AppRoutes.verifyEmailFor(email));
+          case SignUpSignedIn():
+            // Router otomatis mengarah ke /home.
+            break;
+        }
       }
     });
 

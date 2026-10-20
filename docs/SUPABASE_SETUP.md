@@ -1,6 +1,6 @@
 # Panduan Setup Supabase — BISINDO
 
-Status migrasi: **diuji pada PostgreSQL 16 lokal dengan stub Supabase** (`supabase/tests/local/`), 29/29 uji RLS/Storage lulus.
+Status migrasi: **diuji pada PostgreSQL 16 lokal dengan stub Supabase** (`supabase/tests/local/`), 30/30 uji RLS/Storage + 47/47 uji query PostgREST lulus.
 **Belum diterapkan pada proyek Supabase sungguhan** — ikuti langkah berikut di proyek **DEV** dulu.
 
 ## 1. Buat proyek

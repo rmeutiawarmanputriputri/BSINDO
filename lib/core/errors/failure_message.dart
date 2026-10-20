@@ -18,7 +18,12 @@ String failureMessage(AppFailure failure) {
       'Terlalu banyak percobaan. Coba lagi beberapa saat lagi.',
     PermissionFailure() => 'Anda tidak memiliki akses untuk tindakan ini.',
     NotFoundFailure() => 'Data tidak ditemukan.',
+    ValidationFailure(detail: final d) when d != null &&
+        d.contains('validation_required') =>
+      'Isi validator, tanggal, dan sumber sebelum menerbitkan.',
     ValidationFailure() => 'Data yang dikirim tidak valid.',
+    ConflictFailure() => 'Data yang sama sudah ada.',
+    MessageFailure(:final message) => message,
     UnknownFailure() => 'Terjadi kesalahan. Coba lagi.',
   };
 }

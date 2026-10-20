@@ -36,6 +36,14 @@ void main() {
     );
   });
 
+  test('CHECK validasi → pesan terjemahan (UI_UX S26)', () {
+    expect(
+      failureMessage(const ValidationFailure('signs_validation_required')),
+      'Isi validator, tanggal, dan sumber sebelum menerbitkan.',
+    );
+    expect(failureMessage(const MessageFailure('X')), 'X');
+  });
+
   test('semua jenis failure punya pesan tidak kosong', () {
     const all = <AppFailure>[
       NetworkFailure(),
@@ -43,6 +51,9 @@ void main() {
       PermissionFailure(),
       NotFoundFailure(),
       ValidationFailure(),
+      ValidationFailure('signs_validation_required'),
+      ConflictFailure(),
+      MessageFailure('Pesan khusus'),
       RateLimitFailure(),
       UnknownFailure(),
     ];

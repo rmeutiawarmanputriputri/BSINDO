@@ -26,17 +26,4 @@ abstract final class AuthStrings {
   static const registerDivider = 'Atau daftar dengan';
   static const haveAccount = 'Sudah punya akun?';
   static const toLogin = 'Masuk';
-
-  // Pesan sementara Fase 1 (jujur: belum terhubung backend).
-  static const forgotPasswordUnavailable =
-      'Lupa kata sandi belum tersedia — dikerjakan pada Fase 3.';
-  static const fakeLoginSuccess =
-      'Mode pengembangan: masuk berhasil (repository palsu, belum terhubung '
-      'Supabase). Beranda dibuat pada Fase 4.';
-  static const fakeRegisterNeedsVerification =
-      'Mode pengembangan: pendaftaran berhasil (repository palsu). Layar '
-      'verifikasi email dibuat pada Fase 3.';
-  static const fakeRegisterSignedIn =
-      'Mode pengembangan: akun dibuat (repository palsu). Beranda dibuat pada '
-      'Fase 4.';
 }

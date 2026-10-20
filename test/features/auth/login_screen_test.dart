@@ -56,7 +56,7 @@ void main() {
       (tester) async {
     final repo = await pumpAuthApp(tester);
 
-    await tester.enterText(textFieldAt(0), 'nama@email.com');
+    await tester.enterText(textFieldAt(0), 'Nama@Email.com ');
     await tester.enterText(textFieldAt(1), 'rahasia123');
     await tester.tap(find.widgetWithText(FilledButton, 'Masuk'));
     await tester.pump();
@@ -71,8 +71,8 @@ void main() {
     await tester.pump();
 
     expect(repo.signInCalls, 1);
-    expect(find.textContaining('repository palsu'), findsOneWidget);
-    await settleSnackBars(tester);
+    // Sukses → sesi aktif; navigasi ke /home dilakukan redirect router.
+    expect(repo.isSignedIn, isTrue);
   });
 
   testWidgets('AUTH-04: toggle sandi mengubah obscureText dan tooltip',
@@ -103,13 +103,30 @@ void main() {
     expect(find.text('Email atau kata sandi salah.'), findsNothing);
   });
 
-  testWidgets('"Lupa Kata Sandi?" jujur menyatakan belum tersedia',
+  testWidgets('"Lupa Kata Sandi?" membuka layar lupa sandi (S04)',
       (tester) async {
     await pumpAuthApp(tester);
     await tester.tap(find.text('Lupa Kata Sandi?'));
+    await tester.pumpAndSettle();
+    expect(find.text('Lupa Kata Sandi'), findsOneWidget);
+    expect(find.widgetWithText(FilledButton, 'Kirim Tautan'), findsOneWidget);
+  });
+
+  testWidgets('email belum diverifikasi → banner + aksi kirim ulang',
+      (tester) async {
+    await pumpAuthApp(tester);
+    await tester.enterText(textFieldAt(0), 'belum@contoh.com');
+    await tester.enterText(textFieldAt(1), 'apa-saja');
+    await tester.tap(find.widgetWithText(FilledButton, 'Masuk'));
     await tester.pump();
-    expect(find.textContaining('belum tersedia'), findsOneWidget);
-    await settleSnackBars(tester);
+    await tester.pump(kFakeLatency);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Email belum diverifikasi. Cek kotak masuk Anda.'), findsOneWidget);
+    await tester.tap(find.text('Kirim ulang verifikasi'));
+    await tester.pumpAndSettle();
+    expect(find.text('Verifikasi Email'), findsOneWidget);
+    expect(find.textContaining('belum@contoh.com'), findsOneWidget);
   });
 
   testWidgets('footer "Daftar" membuka Register', (tester) async {

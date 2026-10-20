@@ -33,12 +33,24 @@ final class NotFoundFailure extends AppFailure {
 final class ValidationFailure extends AppFailure {
   const ValidationFailure([this.detail]);
 
-  /// Detail untuk log debug saja (tanpa PII).
+  /// Penanda singkat (mis. nama constraint `validation_required`) — tanpa PII.
+  final String? detail;
+}
+
+/// Data bentrok dengan yang sudah ada (unique violation, 23505).
+final class ConflictFailure extends AppFailure {
+  const ConflictFailure([this.detail]);
   final String? detail;
 }
 
 final class RateLimitFailure extends AppFailure {
   const RateLimitFailure();
+}
+
+/// Kegagalan dengan pesan siap tampil (mis. validasi berkas lokal).
+final class MessageFailure extends AppFailure {
+  const MessageFailure(this.message);
+  final String message;
 }
 
 final class UnknownFailure extends AppFailure {

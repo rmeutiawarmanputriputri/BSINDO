@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import '../../../../app/config/feature_flags.dart';
 import '../../../../app/router/routes.dart';
 import '../../../../app/theme/tokens.dart';
+import '../../../../core/errors/app_failure.dart';
 import '../../../../core/errors/failure_message.dart';
 import '../../../../core/utils/validators.dart';
 import '../../../../core/widgets/app_button.dart';
@@ -70,21 +71,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     }
   }
 
-  void _showSnackBar(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
-  }
-
   @override
   Widget build(BuildContext context) {
-    ref.listen<SubmitState<void>>(loginControllerProvider, (previous, next) {
-      if (next is SubmitSucceeded<void>) {
-        // TODO(P3): navigasi ke /home setelah sesi Supabase aktif.
-        _showSnackBar(AuthStrings.fakeLoginSuccess);
-      }
-    });
-
+    // Sukses: router (refreshListenable) otomatis mengarah ke /home.
     final state = ref.watch(loginControllerProvider);
     final loading = state.isLoading;
     final theme = Theme.of(context);
@@ -111,6 +100,18 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               message: failureMessage(failure),
               onDismiss: ref.read(loginControllerProvider.notifier).clearError,
             ),
+            if (failure case AuthFailure(code: AuthFailureCode.emailNotConfirmed))
+              Align(
+                alignment: Alignment.centerRight,
+                child: TextButton(
+                  onPressed: () => context.push(
+                    AppRoutes.verifyEmailFor(
+                      normalizeEmail(_emailController.text),
+                    ),
+                  ),
+                  child: const Text('Kirim ulang verifikasi'),
+                ),
+              ),
             const SizedBox(height: AppSpacing.md),
           ],
           AuthCard(
@@ -161,9 +162,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       child: TextButton(
                         onPressed: loading
                             ? null
-                            : () => _showSnackBar(
-                                  AuthStrings.forgotPasswordUnavailable,
-                                ),
+                            : () => context.push(AppRoutes.forgotPassword),
                         style: TextButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: AppSpacing.xs,

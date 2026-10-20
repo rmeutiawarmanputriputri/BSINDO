@@ -3,8 +3,18 @@
 Flutter + Dart (Android) · Material 3 · Supabase. Dokumen perencanaan ada di [`docs/`](docs/)
 (sumber keputusan tertinggi: [`docs/IMPLEMENTATION_BRIEF.md`](docs/IMPLEMENTATION_BRIEF.md)).
 
-> Status: **Fase 0–1** (fondasi + UI Splash/Login/Register dengan repository palsu).
-> Belum terhubung ke Supabase. Lihat `docs/reports/` untuk laporan fase.
+> Status: **MVP lengkap (Fase 0–11) + persiapan uji (12–13).** Laporan: `docs/reports/FINAL_REPORT.md`,
+> batasan: `docs/KNOWN_ISSUES.md`, setup backend: `docs/SUPABASE_SETUP.md`.
+
+## Cara tercepat (Windows)
+```powershell
+cd bisindo_app
+powershell -ExecutionPolicy Bypass -File tool\setup.ps1   # flutter create + pub get + env\dev.json
+# isi env\dev.json (URL + anon key Supabase DEV), terapkan supabase\setup_all.sql
+powershell -ExecutionPolicy Bypass -File tool\check.ps1   # analyze, test, golden, build APK → logs\
+```
+Error Gradle "Could not read workspace metadata" → `tool\fix_gradle.ps1`.
+Tanpa Gradle lokal: push ke GitHub → Actions → unduh artifact **bisindo-debug-apk**.
 
 ## Prasyarat
 - Flutter stable 3.47.x (Dart ≥ 3.12) — `flutter --version`

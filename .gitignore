@@ -17,6 +17,8 @@ migrate_working_dir/
 *.ipr
 *.iws
 .idea/
+# Log validasi lokal
+/logs/
 
 # Flutter/Dart/Pub related
 **/doc/api/

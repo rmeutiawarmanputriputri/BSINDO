@@ -15,11 +15,17 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_localizations:      # teks bawaan Material (menu salin/tempel, dialog) berbahasa Indonesia
+    sdk: flutter
   supabase_flutter: ^2.18.3   # 3.0.0 masih -dev → tidak dipakai
   flutter_riverpod: ^3.4.3    # tanpa codegen (D-01)
   go_router: ^18.1.0          # D-02
   flutter_svg: ^2.3.0         # logo vektor (menunggu aset K-01)
-  intl: ^0.20.2               # format tanggal Indonesia
+  intl: ^0.20.2               # dipakai flutter_localizations
+  video_player: ^2.14.1       # pemutar video isyarat (S09/S10)
+  speech_to_text: ^7.3.0      # transkripsi ucapan → teks (D-08)
+  permission_handler: ^13.0.2 # status izin mikrofon + "Buka Pengaturan" (S13) — alasan tertulis: speech_to_text tidak menyediakan pembuka pengaturan
+  file_picker: ^11.0.3        # admin memilih video/gambar (v12 mengubah API besar-besaran → ditahan di 11)
 
 dev_dependencies:
   flutter_test:

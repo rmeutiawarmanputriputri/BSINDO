@@ -1,27 +1,55 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/supabase/supabase_providers.dart';
+import '../domain/auth_event.dart';
 import '../domain/sign_up_result.dart';
-import 'fake_auth_repository.dart';
+import 'supabase_auth_repository.dart';
 
-/// Kontrak akses autentikasi. Implementasi Supabase dibuat pada Fase 3;
-/// semua error teknis diterjemahkan menjadi `AppFailure`.
+/// Kontrak autentikasi. Semua error teknis dilempar sebagai `AppFailure`.
 abstract interface class AuthRepository {
-  /// Melempar `AppFailure` bila gagal.
+  bool get isSignedIn;
+  String? get currentUserId;
+  String? get currentEmail;
+
+  /// Aliran peristiwa auth (login, logout, pemulihan sandi).
+  Stream<AuthEvent> get events;
+
   Future<void> signInWithPassword({
     required String email,
     required String password,
   });
 
-  /// Melempar `AppFailure` bila gagal.
   Future<SignUpResult> signUp({
     required String fullName,
     required String email,
     required String password,
   });
+
+  /// Selalu sukses dari sudut pandang UI (pesan netral, tanpa enumerasi email).
+  Future<void> sendPasswordReset(String email);
+
+  Future<void> updatePassword(String newPassword);
+
+  Future<void> resendVerification(String email);
+
+  Future<void> signOut();
 }
 
-/// FASE 1: default memakai [FakeAuthRepository] — TIDAK memanggil Supabase.
-/// TODO(P3): ganti dengan `SupabaseAuthRepository`.
+/// Deep link auth (D-09).
+const kAuthRedirectUrl = 'bisindo://auth-callback';
+
 final authRepositoryProvider = Provider<AuthRepository>(
-  (ref) => FakeAuthRepository(),
+  (ref) => SupabaseAuthRepository(ref.watch(supabaseClientProvider)),
 );
+
+/// Aliran peristiwa auth sebagai provider.
+final authEventsProvider = StreamProvider<AuthEvent>(
+  (ref) => ref.watch(authRepositoryProvider).events,
+);
+
+/// ID pengguna aktif; provider data pribadi menontonnya sehingga otomatis
+/// dimuat ulang saat pengguna berganti / keluar.
+final currentUserIdProvider = Provider<String?>((ref) {
+  ref.watch(authEventsProvider);
+  return ref.watch(authRepositoryProvider).currentUserId;
+});

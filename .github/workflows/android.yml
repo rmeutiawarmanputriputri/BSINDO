@@ -1,0 +1,55 @@
+# Build APK debug otomatis di GitHub (tanpa Gradle di komputer Anda).
+# Secrets opsional (Settings → Secrets → Actions): SUPABASE_URL, SUPABASE_ANON_KEY
+# (HANYA anon key; jangan pernah service role key).
+name: Android CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          flutter-version: 3.47.x
+          cache: true
+
+      - name: Lengkapi berkas platform (gradle wrapper, dll.)
+        run: |
+          flutter create . --project-name bisindo_app --org com.example --platforms android
+          rm -rf android/app/src/main/kotlin/com/example/bisindo_app
+          git status --short
+
+      - name: Konfigurasi env/dev.json
+        env:
+          SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+        run: |
+          URL="${SUPABASE_URL:-https://placeholder.invalid}"
+          KEY="${SUPABASE_ANON_KEY:-placeholder}"
+          printf '{"SUPABASE_URL":"%s","SUPABASE_ANON_KEY":"%s"}\n' "$URL" "$KEY" > env/dev.json
+
+      - run: flutter pub get
+      - run: dart format --output=none --set-exit-if-changed lib test || echo "::warning::Format belum rapi — jalankan 'dart format .'"
+      - run: flutter analyze
+      - run: flutter test --exclude-tags golden
+      - run: flutter build apk --debug --dart-define-from-file=env/dev.json
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bisindo-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+          retention-days: 14
