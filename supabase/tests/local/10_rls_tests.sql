@@ -57,6 +57,8 @@ insert into public.question_answer_keys (question_id, correct_option_id, explana
   ('66666666-0000-0000-0000-000000000001', '77777777-0000-0000-0000-000000000011', 'E1'),
   ('66666666-0000-0000-0000-000000000002', '77777777-0000-0000-0000-000000000021', 'E2'),
   ('66666666-0000-0000-0000-000000000003', '77777777-0000-0000-0000-000000000031', 'ED');
+insert into public.conversation_modules (id, slug, title, status, validated_by, verified_at, source_note) values
+  ('88888888-0000-0000-0000-000000000001', 'modul-uji', 'Modul Uji', 'published', 'Validator Uji', now(), 'Sumber uji');
 -- data pribadi milik B
 insert into public.favorites (user_id, sign_id) values ('bbbbbbbb-0000-0000-0000-00000000000b', '33333333-0000-0000-0000-000000000001');
 insert into public.user_progress (user_id, lesson_id) values ('bbbbbbbb-0000-0000-0000-00000000000b', '44444444-0000-0000-0000-000000000001');
@@ -254,6 +256,21 @@ do $$ declare n int; r jsonb; begin
     get diagnostics n = row_count;
     if n = 0 then perform t.pass('ST-03', 'upload ditolak; delete 0 baris'); else perform t.fail('ST-03', 'delete berhasil'); end if;
   end;
+
+  -- PROG (0010): touch_progress membuat lalu memperbarui satu baris, completed bertahan
+  perform public.touch_progress(p_module_id => null, p_lesson_id => '44444444-0000-0000-0000-000000000001', p_progress_percent => 30);
+  perform public.touch_progress(p_lesson_id => '44444444-0000-0000-0000-000000000001', p_progress_percent => 10);
+  select count(*) into n from public.user_progress where user_id = auth.uid() and lesson_id = '44444444-0000-0000-0000-000000000001';
+  if n = 1 and (select status from public.user_progress where user_id = auth.uid()
+                and lesson_id = '44444444-0000-0000-0000-000000000001') = 'completed'
+  then
+    perform public.touch_progress(p_module_id => '88888888-0000-0000-0000-000000000001', p_last_position => 1);
+    perform public.touch_progress(p_module_id => '88888888-0000-0000-0000-000000000001', p_completed => true);
+    if (select status from public.user_progress where user_id = auth.uid()
+        and conversation_module_id = '88888888-0000-0000-0000-000000000001') = 'completed'
+    then perform t.pass('PROG-RPC', 'pelajaran: 1 baris, completed tidak turun; modul: last_position lalu completed');
+    else perform t.fail('PROG-RPC', 'modul'); end if;
+  else perform t.fail('PROG-RPC', 'n=' || n); end if;
 
   -- ADM dashboard RPC untuk non-admin
   begin
