@@ -1,5 +1,6 @@
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/json.dart';
+import '../../../core/utils/media_type.dart';
 import '../../../core/utils/sample.dart';
 
 enum SignEntryType {
@@ -157,5 +158,42 @@ class Sign {
       contentModule == ContentModule.vocabulary ? term : (symbol ?? term);
 
   bool get hasVideo => videoPath != null;
+
+  /// Video/animasi berupa GIF (diputar sebagai gambar bergerak).
+  bool get isGifAnimation => isGifPath(videoPath);
+
+  /// Bentuk JSON yang sama dengan hasil query ([Sign.fromJson]); dipakai
+  /// untuk menyimpan materi offline di perangkat.
+  Json toJson() => {
+    'id': id,
+    'term': term,
+    'entry_type': entryType.value,
+    'category_id': categoryId,
+    'category': categoryName == null ? null : {'name': categoryName},
+    'meaning': meaning,
+    'movement_description': movementDescription,
+    'usage_example': usageExample,
+    'video': videoPath == null ? null : {'path': videoPath},
+    'thumb': thumbnailPath == null ? null : {'path': thumbnailPath},
+    'image': imagePath == null ? null : {'path': imagePath},
+    'audio': audioPath == null ? null : {'path': audioPath},
+    'source_note': sourceNote,
+    'validated_by': validatedBy,
+    'verified_at': verifiedAt?.toIso8601String(),
+    'status': status,
+    'content_module': contentModule.value,
+    'symbol': symbol,
+    'number_group': numberGroup?.value,
+    'sort_order': sortOrder,
+    'is_premium': isPremium,
+  };
+
+  /// Path media yang perlu diunduh untuk dibuka offline.
+  List<String> get mediaPaths => [
+    ?videoPath,
+    ?thumbnailPath,
+    ?imagePath,
+    ?audioPath,
+  ];
   bool get isSample => isSampleValidator(validatedBy);
 }

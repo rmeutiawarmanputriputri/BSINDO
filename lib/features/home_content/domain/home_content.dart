@@ -134,3 +134,41 @@ class PremiumPlan {
   final String? priceLabel;
   final String? description;
 }
+
+/// Konten beranda yang diatur admin (CMS → Pengaturan → Konten beranda).
+/// Bagian yang tidak disebut dianggap tampil.
+class HomeLayout {
+  const HomeLayout({this.introTitle, this.introText, this.sections = const {}});
+
+  factory HomeLayout.fromJson(Json json) {
+    final raw = json['sections'];
+    return HomeLayout(
+      introTitle: optString(json, 'intro_title'),
+      introText: optString(json, 'intro_text'),
+      sections: {
+        if (raw is Map)
+          for (final e in raw.entries)
+            if (e.key is String && e.value is bool)
+              e.key as String: e.value as bool,
+      },
+    );
+  }
+
+  static const defaultIntroTitle = 'Belajar BISINDO';
+  static const defaultIntroText =
+      'Belajar Bahasa Isyarat Indonesia: huruf, angka, kosakata, dan percakapan '
+      'dari materi yang sudah diverifikasi.';
+
+  final String? introTitle;
+  final String? introText;
+  final Map<String, bool> sections;
+
+  bool show(String key) => sections[key] ?? true;
+
+  String get title => (introTitle?.trim().isNotEmpty ?? false)
+      ? introTitle!.trim()
+      : defaultIntroTitle;
+  String get text => (introText?.trim().isNotEmpty ?? false)
+      ? introText!.trim()
+      : defaultIntroText;
+}

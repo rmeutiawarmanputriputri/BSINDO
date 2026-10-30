@@ -14,6 +14,7 @@ import '../../dictionary/data/sign_repository.dart';
 import '../../dictionary/domain/sign.dart';
 import '../../favorites/data/favorites_repository.dart';
 import '../../home_content/data/home_content_repository.dart';
+import '../../offline/data/offline_repository.dart';
 import '../../reports/domain/report.dart';
 import '../../video/video_player_view.dart';
 import '../data/study_repository.dart';
@@ -70,6 +71,30 @@ class _StudyBody extends ConsumerStatefulWidget {
 
 class _StudyBodyState extends ConsumerState<_StudyBody> {
   bool _busy = false;
+  bool _savingOffline = false;
+
+  Future<void> _toggleOffline(bool saved) async {
+    setState(() => _savingOffline = true);
+    final notifier = ref.read(offlineSignsProvider.notifier);
+    try {
+      if (saved) {
+        await notifier.remove(widget.sign.id);
+        if (mounted) showAppSnackBar(context, 'Dihapus dari materi offline');
+      } else {
+        await notifier.save(widget.sign);
+        if (mounted) {
+          showAppSnackBar(
+            context,
+            'Tersimpan. Materi bisa dibuka tanpa internet.',
+          );
+        }
+      }
+    } catch (error) {
+      if (mounted) showErrorSnackBar(context, error);
+    } finally {
+      if (mounted) setState(() => _savingOffline = false);
+    }
+  }
 
   @override
   void initState() {
@@ -165,6 +190,7 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
           sign.id,
         );
     final isVocab = widget.module == ContentModule.vocabulary;
+    final savedOffline = ref.watch(offlineSignIdsProvider).contains(sign.id);
 
     Widget section(String title, String? body) {
       if (body == null || body.trim().isEmpty) return const SizedBox.shrink();
@@ -246,6 +272,11 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
                   size: 18,
                 ),
                 label: Text('Sudah dipelajari'),
+              ),
+            if (savedOffline)
+              const Chip(
+                avatar: Icon(Icons.download_done_rounded, size: 18),
+                label: Text('Tersedia offline'),
               ),
             if (sign.isSample) const SampleBadge(),
           ],
@@ -394,6 +425,30 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
                 isDifficult ? 'Hapus dari daftar sulit' : 'Tandai Sulit',
               ),
             ),
+            if (!locked && sign.mediaPaths.isNotEmpty)
+              OutlinedButton.icon(
+                onPressed: _savingOffline
+                    ? null
+                    : () => _toggleOffline(savedOffline),
+                icon: _savingOffline
+                    ? const SizedBox(
+                        width: 18,
+                        height: 18,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Icon(
+                        savedOffline
+                            ? Icons.download_done_rounded
+                            : Icons.download_outlined,
+                      ),
+                label: Text(
+                  _savingOffline
+                      ? 'Menyimpan…'
+                      : savedOffline
+                      ? 'Hapus unduhan offline'
+                      : 'Simpan offline',
+                ),
+              ),
             OutlinedButton.icon(
               onPressed: () => context.push(
                 AppRoutes.newReport(

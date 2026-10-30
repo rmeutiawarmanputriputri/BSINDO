@@ -84,6 +84,26 @@ final quizBankRepositoryProvider = Provider<QuizBankRepository>(
   (ref) => SupabaseQuizBankRepository(ref.watch(supabaseClientProvider)),
 );
 
+/// Ada soal latihan (Published, aktif, terbaca pengguna) untuk topik percakapan?
+/// Tombol "Latihan memahami percakapan" hanya ditampilkan bila `true`.
+final conversationQuizAvailableProvider = FutureProvider.autoDispose
+    .family<bool, String>((ref, moduleId) async {
+      final client = ref.watch(supabaseClientProvider);
+      try {
+        final data = await client
+            .from('questions')
+            .select('id')
+            .isFilter('quiz_id', null)
+            .eq('conversation_module_id', moduleId)
+            .eq('status', 'published')
+            .eq('is_active', true)
+            .limit(1);
+        return rows(data).isNotEmpty;
+      } catch (_) {
+        return false;
+      }
+    });
+
 /// Riwayat gabungan: kuis bank (v1.1.0) + kuis pelajaran (versi lama).
 final quizHistoryProvider = FutureProvider.autoDispose<List<QuizHistoryEntry>>((
   ref,

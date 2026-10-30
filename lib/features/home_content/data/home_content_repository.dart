@@ -139,3 +139,22 @@ final premiumInfoProvider = FutureProvider.autoDispose<PremiumInfo>((ref) {
 final isPremiumProvider = Provider<bool>(
   (ref) => ref.watch(premiumStatusProvider).value?.isPremium ?? false,
 );
+
+/// Pengaturan beranda dari CMS. Gagal/belum ada → tampilan bawaan.
+final homeLayoutProvider = FutureProvider.autoDispose<HomeLayout>((ref) async {
+  ref.watch(currentUserIdProvider);
+  final client = ref.watch(supabaseClientProvider);
+  try {
+    final row = await client
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'home_layout')
+        .maybeSingle();
+    final value = row?['value'];
+    return value is Map<String, dynamic>
+        ? HomeLayout.fromJson(value)
+        : const HomeLayout();
+  } catch (_) {
+    return const HomeLayout();
+  }
+});

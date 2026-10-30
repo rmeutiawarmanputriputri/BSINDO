@@ -9,9 +9,12 @@ import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/content_page.dart';
 import '../../../core/widgets/media_widgets.dart';
 import '../../../core/widgets/source_card.dart';
+import '../../dictionary/domain/sign.dart';
 import '../../difficult_vocab/data/difficult_repository.dart';
 import '../../home_content/data/home_content_repository.dart';
 import '../../learning/data/progress_repository.dart';
+import '../../quiz/data/quiz_bank_repository.dart';
+import '../../quiz/domain/quiz_bank.dart';
 import '../../reports/domain/report.dart';
 import '../../video/video_player_view.dart';
 import '../data/conversation_repository.dart';
@@ -191,6 +194,24 @@ class _BodyState extends ConsumerState<_Body> {
               label: const Text('Mulai simulasi percakapan'),
             ),
           ),
+        if (ref.watch(conversationQuizAvailableProvider(m.id)).value ?? false)
+          Padding(
+            padding: const EdgeInsets.only(bottom: AppSpacing.md),
+            child: OutlinedButton.icon(
+              onPressed: () => context.push(
+                AppRoutes.quizPlay(
+                  QuizConfig(
+                    mode: QuizMode.category,
+                    module: QuizModule.conversation,
+                    categoryName: m.title,
+                    conversationModuleId: m.id,
+                  ),
+                ),
+              ),
+              icon: const Icon(Icons.quiz_outlined),
+              label: const Text('Latihan memahami percakapan'),
+            ),
+          ),
         if (current != null)
           VideoPlayerView(
             key: ValueKey(current.id),
@@ -325,9 +346,11 @@ class _ItemDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final parts = item.parts.where((p) => p.isVisible).toList();
     final hasText =
         (item.translation?.isNotEmpty ?? false) ||
-        (item.explanation?.isNotEmpty ?? false);
+        (item.explanation?.isNotEmpty ?? false) ||
+        parts.isNotEmpty;
     if (!hasText && item.audioPath == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
@@ -354,6 +377,19 @@ class _ItemDetails extends StatelessWidget {
               Text(item.explanation!, style: theme.textTheme.bodyMedium),
               const SizedBox(height: AppSpacing.sm),
             ],
+            if (parts.isNotEmpty) ...[
+              Semantics(
+                header: true,
+                child: Text(
+                  'Bagian kalimat (urutan isyarat)',
+                  style: theme.textTheme.labelLarge,
+                ),
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              for (var i = 0; i < parts.length; i++)
+                _PartTile(index: i, part: parts[i]),
+              const SizedBox(height: AppSpacing.sm),
+            ],
             if (item.audioPath != null)
               AudioPlayButton(
                 key: ValueKey('au${item.id}'),
@@ -362,6 +398,39 @@ class _ItemDetails extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Satu bagian kalimat; kosakata Published bisa dibuka detailnya.
+class _PartTile extends StatelessWidget {
+  const _PartTile({required this.index, required this.part});
+  final int index;
+  final ConversationPart part;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final signId = part.signId;
+    final meaning = part.displayMeaning;
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      dense: true,
+      leading: CircleAvatar(
+        radius: 14,
+        backgroundColor: AppColors.surface,
+        child: Text('${index + 1}', style: theme.textTheme.labelMedium),
+      ),
+      title: Text(part.label, style: theme.textTheme.bodyLarge),
+      subtitle: meaning == null || meaning.isEmpty ? null : Text(meaning),
+      trailing: signId == null
+          ? null
+          : const Icon(Icons.chevron_right, semanticLabel: 'Buka kosakata'),
+      onTap: signId == null
+          ? null
+          : () => context.push(
+              AppRoutes.study(ContentModule.parse(part.signModule), signId),
+            ),
     );
   }
 }

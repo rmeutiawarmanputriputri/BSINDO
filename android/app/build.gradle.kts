@@ -27,6 +27,8 @@ android {
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
+        // Wajib untuk flutter_local_notifications (pengingat belajar).
+        isCoreLibraryDesugaringEnabled = true
     }
 
     defaultConfig {
@@ -74,6 +76,10 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+dependencies {
+    coreLibraryDesugaring("com.android.tools:desugar_jdk_libs:2.1.4")
 }
 
 // Tolak build release tanpa keystore (agar tidak diam-diam memakai debug key).

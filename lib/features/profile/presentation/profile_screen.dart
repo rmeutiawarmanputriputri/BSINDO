@@ -160,11 +160,21 @@ class ProfileScreen extends ConsumerWidget {
               label: 'Riwayat Laporan',
               onTap: () => context.push(AppRoutes.reports),
             ),
+            _MenuTile(
+              icon: Icons.download_for_offline_outlined,
+              label: 'Materi Offline',
+              onTap: () => context.push(AppRoutes.offline),
+            ),
             const SectionHeader(title: 'Aplikasi'),
             _MenuTile(
               icon: Icons.notifications_none,
               label: unread > 0 ? 'Notifikasi ($unread baru)' : 'Notifikasi',
               onTap: () => context.push(AppRoutes.notifications),
+            ),
+            _MenuTile(
+              icon: Icons.notifications_active_outlined,
+              label: 'Pengaturan Notifikasi',
+              onTap: () => context.push(AppRoutes.notificationSettings),
             ),
             _MenuTile(
               icon: Icons.workspace_premium_outlined,

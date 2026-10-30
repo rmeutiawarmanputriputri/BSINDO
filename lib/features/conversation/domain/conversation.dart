@@ -30,7 +30,9 @@ class ConversationModule {
       'items:conversation_items(id, position, speaker_label, text_id, '
       'context_note, translation, explanation, sign_id, '
       'video:media_assets!video_asset_id(path), audio:media_assets!audio_asset_id(path), '
-      'sign:signs(id, term, sign_video:media_assets!video_asset_id(path)))';
+      'sign:signs(id, term, sign_video:media_assets!video_asset_id(path)), '
+      'parts:conversation_item_parts(position, part_text, meaning, sign_id, '
+      'part_sign:signs(id, term, meaning, content_module)))';
 
   factory ConversationModule.fromJson(Json json) {
     final items =
@@ -89,6 +91,7 @@ class ConversationItem {
     this.translation,
     this.explanation,
     this.audioPath,
+    this.parts = const [],
   });
 
   factory ConversationItem.fromJson(Json json) {
@@ -111,6 +114,8 @@ class ConversationItem {
       translation: optString(json, 'translation'),
       explanation: optString(json, 'explanation'),
       audioPath: optObject(json, 'audio')?['path'] as String?,
+      parts: optList(json, 'parts').map(ConversationPart.fromJson).toList()
+        ..sort((a, b) => a.position.compareTo(b.position)),
     );
   }
 
@@ -130,4 +135,55 @@ class ConversationItem {
   /// Penjelasan makna kalimat (v1.1.0).
   final String? explanation;
   final String? audioPath;
+
+  /// Kalimat dipecah menjadi bagian/kosakata sesuai susunan isyarat (v1.1.0).
+  final List<ConversationPart> parts;
+}
+
+/// Satu bagian kalimat: kosakata dari kamus dan/atau teks bagian + artinya.
+/// Kosakata yang belum Published tidak terbaca (RLS) → hanya teks bagian.
+class ConversationPart {
+  const ConversationPart({
+    required this.position,
+    this.partText,
+    this.meaning,
+    this.signId,
+    this.signTerm,
+    this.signMeaning,
+    this.signModule,
+  });
+
+  factory ConversationPart.fromJson(Json json) {
+    final sign = optObject(json, 'part_sign');
+    return ConversationPart(
+      position: optInt(json, 'position'),
+      partText: optString(json, 'part_text'),
+      meaning: optString(json, 'meaning'),
+      signId: sign != null ? optString(sign, 'id') : null,
+      signTerm: sign != null ? optString(sign, 'term') : null,
+      signMeaning: sign != null ? optString(sign, 'meaning') : null,
+      signModule: sign != null ? optString(sign, 'content_module') : null,
+    );
+  }
+
+  final int position;
+  final String? partText;
+  final String? meaning;
+
+  /// Terisi hanya bila kosakata terkait dapat dibaca pengguna (Published).
+  final String? signId;
+  final String? signTerm;
+  final String? signMeaning;
+  final String? signModule;
+
+  /// Teks yang ditampilkan: teks bagian, atau istilah kosakata.
+  String get label => (partText?.trim().isNotEmpty ?? false)
+      ? partText!.trim()
+      : (signTerm ?? '');
+
+  /// Arti bagian: dari CMS, atau arti kosakata di kamus.
+  String? get displayMeaning =>
+      (meaning?.trim().isNotEmpty ?? false) ? meaning!.trim() : signMeaning;
+
+  bool get isVisible => label.isNotEmpty;
 }

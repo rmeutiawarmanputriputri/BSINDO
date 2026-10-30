@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -5,6 +7,7 @@ import 'package:video_player/video_player.dart';
 
 import '../../app/router/routes.dart';
 import '../../app/theme/tokens.dart';
+import '../../features/offline/data/media_cache.dart';
 import '../supabase/signed_url_cache.dart';
 
 /// Gambar dari bucket privat (signed URL). Menampilkan placeholder saat memuat
@@ -29,6 +32,7 @@ class SignedImage extends ConsumerStatefulWidget {
 
 class _SignedImageState extends ConsumerState<SignedImage> {
   String? _url;
+  File? _file;
   bool _failed = false;
 
   @override
@@ -42,6 +46,7 @@ class _SignedImageState extends ConsumerState<SignedImage> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.path != widget.path) {
       _url = null;
+      _file = null;
       _failed = false;
       _load();
     }
@@ -50,6 +55,13 @@ class _SignedImageState extends ConsumerState<SignedImage> {
   Future<void> _load() async {
     final path = widget.path;
     try {
+      // Berkas offline lebih dulu (materi yang disimpan untuk offline).
+      final local = await ref.read(mediaCacheProvider).cached(path);
+      if (!mounted || widget.path != path) return;
+      if (local != null) {
+        setState(() => _file = local);
+        return;
+      }
       final url = await ref.read(signedUrlCacheProvider).get(path);
       if (mounted && widget.path == path) setState(() => _url = url);
     } catch (_) {
@@ -64,6 +76,16 @@ class _SignedImageState extends ConsumerState<SignedImage> {
       child = const _ImagePlaceholder(
         icon: Icons.broken_image_outlined,
         text: 'Gambar gagal dimuat',
+      );
+    } else if (_file != null) {
+      child = Image.file(
+        _file!,
+        fit: widget.fit,
+        semanticLabel: widget.semanticLabel,
+        errorBuilder: (_, _, _) => const _ImagePlaceholder(
+          icon: Icons.broken_image_outlined,
+          text: 'Gambar gagal dimuat',
+        ),
       );
     } else if (_url == null) {
       child = const _ImagePlaceholder(icon: Icons.image_outlined);
@@ -179,8 +201,14 @@ class _AudioPlayButtonState extends ConsumerState<AudioPlayButton> {
     final path = widget.path;
     final cache = ref.read(signedUrlCacheProvider);
     try {
-      final url = await cache.get(path);
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      final local = await ref.read(mediaCacheProvider).cached(path);
+      final VideoPlayerController controller;
+      if (local != null) {
+        controller = VideoPlayerController.file(local);
+      } else {
+        final url = await cache.get(path);
+        controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      }
       await controller.initialize();
       if (!mounted || widget.path != path) {
         await controller.dispose();

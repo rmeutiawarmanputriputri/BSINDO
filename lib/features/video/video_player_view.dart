@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 import 'package:flutter/services.dart';
@@ -7,11 +9,16 @@ import 'package:video_player/video_player.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/supabase/signed_url_cache.dart';
+import '../../core/utils/media_type.dart';
+import '../offline/data/media_cache.dart';
 import 'playback_speed.dart';
 
 /// Pemutar video isyarat (S10, DESIGN_SYSTEM §5): poster dulu, tanpa autoplay,
 /// buffering + "Memuat video…", error + "Coba Lagi" (signed URL baru),
 /// Play/Pause, Ulangi (loop), kecepatan 0,5×/0,75×/1×, layar penuh, seekbar.
+///
+/// v1.1.0: animasi GIF (diputar sebagai gambar bergerak + tombol putar ulang;
+/// kecepatan tidak dapat diubah) dan berkas offline dari [MediaCache].
 
 class VideoPlayerView extends ConsumerStatefulWidget {
   const VideoPlayerView({
@@ -42,6 +49,12 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
   bool _looping = false;
   double _speed = 1.0;
 
+  /// Animasi GIF: berkas lokal + generasi (naik setiap "putar ulang").
+  File? _gifFile;
+  int _gifGeneration = 0;
+
+  bool get _isGif => isGifPath(widget.videoPath);
+
   @override
   void initState() {
     super.initState();
@@ -53,6 +66,7 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
     super.didUpdateWidget(oldWidget);
     if (oldWidget.videoPath != widget.videoPath) {
       _disposeController();
+      _gifFile = null;
       setState(() => _phase = _Phase.poster);
     }
     if (oldWidget.posterPath != widget.posterPath) {
@@ -94,13 +108,26 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
       _errorText = null;
     });
     final cache = ref.read(signedUrlCacheProvider);
+    final mediaCache = ref.read(mediaCacheProvider);
+    if (_isGif) {
+      await _startGif(path, mediaCache, cache);
+      return;
+    }
     VideoPlayerController? created;
     // Controller sudah dibuang (dispose/didUpdateWidget) selama jeda async.
     bool stale() => !mounted || !identical(_controller, created);
     try {
-      final url = await cache.get(path);
+      // Berkas offline (bila materi disimpan) diutamakan; lainnya streaming.
+      final local = await mediaCache.cached(path);
       if (!mounted || widget.videoPath != path) return;
-      final controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      final VideoPlayerController controller;
+      if (local != null) {
+        controller = VideoPlayerController.file(local);
+      } else {
+        final url = await cache.get(path);
+        if (!mounted || widget.videoPath != path) return;
+        controller = VideoPlayerController.networkUrl(Uri.parse(url));
+      }
       created = controller;
       _disposeController();
       _controller = controller;
@@ -124,6 +151,42 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
             : 'Video gagal dimuat. Periksa koneksi lalu coba lagi.';
       });
     }
+  }
+
+  Future<void> _startGif(
+    String path,
+    MediaCache mediaCache,
+    SignedUrlCache cache,
+  ) async {
+    try {
+      final file = await mediaCache.fetch(path);
+      if (!mounted || widget.videoPath != path) return;
+      setState(() {
+        _gifFile = file;
+        _phase = _Phase.ready;
+      });
+    } catch (error) {
+      if (!mounted || widget.videoPath != path) return;
+      cache.invalidate(path);
+      setState(() {
+        _phase = _Phase.error;
+        _errorText = 'Animasi gagal dimuat. Periksa koneksi lalu coba lagi.';
+      });
+    }
+  }
+
+  /// GIF tidak bisa dijeda/diperlambat; "putar ulang" memulai dari bingkai awal.
+  Future<void> _replayGif() async {
+    final file = _gifFile;
+    if (file == null) return;
+    await FileImage(file).evict();
+    if (!mounted) return;
+    setState(() => _gifGeneration++);
+    SemanticsService.sendAnnouncement(
+      View.of(context),
+      'Animasi diputar ulang',
+      Directionality.of(context),
+    );
   }
 
   void _onTick() {
@@ -193,7 +256,7 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
       child: ColoredBox(
         color: const Color(0xFF0F172A),
         child: AspectRatio(
-          aspectRatio: _phase == _Phase.ready && _controller != null
+          aspectRatio: _phase == _Phase.ready && _controller != null && !_isGif
               ? _controller!.value.aspectRatio
               : widget.aspectRatio,
           child: _buildBody(context),
@@ -304,6 +367,59 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
               ),
             ),
           ),
+        );
+      case _Phase.ready when _isGif && _gifFile != null:
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            Image.file(
+              _gifFile!,
+              key: ValueKey(_gifGeneration),
+              fit: BoxFit.contain,
+              gaplessPlayback: true,
+              semanticLabel: 'Animasi ${widget.semanticTitle}',
+              errorBuilder: (context, error, stackTrace) => Center(
+                child: Text(
+                  'Animasi tidak dapat ditampilkan.',
+                  style: theme.textTheme.bodyMedium?.merge(onDark),
+                ),
+              ),
+            ),
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: DecoratedBox(
+                decoration: const BoxDecoration(
+                  gradient: LinearGradient(
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                    colors: [Color(0x00000000), Color(0xB3000000)],
+                  ),
+                ),
+                child: Row(
+                  children: [
+                    TextButton.icon(
+                      onPressed: _replayGif,
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                      ),
+                      icon: const Icon(Icons.replay_rounded),
+                      label: const Text('Putar ulang'),
+                    ),
+                    const Spacer(),
+                    Padding(
+                      padding: const EdgeInsets.only(right: AppSpacing.md),
+                      child: Text(
+                        'Animasi GIF',
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: Colors.white70,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         );
       case _Phase.ready:
         final c = _controller!;

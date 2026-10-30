@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,6 +7,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/app.dart';
 import 'app/bootstrap.dart';
 import 'app/config/env.dart';
+import 'core/storage/local_store.dart';
+import 'features/reminders/reminder_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,10 +23,11 @@ Future<void> main() async {
       // Tanpa retry otomatis Riverpod 3: error ditampilkan dengan tombol
       // "Coba Lagi" (UI_UX §2), bukan diulang diam-diam.
       retry: (retryCount, error) => null,
-      overrides: [
-        bootstrapErrorProvider.overrideWithValue(bootstrapError),
-      ],
+      overrides: [bootstrapErrorProvider.overrideWithValue(bootstrapError)],
       child: const BisindoApp(),
     ),
   );
+
+  // Jadwalkan ulang pengingat belajar yang aktif (mis. setelah update aplikasi).
+  unawaited(restoreReminder(LocalStore(), ReminderService()));
 }

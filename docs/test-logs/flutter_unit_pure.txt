@@ -1,3 +1,14 @@
+== test/features/feature_list_v110_test.dart
+LULUS  Animasi GIF › dikenali dari ekstensi path
+LULUS  Sign offline (toJson ↔ fromJson) › semua kolom kembali sama; mediaPaths hanya yang ada
+LULUS  Bagian kalimat percakapan › urut menurut posisi; label & arti dari CMS atau kamus
+LULUS  Bagian kalimat percakapan › data lama tanpa parts tetap terbaca
+LULUS  Latihan per topik percakapan › parameter RPC hanya dikirim bila ada topik
+LULUS  Latihan per topik percakapan › rute kuis membawa topik; topik bukan UUID diabaikan
+LULUS  Konten beranda (home_layout) › bagian tidak disebut = tampil; teks kosong = teks bawaan
+LULUS  Pengingat belajar › parse, batas nilai, label jam
+LULUS  Pengingat belajar › zona waktu Indonesia dari offset perangkat
+-- 9 lulus, 0 gagal
 == test/features/quiz/quiz_bank_test.dart
 LULUS  QuizQuestion.fromJson › membaca semua kolom RPC get_quiz_questions
 LULUS  QuizQuestion.fromJson › jenis tidak dikenal → pilihan ganda; kolom hilang tidak membuat crash

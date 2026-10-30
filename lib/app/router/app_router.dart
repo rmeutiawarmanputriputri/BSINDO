@@ -27,12 +27,14 @@ import '../../features/learning/presentation/lesson_detail_screen.dart';
 import '../../features/learning/presentation/lessons_screen.dart';
 import '../../features/learning/presentation/progress_screen.dart';
 import '../../features/learning/presentation/quiz_screen.dart';
+import '../../features/offline/presentation/offline_screens.dart';
 import '../../features/profile/presentation/profile_screen.dart';
 import '../../features/quiz/presentation/quiz_history_screen.dart';
 import '../../features/quiz/presentation/quiz_hub_screen.dart';
 import '../../features/quiz/presentation/quiz_play_screen.dart';
 import '../../features/reports/domain/report.dart';
 import '../../features/reports/presentation/report_form_screen.dart';
+import '../../features/reminders/notification_settings_screen.dart';
 import '../../features/reports/presentation/report_history_screen.dart';
 import '../../features/study/presentation/history_and_search_screens.dart';
 import '../../features/study/presentation/module_grid_screen.dart';
@@ -232,6 +234,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       _route(AppRoutes.notifications, (_) => const NotificationsScreen()),
       _route(AppRoutes.faq, (_) => const FaqScreen()),
       _route(AppRoutes.premium, (_) => const PremiumScreen()),
+      _route(
+        AppRoutes.offline,
+        (_) => const OfflineListScreen(),
+        routes: [
+          _route(
+            ':id',
+            (s) => _withId(s, 'id', (id) => OfflineSignScreen(signId: id)),
+          ),
+        ],
+      ),
+      _route(
+        AppRoutes.notificationSettings,
+        (_) => const NotificationSettingsScreen(),
+      ),
       _route(
         AppRoutes.admin,
         (_) => const AdminDashboardScreen(),

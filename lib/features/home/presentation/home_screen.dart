@@ -12,6 +12,7 @@ import '../../difficult_vocab/data/difficult_repository.dart';
 import '../../difficult_vocab/domain/difficult_item.dart';
 import '../../dictionary/domain/sign.dart';
 import '../../home_content/data/home_content_repository.dart';
+import '../../home_content/domain/home_content.dart';
 import '../../home_content/presentation/banner_carousel.dart';
 import '../../learning/data/progress_repository.dart';
 import '../../profile/data/profile_repository.dart';
@@ -51,6 +52,7 @@ class HomeScreen extends ConsumerWidget {
     final theme = Theme.of(context);
     final profile = ref.watch(currentProfileProvider).value;
     final unread = ref.watch(unreadAnnouncementsProvider);
+    final layout = ref.watch(homeLayoutProvider).value ?? const HomeLayout();
     return Scaffold(
       appBar: AppBar(
         title: const Text('Beranda'),
@@ -84,6 +86,7 @@ class HomeScreen extends ConsumerWidget {
           ref.invalidate(progressSummaryProvider);
           ref.invalidate(learningHistoryProvider);
           ref.invalidate(bannersProvider);
+          ref.invalidate(homeLayoutProvider);
           ref.invalidate(signProgressProvider);
           ref.invalidate(premiumStatusProvider);
           for (final m in ContentModule.values) {
@@ -123,13 +126,17 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.lg),
             const BannerCarousel(),
             const SizedBox(height: AppSpacing.md),
-            const _ContinueCard(),
-            const SectionHeader(title: 'Materi belajar'),
-            const LearnModuleGrid(),
-            const SectionHeader(title: 'Ringkasan progres'),
-            const _SummaryBlock(),
-            const _RecommendationBlock(),
-            const _PremiumBlock(),
+            if (layout.show('continue')) const _ContinueCard(),
+            if (layout.show('modules')) ...[
+              const SectionHeader(title: 'Materi belajar'),
+              const LearnModuleGrid(),
+            ],
+            if (layout.show('progress')) ...[
+              const SectionHeader(title: 'Ringkasan progres'),
+              const _SummaryBlock(),
+            ],
+            if (layout.show('recommendations')) const _RecommendationBlock(),
+            if (layout.show('premium')) const _PremiumBlock(),
             const SectionHeader(title: 'Akses cepat'),
             const _QuickGrid(),
             SectionHeader(

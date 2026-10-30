@@ -1,3 +1,4 @@
+import '../../core/utils/uuid.dart';
 import '../../features/dictionary/domain/sign.dart';
 import '../../features/quiz/domain/quiz_bank.dart';
 
@@ -36,6 +37,9 @@ abstract final class AppRoutes {
   static const faq = '/faq';
   static const premium = '/premium';
   static const history = '/history';
+  static const offline = '/offline';
+  static const notificationSettings = '/settings/notifications';
+  static String offlineSign(String id) => '/offline/$id';
 
   /// Detail belajar huruf/angka/kosakata. [learnMode] = mode belajar berurutan.
   static String study(
@@ -56,6 +60,8 @@ abstract final class AppRoutes {
       if (config.categoryId != null) 'category': config.categoryId!,
       if (config.categoryName != null) 'categoryName': config.categoryName!,
       if (config.difficulty != null) 'difficulty': config.difficulty!.value,
+      if (config.conversationModuleId != null)
+        'topic': config.conversationModuleId!,
       'limit': '${config.limit}',
     },
   ).toString();
@@ -69,6 +75,7 @@ abstract final class AppRoutes {
         ? null
         : QuizDifficulty.parse(q['difficulty']),
     limit: (int.tryParse(q['limit'] ?? '') ?? 10).clamp(1, 50),
+    conversationModuleId: isUuid(q['topic']) ? q['topic'] : null,
   );
 
   /// Rute aplikasi yang boleh dipakai banner CMS (target_type = route).

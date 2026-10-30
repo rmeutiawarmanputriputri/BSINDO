@@ -81,6 +81,7 @@ class QuizConfig {
     this.categoryName,
     this.difficulty,
     this.limit = 10,
+    this.conversationModuleId,
   });
 
   final QuizMode mode;
@@ -89,6 +90,9 @@ class QuizConfig {
   final String? categoryName;
   final QuizDifficulty? difficulty;
   final int limit;
+
+  /// Latihan memahami percakapan: soal milik satu topik (v1.1.0, migrasi 0121).
+  final String? conversationModuleId;
 
   String get title => switch (mode) {
     QuizMode.category => 'Kuis ${categoryName ?? module?.label ?? ''}'.trim(),
@@ -102,6 +106,8 @@ class QuizConfig {
     'p_category_id': categoryId,
     'p_difficulty': difficulty?.value,
     'p_limit': limit,
+    if (conversationModuleId != null)
+      'p_conversation_module_id': conversationModuleId,
   };
 
   @override
@@ -111,10 +117,18 @@ class QuizConfig {
       other.module == module &&
       other.categoryId == categoryId &&
       other.difficulty == difficulty &&
-      other.limit == limit;
+      other.limit == limit &&
+      other.conversationModuleId == conversationModuleId;
 
   @override
-  int get hashCode => Object.hash(mode, module, categoryId, difficulty, limit);
+  int get hashCode => Object.hash(
+    mode,
+    module,
+    categoryId,
+    difficulty,
+    limit,
+    conversationModuleId,
+  );
 }
 
 class QuizOption {

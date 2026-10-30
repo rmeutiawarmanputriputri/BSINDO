@@ -71,9 +71,17 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
 
   @override
   Widget build(BuildContext context) {
-    final banners = ref.watch(bannersProvider).value ?? const <HomeBanner>[];
+    final bannerState = ref.watch(bannersProvider);
+    final banners = bannerState.value ?? const <HomeBanner>[];
     final visible = banners.where((b) => b.imagePath != null).toList();
-    if (visible.isEmpty) return const SizedBox.shrink();
+    if (visible.isEmpty) {
+      // Tanpa banner aktif: banner perkenalan aplikasi (A.1), bila diaktifkan.
+      final layout = ref.watch(homeLayoutProvider).value ?? const HomeLayout();
+      if (bannerState.isLoading || !layout.show('intro')) {
+        return const SizedBox.shrink();
+      }
+      return IntroBanner(layout: layout);
+    }
     _ensureAutoplay(visible.length);
     return Column(
       children: [
@@ -176,6 +184,64 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
             ),
           ),
       ],
+    );
+  }
+}
+
+/// Banner perkenalan aplikasi. Teks bawaan atau dari CMS (bukan materi BISINDO).
+class IntroBanner extends StatelessWidget {
+  const IntroBanner({super.key, required this.layout});
+  final HomeLayout layout;
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(AppRadius.contentCard),
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, Color(0xFF3B6FE0)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const ExcludeSemantics(
+                child: Icon(Icons.sign_language, color: Colors.white, size: 32),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Semantics(
+                  header: true,
+                  child: Text(
+                    layout.title,
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            layout.text,
+            style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          FilledButton.tonalIcon(
+            onPressed: () => context.go(AppRoutes.learn),
+            icon: const Icon(Icons.grid_view_rounded),
+            label: const Text('Lihat semua modul'),
+          ),
+        ],
+      ),
     );
   }
 }
