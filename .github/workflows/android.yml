@@ -1,7 +1,7 @@
 # Build APK RELEASE BISINDO otomatis di GitHub (tanpa Flutter/Android Studio di komputer Anda).
 #
 # Secrets (Settings → Secrets and variables → Actions):
-#   SUPABASE_URL, SUPABASE_ANON_KEY   — WAJIB (anon/publishable key saja; JANGAN service_role)
+#   SUPABASE_URL, SUPABASE_ANON_KEY   — opsional; bila kosong dipakai env/public.json (kunci publik)
 #   KEYSTORE_BASE64, KEYSTORE_PASSWORD — opsional tetapi DISARANKAN (keystore release, lihat docs/BUILD_APK.md).
 #     Tanpa keystore, APK ditandatangani debug key acak milik server GitHub → hanya untuk UJI:
 #     setiap build baru harus uninstall dulu sebelum dipasang.
@@ -45,8 +45,11 @@ jobs:
           SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
         run: |
           if [ -z "$SUPABASE_URL" ] || [ -z "$SUPABASE_ANON_KEY" ]; then
-            echo "::error::Secret SUPABASE_URL / SUPABASE_ANON_KEY belum diisi. APK tidak akan bisa terhubung ke database."
-            exit 1
+            # Tanpa secret: pakai env/public.json (URL + publishable key PUBLIK,
+            # yang memang ikut di dalam APK). Service role key TIDAK pernah di repo.
+            echo "::notice::Secret Supabase belum diisi — memakai env/public.json."
+            cp env/public.json env/dev.json
+            exit 0
           fi
           printf '{"SUPABASE_URL":"%s","SUPABASE_ANON_KEY":"%s"}\n' "$SUPABASE_URL" "$SUPABASE_ANON_KEY" > env/dev.json
 

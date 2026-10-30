@@ -45,6 +45,8 @@ app.*.map.json
 # ---- BISINDO: rahasia & konfigurasi lokal (D-14, SUPABASE_SECURITY_PLAN §7) ----
 env/*.json
 !env/example.json
+# Kunci PUBLIK (publishable/anon) — memang ikut di dalam APK; bukan rahasia.
+!env/public.json
 .env*
 *.keystore
 *.jks
