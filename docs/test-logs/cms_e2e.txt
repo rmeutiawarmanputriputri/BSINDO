@@ -1,0 +1,38 @@
+LULUS CMS-01 Pengguna biasa ditolak masuk CMS
+LULUS CMS-02 Kata sandi salah → pesan jelas
+LULUS CMS-03 Admin masuk → Dashboard dengan angka nyata
+LULUS CMS-10 Unggah video dengan progres + tersimpan di DB & Storage
+LULUS CMS-11 Unggah audio MP3 & dua gambar
+LULUS CMS-12 Format tidak didukung (WAV) ditolak dengan pesan jelas
+LULUS CMS-13 Batas ukuran dari Pengaturan ditegakkan (gambar 0 MB → tolak)
+LULUS CMS-20 Alfabet: publish tanpa video ditolak, kekurangan ditampilkan
+LULUS CMS-21 Alfabet: pilih video dari Media + lengkapi → Published
+LULUS CMS-22 Kosakata: tambah dengan kategori, gambar panduan, audio
+LULUS CMS-23 Ubah status cepat dari daftar (Published → Archived)
+LULUS CMS-24 Angka: tanpa kelompok → kekurangan ditampilkan
+LULUS CMS-30 Percakapan: topik + 2 kalimat, urutan ditukar, tersimpan
+LULUS CMS-31 Percakapan: lengkapi validasi → Published
+LULUS CMS-40 Kuis: pilihan ganda tebak huruf → Published, kunci tersimpan
+LULUS CMS-41 Kuis: susun kata & cocokkan gambar tersimpan
+LULUS CMS-50 Hapus media yang dipakai → peringatan + daftar pemakaian; batal
+LULUS CMS-51 Paksa hapus media wajib materi Published → server menolak, data utuh
+LULUS CMS-52 Ganti berkas video: id tetap, berkas lama dihapus
+LULUS CMS-53 Hapus media tak terpakai → baris & berkas hilang
+LULUS CMS-54 Pratinjau media (signed URL) terbuka
+LULUS CMS-60 Impor CSV (titik koma): pratinjau → validasi → impor sebagai Draft
+LULUS CMS-61 Template impor kosong dapat diunduh (header saja)
+LULUS CMS-70 Kategori: tambah, ubah urutan, nonaktifkan
+LULUS CMS-80 Pengguna: detail + set Premium manual
+LULUS CMS-81 Admin tidak bisa menonaktifkan diri sendiri (tombol dinonaktifkan)
+LULUS CMS-82 Nonaktifkan pengguna → akun ditandai nonaktif
+LULUS CMS-83 Premium: info paket tersimpan; konten Premium terdaftar
+LULUS CMS-90 Banner: aktif tanpa gambar ditolak; dengan gambar tersimpan
+LULUS CMS-91 Pengumuman & FAQ dapat dibuat
+LULUS CMS-92 Pengaturan batas media tersimpan
+LULUS CMS-93 Dashboard memperbarui angka setelah perubahan
+LULUS CMS-95 Tampilan HP (390×844): menu lipat, tanpa scroll horizontal
+LULUS CMS-99 Token pengguna biasa ditolak di RPC admin & penulisan konten (API langsung)
+LULUS CMS-100 Keluar
+LULUS CMS-CON konsol: 0 error
+
+TOTAL 36 uji, 36 LULUS, 0 GAGAL

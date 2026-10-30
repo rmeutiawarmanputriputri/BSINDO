@@ -1,0 +1,14 @@
+{
+  "name": "bisindo-cms",
+  "version": "1.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BISINDO CMS (statis, tanpa build). package.json hanya untuk alat uji lokal.",
+  "scripts": {
+    "check": "for f in js/*.js js/pages/*.js; do node --check \"$f\" || exit 1; done",
+    "test:e2e": "node tests/e2e/run.mjs"
+  },
+  "devDependencies": {
+    "pg": "8.16.3"
+  }
+}

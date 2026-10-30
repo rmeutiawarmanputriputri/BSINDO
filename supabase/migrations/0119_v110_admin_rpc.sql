@@ -178,15 +178,21 @@ revoke all on function public.admin_replace_media_file(uuid, text, text, bigint,
 grant execute on function public.admin_replace_media_file(uuid, text, text, bigint, text, int, int, int) to authenticated;
 
 -- ============================================================ pengguna
+-- p_filter: null | 'premium' | 'inactive' | 'admin'
 create or replace function public.admin_list_users(
-  p_search text default null, p_limit int default 50, p_offset int default 0
+  p_search text default null, p_limit int default 50, p_offset int default 0, p_filter text default null
 ) returns jsonb language plpgsql stable security definer set search_path = '' as $$
 declare v_q text := nullif(btrim(coalesce(p_search, '')), '');
 begin
   perform public.assert_admin();
+  if p_filter is not null and p_filter not in ('premium', 'inactive', 'admin') then
+    raise exception 'invalid_filter' using errcode = '22023';
+  end if;
   return jsonb_build_object(
     'total', (select count(*) from public.profiles p join auth.users u on u.id = p.id
-              where v_q is null or p.full_name ilike '%' || v_q || '%' or u.email ilike '%' || v_q || '%'),
+              where (v_q is null or p.full_name ilike '%' || v_q || '%' or u.email ilike '%' || v_q || '%')
+                and (p_filter is null or (p_filter = 'premium' and public.has_premium(p.id))
+                     or (p_filter = 'inactive' and not p.is_active) or (p_filter = 'admin' and p.role = 'admin'))),
     'rows', coalesce((select jsonb_agg(r order by r ->> 'created_at' desc) from (
       select jsonb_build_object(
         'id', p.id, 'full_name', p.full_name, 'email', u.email, 'role', p.role,
@@ -196,12 +202,14 @@ begin
       from public.profiles p
       join auth.users u on u.id = p.id
       left join public.subscriptions s on s.user_id = p.id
-      where v_q is null or p.full_name ilike '%' || v_q || '%' or u.email ilike '%' || v_q || '%'
+      where (v_q is null or p.full_name ilike '%' || v_q || '%' or u.email ilike '%' || v_q || '%')
+                and (p_filter is null or (p_filter = 'premium' and public.has_premium(p.id))
+                     or (p_filter = 'inactive' and not p.is_active) or (p_filter = 'admin' and p.role = 'admin'))
       order by p.created_at desc
       limit greatest(1, least(coalesce(p_limit, 50), 200)) offset greatest(0, coalesce(p_offset, 0))) x), '[]'::jsonb));
 end $$;
-revoke all on function public.admin_list_users(text, int, int) from public, anon;
-grant execute on function public.admin_list_users(text, int, int) to authenticated;
+revoke all on function public.admin_list_users(text, int, int, text) from public, anon;
+grant execute on function public.admin_list_users(text, int, int, text) to authenticated;
 
 create or replace function public.admin_user_detail(p_user_id uuid)
 returns jsonb language plpgsql stable security definer set search_path = '' as $$

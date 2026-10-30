@@ -6,7 +6,7 @@ drop function if exists public.admin_set_premium(uuid, boolean, text, timestampt
 drop function if exists public.admin_set_user_active(uuid, boolean);
 drop function if exists public.admin_set_user_role(uuid, public.app_role);
 drop function if exists public.admin_user_detail(uuid);
-drop function if exists public.admin_list_users(text, int, int);
+drop function if exists public.admin_list_users(text, int, int, text);
 drop function if exists public.admin_replace_media_file(uuid, text, text, bigint, text, int, int, int);
 drop function if exists public.admin_delete_media(uuid, boolean);
 drop function if exists public.media_usage(uuid);

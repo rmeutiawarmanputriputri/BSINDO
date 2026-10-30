@@ -1,0 +1,20 @@
+# Untuk hosting Apache/cPanel. Unggah HANYA: index.html, config.js, css/, js/, vendor/, assets/, .htaccess
+Options -Indexes
+<IfModule mod_headers.c>
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "no-referrer"
+  Header always set X-Robots-Tag "noindex, nofollow"
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data: https:; media-src 'self' blob: https:; connect-src 'self' https: wss:; object-src 'none'; base-uri 'none'; form-action 'self'; frame-ancestors 'none'"
+  <Files "config.js">
+    Header set Cache-Control "no-store"
+  </Files>
+</IfModule>
+# Tolak berkas yang tidak boleh publik bila terlanjur terunggah
+<FilesMatch "(^\.|\.(env|sql|log|sh|mjs|json|md|jks|keystore|properties)$)">
+  Require all denied
+</FilesMatch>
+<FilesMatch "^(index\.html|config\.js)$">
+  Require all granted
+</FilesMatch>
+RedirectMatch 404 ^/(tests|node_modules)(/|$)

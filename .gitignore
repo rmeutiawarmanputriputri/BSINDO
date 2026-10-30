@@ -53,3 +53,9 @@ key.properties
 
 # Hasil kegagalan golden test
 test/**/failures/
+
+# ---- v1.1.0: CMS & uji lokal
+cms/config.js
+cms/node_modules/
+cms/tests/e2e/out/
+cms/tests/e2e/media/

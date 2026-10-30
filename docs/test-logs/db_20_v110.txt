@@ -40,7 +40,7 @@
 
                                               record_sign_view                                              
 ------------------------------------------------------------------------------------------------------------
- {"learned": false, "sign_id": "f261656f-8c8d-4fba-bdc6-9d3879473543", "learned_at": null, "view_count": 1}
+ {"learned": false, "sign_id": "feea9e88-b7a7-4522-ad22-f2d67ffbcf20", "learned_at": null, "view_count": 1}
 (1 row)
 
  delete_my_account 
@@ -93,18 +93,18 @@
  V-23  | LULUS | 12/12 RPC admin ditolak
  V-23b | LULUS | update konten oleh user: 0 baris
  V-23c | LULUS | kolom role tidak bisa diubah klien
- V-24a | LULUS | {"learned": true, "sign_id": "f261656f-8c8d-4fba-bdc6-9d3879473543", "learned_at": "2026-10-30T11:03:28.711918+07:00", "view_count": 2}
+ V-24a | LULUS | {"learned": true, "sign_id": "feea9e88-b7a7-4522-ad22-f2d67ffbcf20", "learned_at": "2026-10-30T11:46:20.139766+07:00", "view_count": 2}
  V-24b | LULUS | progres materi draft ditolak RLS
  V-24c | LULUS | {"modules": {"number": {"total": 1, "learned": 0}, "alphabet": {"total": 1, "learned": 1}, "vocabulary": {"total": 1, "learned": 0}}, "quizz
  V-24d | LULUS | riwayat belajar milik sendiri
- V-25a | LULUS | hanya soal published non-premium; tanpa kunci: [{"id": "15bce4c2-013d-4e34-bec6-6ea8013deb30", "module": "alphabet", "prompt": "TEST soal 1 
+ V-25a | LULUS | hanya soal published non-premium; tanpa kunci: [{"id": "3168db02-10e9-4a49-99cd-e6f509db6d86", "module": "alphabet", "prompt": "TEST soal 1 
  V-25b | LULUS | kunci jawaban tertutup
- V-25c | LULUS | {"pairs": null, "is_correct": true, "explanation": "TEST pembahasan", "question_id": "15bce4c2-013d-4e34-bec6-6ea8013deb30", "correct_sequen
+ V-25c | LULUS | {"pairs": null, "is_correct": true, "explanation": "TEST pembahasan", "question_id": "3168db02-10e9-4a49-99cd-e6f509db6d86", "correct_sequen
  V-25d | LULUS | soal draft tidak bisa dicek
  V-25e | LULUS | soal Premium tertutup untuk pengguna gratis
- V-25f | LULUS | {"details": [{"given": {"sequence": ["05219241-dcbd-4aae-8b71-7f86456ec04d", "858a71a4-3848-4857-b949-b9ac3e2922e9", "9e1ebeda-84aa-4572-abe
+ V-25f | LULUS | {"details": [{"given": {"sequence": ["b82f1b04-2990-4b9b-82df-6da1fc531804", "c6c6e8b2-3f35-451b-bacf-d9ce7c92d976", "35735f85-b27f-402a-8cb
  V-25g | LULUS | riwayat sesi tercatat
- V-25h | LULUS | mode kelemahan: [{"id": "15bce4c2-013d-4e34-bec6-6ea8013deb30", "module": "alphabet", "prompt": "TEST soal 1 (edit)", "options": [{"id":
+ V-25h | LULUS | mode kelemahan: [{"id": "3168db02-10e9-4a49-99cd-e6f509db6d86", "module": "alphabet", "prompt": "TEST soal 1 (edit)", "options": [{"id":
  V-25i | LULUS | skor hanya lewat RPC (dinilai server)
  V-25j | LULUS | submit soal draft ditolak
  V-26a | LULUS | banner aktif saja + gambarnya terbaca
@@ -121,16 +121,16 @@
  V-31c | LULUS | {"plan": "TEST plan", "source": "manual", "status": "active", "expires_at": null, "is_premium": true}
  V-31d | LULUS | Premium kedaluwarsa → media tertutup
  V-32  | LULUS | akun nonaktif tidak membaca konten, tetapi melihat status profilnya
- V-40a | LULUS | media dipakai: [{"id": "573ec3fa-7ce5-4459-8a4b-f6d5226289a2", "type": "sign", "field": "video", "title": "TEST_ANGKA", "module": "number", 
+ V-40a | LULUS | media dipakai: [{"id": "6d2e03a2-3905-481f-9309-a72a42cd3f2b", "type": "sign", "field": "video", "title": "TEST_ANGKA", "module": "number", 
  V-40b | LULUS | hapus media terpakai ditolak
  V-40c | LULUS | paksa hapus tetap ditolak bila merusak materi published
  V-40d | LULUS | {"path": "test/TEST_unused.mp4", "bucket": "bisindo-media", "unlinked": []}
  V-40e | LULUS | ganti berkas: id tetap, path lama dikembalikan
- V-41a | LULUS | {"ok": 2, "kind": "vocabulary", "total": 3, "failed": 1, "dry_run": true, "results": [{"id": "3f125b42-4060-4513-9f11-db4e1ab4a61a", "ok": t
+ V-41a | LULUS | {"ok": 2, "kind": "vocabulary", "total": 3, "failed": 1, "dry_run": true, "results": [{"id": "e368cc29-68b6-433d-9c82-3417fea94c09", "ok": t
  V-41b | LULUS | impor → Draft, media terhubung
- V-41c | LULUS | {"ok": 1, "kind": "number", "total": 2, "failed": 1, "dry_run": false, "results": [{"id": "e3980bf3-7fea-4bdc-9d94-1c60a80bed53", "ok": true
- V-41d | LULUS | {"ok": 2, "kind": "conversation", "total": 2, "failed": 0, "dry_run": false, "results": [{"id": "80d0e773-7a74-44a9-8035-af9f6c68692b", "ok"
- V-41e | LULUS | {"ok": 3, "kind": "quiz", "total": 4, "failed": 1, "dry_run": false, "results": [{"id": "8a94b6ae-b08d-4df7-9f67-cf4a964f3149", "ok": true, 
+ V-41c | LULUS | {"ok": 1, "kind": "number", "total": 2, "failed": 1, "dry_run": false, "results": [{"id": "21f7a1d0-1a6c-4c7c-a0cd-5799a85414f8", "ok": true
+ V-41d | LULUS | {"ok": 2, "kind": "conversation", "total": 2, "failed": 0, "dry_run": false, "results": [{"id": "9a58db1f-b413-4d60-a144-18d753cce274", "ok"
+ V-41e | LULUS | {"ok": 3, "kind": "quiz", "total": 4, "failed": 1, "dry_run": false, "results": [{"id": "99c1d821-8edf-4d00-a8ce-3270bf06a273", "ok": true, 
  V-41f | LULUS | soal cocokkan hasil impor lolos validasi publikasi
  V-42  | LULUS | urutan diperbarui
  V-50  | LULUS | akun B & datanya terhapus; data A utuh
