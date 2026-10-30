@@ -33,11 +33,12 @@ class ConversationModule {
       'sign:signs(id, term, sign_video:media_assets!video_asset_id(path)))';
 
   factory ConversationModule.fromJson(Json json) {
-    final items = optList(json, 'items')
-        .where((i) => i.containsKey('id'))
-        .map(ConversationItem.fromJson)
-        .toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+    final items =
+        optList(json, 'items')
+            .where((i) => i.containsKey('id'))
+            .map(ConversationItem.fromJson)
+            .toList()
+          ..sort((a, b) => a.position.compareTo(b.position));
     return ConversationModule(
       id: reqString(json, 'id'),
       slug: optString(json, 'slug'),
@@ -93,8 +94,9 @@ class ConversationItem {
   factory ConversationItem.fromJson(Json json) {
     final sign = optObject(json, 'sign');
     final ownVideo = optObject(json, 'video')?['path'] as String?;
-    final signVideo =
-        sign != null ? (optObject(sign, 'sign_video')?['path'] as String?) : null;
+    final signVideo = sign != null
+        ? (optObject(sign, 'sign_video')?['path'] as String?)
+        : null;
     return ConversationItem(
       id: reqString(json, 'id'),
       position: optInt(json, 'position'),

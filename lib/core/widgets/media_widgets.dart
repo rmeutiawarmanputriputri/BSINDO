@@ -61,7 +61,10 @@ class _SignedImageState extends ConsumerState<SignedImage> {
   Widget build(BuildContext context) {
     Widget child;
     if (_failed) {
-      child = const _ImagePlaceholder(icon: Icons.broken_image_outlined, text: 'Gambar gagal dimuat');
+      child = const _ImagePlaceholder(
+        icon: Icons.broken_image_outlined,
+        text: 'Gambar gagal dimuat',
+      );
     } else if (_url == null) {
       child = const _ImagePlaceholder(icon: Icons.image_outlined);
     } else {
@@ -71,14 +74,20 @@ class _SignedImageState extends ConsumerState<SignedImage> {
         semanticLabel: widget.semanticLabel,
         errorBuilder: (_, _, _) {
           ref.read(signedUrlCacheProvider).invalidate(widget.path);
-          return const _ImagePlaceholder(icon: Icons.broken_image_outlined, text: 'Gambar gagal dimuat');
+          return const _ImagePlaceholder(
+            icon: Icons.broken_image_outlined,
+            text: 'Gambar gagal dimuat',
+          );
         },
-        loadingBuilder: (context, img, progress) =>
-            progress == null ? img : const _ImagePlaceholder(icon: Icons.image_outlined),
+        loadingBuilder: (context, img, progress) => progress == null
+            ? img
+            : const _ImagePlaceholder(icon: Icons.image_outlined),
       );
     }
     final ratio = widget.aspectRatio;
-    return ratio == null ? child : AspectRatio(aspectRatio: ratio, child: child);
+    return ratio == null
+        ? child
+        : AspectRatio(aspectRatio: ratio, child: child);
   }
 }
 
@@ -97,7 +106,11 @@ class _ImagePlaceholder extends StatelessWidget {
           children: [
             Icon(icon, color: AppColors.textSecondary),
             if (text != null)
-              Text(text!, style: Theme.of(context).textTheme.bodySmall, textAlign: TextAlign.center),
+              Text(
+                text!,
+                style: Theme.of(context).textTheme.bodySmall,
+                textAlign: TextAlign.center,
+              ),
           ],
         ),
       ),
@@ -108,7 +121,11 @@ class _ImagePlaceholder extends StatelessWidget {
 /// Tombol putar/jeda audio (voice). Memakai `video_player` (ExoPlayer) yang
 /// juga memutar MP3/M4A/AAC — tanpa dependensi tambahan.
 class AudioPlayButton extends ConsumerStatefulWidget {
-  const AudioPlayButton({super.key, required this.path, this.label = 'Putar suara'});
+  const AudioPlayButton({
+    super.key,
+    required this.path,
+    this.label = 'Putar suara',
+  });
 
   final String path;
   final String label;
@@ -186,20 +203,31 @@ class _AudioPlayButtonState extends ConsumerState<AudioPlayButton> {
     return OutlinedButton.icon(
       onPressed: _loading ? null : _toggle,
       icon: _loading
-          ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
-          : Icon(_error
-              ? Icons.refresh
-              : playing
+          ? const SizedBox(
+              width: 18,
+              height: 18,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            )
+          : Icon(
+              _error
+                  ? Icons.refresh
+                  : playing
                   ? Icons.pause_circle_outline
-                  : Icons.volume_up_outlined),
-      label: Text(_error ? 'Gagal — coba lagi' : (playing ? 'Jeda suara' : widget.label)),
+                  : Icons.volume_up_outlined,
+            ),
+      label: Text(
+        _error ? 'Gagal — coba lagi' : (playing ? 'Jeda suara' : widget.label),
+      ),
     );
   }
 }
 
 /// Kartu pengganti media untuk konten Premium yang belum dibuka.
 class PremiumLockCard extends StatelessWidget {
-  const PremiumLockCard({super.key, this.message = 'Materi ini khusus pengguna Premium.'});
+  const PremiumLockCard({
+    super.key,
+    this.message = 'Materi ini khusus pengguna Premium.',
+  });
 
   final String message;
 
@@ -215,11 +243,17 @@ class PremiumLockCard extends StatelessWidget {
       ),
       child: Column(
         children: [
-          const ExcludeSemantics(child: Icon(Icons.lock_outline, size: 40, color: Color(0xFF8A5300))),
+          const ExcludeSemantics(
+            child: Icon(Icons.lock_outline, size: 40, color: Color(0xFF8A5300)),
+          ),
           const SizedBox(height: AppSpacing.sm),
           Text('Konten Premium', style: theme.textTheme.titleMedium),
           const SizedBox(height: AppSpacing.xs),
-          Text(message, textAlign: TextAlign.center, style: theme.textTheme.bodyMedium),
+          Text(
+            message,
+            textAlign: TextAlign.center,
+            style: theme.textTheme.bodyMedium,
+          ),
           const SizedBox(height: AppSpacing.md),
           FilledButton.tonal(
             onPressed: () => context.push(AppRoutes.premium),
@@ -249,9 +283,20 @@ class PremiumBadge extends StatelessWidget {
         child: const Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(Icons.workspace_premium_outlined, size: 14, color: Color(0xFF8A5300)),
+            Icon(
+              Icons.workspace_premium_outlined,
+              size: 14,
+              color: Color(0xFF8A5300),
+            ),
             SizedBox(width: 2),
-            Text('Premium', style: TextStyle(fontSize: 11, color: Color(0xFF8A5300), fontWeight: FontWeight.w600)),
+            Text(
+              'Premium',
+              style: TextStyle(
+                fontSize: 11,
+                color: Color(0xFF8A5300),
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),

@@ -78,7 +78,9 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
     if (path == null) return;
     try {
       final url = await ref.read(signedUrlCacheProvider).get(path);
-      if (mounted && widget.posterPath == path) setState(() => _posterUrl = url);
+      if (mounted && widget.posterPath == path) {
+        setState(() => _posterUrl = url);
+      }
     } catch (_) {
       // Poster opsional: abaikan kegagalan.
     }
@@ -208,10 +210,16 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.videocam_off_outlined, color: Colors.white70, size: 36),
+            const Icon(
+              Icons.videocam_off_outlined,
+              color: Colors.white70,
+              size: 36,
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Video belum tersedia',
-                style: theme.textTheme.bodyMedium?.merge(onDark)),
+            Text(
+              'Video belum tersedia',
+              style: theme.textTheme.bodyMedium?.merge(onDark),
+            ),
           ],
         ),
       );
@@ -238,8 +246,11 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
                   child: CircleAvatar(
                     radius: 30,
                     backgroundColor: Colors.white,
-                    child: Icon(Icons.play_arrow_rounded,
-                        size: 40, color: AppColors.primary),
+                    child: Icon(
+                      Icons.play_arrow_rounded,
+                      size: 40,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ),
               ],
@@ -256,7 +267,10 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
               children: [
                 const CircularProgressIndicator(color: Colors.white),
                 const SizedBox(height: AppSpacing.md),
-                Text('Memuat video…', style: theme.textTheme.bodyMedium?.merge(onDark)),
+                Text(
+                  'Memuat video…',
+                  style: theme.textTheme.bodyMedium?.merge(onDark),
+                ),
               ],
             ),
           ),
@@ -270,13 +284,22 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.error_outline, color: Colors.white, size: 32),
+                  const Icon(
+                    Icons.error_outline,
+                    color: Colors.white,
+                    size: 32,
+                  ),
                   const SizedBox(height: AppSpacing.sm),
-                  Text(_errorText ?? 'Video gagal dimuat.',
-                      textAlign: TextAlign.center,
-                      style: theme.textTheme.bodyMedium?.merge(onDark)),
+                  Text(
+                    _errorText ?? 'Video gagal dimuat.',
+                    textAlign: TextAlign.center,
+                    style: theme.textTheme.bodyMedium?.merge(onDark),
+                  ),
                   const SizedBox(height: AppSpacing.md),
-                  FilledButton.tonal(onPressed: _start, child: const Text('Coba Lagi')),
+                  FilledButton.tonal(
+                    onPressed: _start,
+                    child: const Text('Coba Lagi'),
+                  ),
                 ],
               ),
             ),
@@ -292,7 +315,9 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
               child: GestureDetector(onTap: _togglePlay, child: VideoPlayer(c)),
             ),
             if (c.value.isBuffering)
-              const Center(child: CircularProgressIndicator(color: Colors.white)),
+              const Center(
+                child: CircularProgressIndicator(color: Colors.white),
+              ),
             Align(
               alignment: Alignment.bottomCenter,
               child: _Controls(
@@ -367,19 +392,24 @@ class _Controls extends StatelessWidget {
                 IconButton(
                   tooltip: playing ? 'Jeda' : 'Putar',
                   onPressed: onTogglePlay,
-                  icon: Icon(playing ? Icons.pause_rounded : Icons.play_arrow_rounded),
+                  icon: Icon(
+                    playing ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  ),
                 ),
                 IconButton(
                   tooltip: looping ? 'Matikan ulangi' : 'Ulangi terus',
                   isSelected: looping,
                   onPressed: onToggleLoop,
-                  icon: Icon(looping ? Icons.repeat_on_rounded : Icons.repeat_rounded),
+                  icon: Icon(
+                    looping ? Icons.repeat_on_rounded : Icons.repeat_rounded,
+                  ),
                 ),
                 TextButton(
                   onPressed: onToggleSpeed,
                   style: TextButton.styleFrom(foregroundColor: Colors.white),
                   child: Semantics(
-                    label: 'Kecepatan ${speedLabel(speed)}, ketuk untuk mengubah',
+                    label:
+                        'Kecepatan ${speedLabel(speed)}, ketuk untuk mengubah',
                     excludeSemantics: true,
                     child: Text(speedLabel(speed)),
                   ),
@@ -461,8 +491,9 @@ class _FullscreenVideoPageState extends State<_FullscreenVideoPage> {
                 speed: c.value.playbackSpeed,
                 onTogglePlay: () => c.value.isPlaying ? c.pause() : c.play(),
                 onToggleLoop: () => c.setLooping(!c.value.isLooping),
-                onToggleSpeed: () =>
-                    c.setPlaybackSpeed(nextPlaybackSpeed(c.value.playbackSpeed)),
+                onToggleSpeed: () => c.setPlaybackSpeed(
+                  nextPlaybackSpeed(c.value.playbackSpeed),
+                ),
                 onExitFullscreen: () => Navigator.of(context).pop(),
               ),
             ),

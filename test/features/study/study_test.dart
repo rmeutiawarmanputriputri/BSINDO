@@ -14,7 +14,12 @@ void main() {
           {'category_id': 'c', 'name': 'TEST', 'total': 2, 'learned': 1},
         ],
         'conversations': {'total': 3, 'completed': 1},
-        'quizzes': {'sessions': 2, 'average_score': 75, 'best_score': 90, 'last_at': null},
+        'quizzes': {
+          'sessions': 2,
+          'average_score': 75,
+          'best_score': 90,
+          'last_at': null,
+        },
         'total_learned': 13,
       });
       expect(s.module('alphabet').ratio, 0.5);
@@ -49,9 +54,21 @@ void main() {
   });
 
   test('SignProgress: learned dari learned_at atau flag RPC', () {
-    expect(SignProgress.fromJson({'sign_id': 'a', 'learned_at': '2026-10-30'}).learned, true);
-    expect(SignProgress.fromJson({'sign_id': 'a', 'learned': true}).learned, true);
-    expect(SignProgress.fromJson({'sign_id': 'a', 'learned_at': null}).learned, false);
+    expect(
+      SignProgress.fromJson({
+        'sign_id': 'a',
+        'learned_at': '2026-10-30',
+      }).learned,
+      true,
+    );
+    expect(
+      SignProgress.fromJson({'sign_id': 'a', 'learned': true}).learned,
+      true,
+    );
+    expect(
+      SignProgress.fromJson({'sign_id': 'a', 'learned_at': null}).learned,
+      false,
+    );
   });
 
   test('mode belajar mulai dari materi pertama yang belum dipelajari', () {
@@ -84,7 +101,11 @@ void main() {
     });
 
     test('JSON lama (tanpa kolom v1.1.0) tetap terbaca sebagai kosakata', () {
-      final s = Sign.fromJson({'id': 'x', 'term': 'TEST kata', 'entry_type': 'phrase'});
+      final s = Sign.fromJson({
+        'id': 'x',
+        'term': 'TEST kata',
+        'entry_type': 'phrase',
+      });
       expect(s.contentModule, ContentModule.vocabulary);
       expect(s.displayTitle, 'TEST kata');
       expect(s.isPremium, false);
@@ -93,8 +114,14 @@ void main() {
     });
 
     test('kolom select memuat relasi media baru', () {
-      expect(Sign.selectColumns.contains('image:media_assets!image_asset_id(path)'), true);
-      expect(Sign.selectColumns.contains('audio:media_assets!audio_asset_id(path)'), true);
+      expect(
+        Sign.selectColumns.contains('image:media_assets!image_asset_id(path)'),
+        true,
+      );
+      expect(
+        Sign.selectColumns.contains('audio:media_assets!audio_asset_id(path)'),
+        true,
+      );
       expect(Sign.selectColumns.contains('content_module'), true);
     });
   });

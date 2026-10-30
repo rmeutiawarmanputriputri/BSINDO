@@ -34,11 +34,18 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
   }
 
   void _ensureAutoplay(int count) {
-    if (count < 2 || _timer != null || MediaQuery.disableAnimationsOf(context)) return;
+    if (count < 2 ||
+        _timer != null ||
+        MediaQuery.disableAnimationsOf(context)) {
+      return;
+    }
     _timer = Timer.periodic(const Duration(seconds: 6), (_) {
       if (!mounted || !_controller.hasClients) return;
-      _controller.animateToPage((_page + 1) % count,
-          duration: const Duration(milliseconds: 400), curve: Curves.easeOut);
+      _controller.animateToPage(
+        (_page + 1) % count,
+        duration: const Duration(milliseconds: 400),
+        curve: Curves.easeOut,
+      );
     });
   }
 
@@ -82,7 +89,10 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
                 padding: const EdgeInsets.symmetric(horizontal: 4),
                 child: Semantics(
                   button: b.isTappable,
-                  label: [b.title, if (b.description != null) b.description!].join('. '),
+                  label: [
+                    b.title,
+                    if (b.description != null) b.description!,
+                  ].join('. '),
                   excludeSemantics: true,
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.contentCard),
@@ -108,15 +118,25 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
                                   mainAxisSize: MainAxisSize.min,
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(b.title,
+                                    Text(
+                                      b.title,
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleMedium
+                                          ?.copyWith(color: Colors.white),
+                                    ),
+                                    if (b.description != null)
+                                      Text(
+                                        b.description!,
                                         maxLines: 2,
                                         overflow: TextOverflow.ellipsis,
-                                        style: Theme.of(context).textTheme.titleMedium?.copyWith(color: Colors.white)),
-                                    if (b.description != null)
-                                      Text(b.description!,
-                                          maxLines: 2,
-                                          overflow: TextOverflow.ellipsis,
-                                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white)),
+                                        style: Theme.of(context)
+                                            .textTheme
+                                            .bodySmall
+                                            ?.copyWith(color: Colors.white),
+                                      ),
                                   ],
                                 ),
                               ),
@@ -145,7 +165,9 @@ class _BannerCarouselState extends ConsumerState<BannerCarousel> {
                       width: i == _page ? 18 : 7,
                       height: 7,
                       decoration: BoxDecoration(
-                        color: i == _page ? AppColors.primary : AppColors.outline,
+                        color: i == _page
+                            ? AppColors.primary
+                            : AppColors.outline,
                         borderRadius: BorderRadius.circular(AppRadius.pill),
                       ),
                     ),

@@ -27,25 +27,26 @@ class SupabaseProfileRepository implements ProfileRepository {
 
   @override
   Future<Profile> fetchCurrent() => guardRequest(() async {
-        final row = await _client
-            .from('profiles')
-            .select('id, full_name, role, is_active')
-            .eq('id', _uid)
-            .single();
-        return Profile.fromJson(row);
-      });
+    final row = await _client
+        .from('profiles')
+        .select('id, full_name, role, is_active')
+        .eq('id', _uid)
+        .single();
+    return Profile.fromJson(row);
+  });
 
   @override
   Future<void> updateFullName(String fullName) => guardRequest(() async {
-        await _client
-            .from('profiles')
-            .update({'full_name': fullName.trim()}).eq('id', _uid);
-      });
+    await _client
+        .from('profiles')
+        .update({'full_name': fullName.trim()})
+        .eq('id', _uid);
+  });
 
   @override
   Future<void> deleteMyAccount() => guardRequest(() async {
-        await _client.rpc('delete_my_account');
-      });
+    await _client.rpc('delete_my_account');
+  });
 }
 
 final profileRepositoryProvider = Provider<ProfileRepository>(

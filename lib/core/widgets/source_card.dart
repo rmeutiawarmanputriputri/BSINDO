@@ -42,7 +42,10 @@ class SourceCard extends StatelessWidget {
                 ),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
-                  child: Text('Sumber & validasi', style: theme.textTheme.titleSmall),
+                  child: Text(
+                    'Sumber & validasi',
+                    style: theme.textTheme.titleSmall,
+                  ),
                 ),
                 if (sample) const SampleBadge(),
               ],
@@ -88,14 +91,18 @@ class SampleBadge extends StatelessWidget {
           child: Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Icon(Icons.science_outlined, size: 14, color: AppColors.warning),
+              const Icon(
+                Icons.science_outlined,
+                size: 14,
+                color: AppColors.warning,
+              ),
               const SizedBox(width: 4),
               Text(
                 'Materi contoh',
                 style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                      color: AppColors.warning,
-                      fontWeight: FontWeight.w700,
-                    ),
+                  color: AppColors.warning,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ],
           ),

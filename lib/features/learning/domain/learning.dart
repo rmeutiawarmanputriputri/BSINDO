@@ -32,15 +32,17 @@ class Lesson {
       'quiz:quizzes(id, title, is_active)';
 
   factory Lesson.fromJson(Json json) {
-    final items = optList(json, 'items')
-        .where((i) => i.containsKey('id'))
-        .map(LessonItem.fromJson)
-        .toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+    final items =
+        optList(
+            json,
+            'items',
+          ).where((i) => i.containsKey('id')).map(LessonItem.fromJson).toList()
+          ..sort((a, b) => a.position.compareTo(b.position));
     final quiz = optObject(json, 'quiz');
     // Variabel bool tidak mempromosikan `quiz` → pakai pola null-check.
-    final activeQuiz =
-        quiz != null && optBool(quiz, 'is_active', true) ? quiz : null;
+    final activeQuiz = quiz != null && optBool(quiz, 'is_active', true)
+        ? quiz
+        : null;
     return Lesson(
       id: reqString(json, 'id'),
       slug: optString(json, 'slug'),
@@ -120,10 +122,10 @@ class LessonItem {
 
   /// Judul yang ditampilkan; materi yang tidak lagi published → null.
   String? get displayTitle => switch (type) {
-        LessonItemType.sign => signTerm,
-        LessonItemType.conversationModule => moduleTitle,
-        LessonItemType.text => bodyText,
-      };
+    LessonItemType.sign => signTerm,
+    LessonItemType.conversationModule => moduleTitle,
+    LessonItemType.text => bodyText,
+  };
 }
 
 class Quiz {
@@ -172,14 +174,17 @@ class Question {
 
   factory Question.fromJson(Json json) {
     final sign = optObject(json, 'sign');
-    final options = optList(json, 'options').map(QuestionOption.fromJson).toList()
-      ..sort((a, b) => a.position.compareTo(b.position));
+    final options =
+        optList(json, 'options').map(QuestionOption.fromJson).toList()
+          ..sort((a, b) => a.position.compareTo(b.position));
     return Question(
       id: reqString(json, 'id'),
       position: optInt(json, 'position'),
       prompt: reqString(json, 'prompt'),
       options: options,
-      videoPath: sign != null ? (optObject(sign, 'video')?['path'] as String?) : null,
+      videoPath: sign != null
+          ? (optObject(sign, 'video')?['path'] as String?)
+          : null,
       signTerm: sign != null ? optString(sign, 'term') : null,
     );
   }
@@ -193,13 +198,17 @@ class Question {
 }
 
 class QuestionOption {
-  const QuestionOption({required this.id, required this.position, required this.label});
+  const QuestionOption({
+    required this.id,
+    required this.position,
+    required this.label,
+  });
 
   factory QuestionOption.fromJson(Json json) => QuestionOption(
-        id: reqString(json, 'id'),
-        position: optInt(json, 'position'),
-        label: reqString(json, 'label'),
-      );
+    id: reqString(json, 'id'),
+    position: optInt(json, 'position'),
+    label: reqString(json, 'label'),
+  );
 
   final String id;
   final int position;
@@ -218,13 +227,13 @@ class QuizResult {
   });
 
   factory QuizResult.fromJson(Json json) => QuizResult(
-        attemptId: optString(json, 'attempt_id') ?? '',
-        scorePercent: optInt(json, 'score_percent'),
-        correctCount: optInt(json, 'correct_count'),
-        totalCount: optInt(json, 'total_count'),
-        passed: optBool(json, 'passed'),
-        details: optList(json, 'details').map(QuestionReview.fromJson).toList(),
-      );
+    attemptId: optString(json, 'attempt_id') ?? '',
+    scorePercent: optInt(json, 'score_percent'),
+    correctCount: optInt(json, 'correct_count'),
+    totalCount: optInt(json, 'total_count'),
+    passed: optBool(json, 'passed'),
+    details: optList(json, 'details').map(QuestionReview.fromJson).toList(),
+  );
 
   final String attemptId;
   final int scorePercent;
@@ -244,12 +253,12 @@ class QuestionReview {
   });
 
   factory QuestionReview.fromJson(Json json) => QuestionReview(
-        questionId: optString(json, 'question_id') ?? '',
-        selectedOptionId: optString(json, 'selected_option_id'),
-        correctOptionId: optString(json, 'correct_option_id'),
-        isCorrect: optBool(json, 'is_correct'),
-        explanation: optString(json, 'explanation'),
-      );
+    questionId: optString(json, 'question_id') ?? '',
+    selectedOptionId: optString(json, 'selected_option_id'),
+    correctOptionId: optString(json, 'correct_option_id'),
+    isCorrect: optBool(json, 'is_correct'),
+    explanation: optString(json, 'explanation'),
+  );
 
   final String questionId;
   final String? selectedOptionId;
@@ -269,13 +278,13 @@ class QuizAttempt {
   });
 
   factory QuizAttempt.fromJson(Json json) => QuizAttempt(
-        id: reqString(json, 'id'),
-        quizId: reqString(json, 'quiz_id'),
-        scorePercent: optInt(json, 'score_percent'),
-        passed: optBool(json, 'passed'),
-        submittedAt: parseDate(json['submitted_at']) ?? DateTime.now(),
-        quizTitle: optObject(json, 'quiz')?['title'] as String?,
-      );
+    id: reqString(json, 'id'),
+    quizId: reqString(json, 'quiz_id'),
+    scorePercent: optInt(json, 'score_percent'),
+    passed: optBool(json, 'passed'),
+    submittedAt: parseDate(json['submitted_at']) ?? DateTime.now(),
+    quizTitle: optObject(json, 'quiz')?['title'] as String?,
+  );
 
   final String id;
   final String quizId;

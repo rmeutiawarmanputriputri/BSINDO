@@ -57,9 +57,10 @@ class _BodyState extends ConsumerState<_Body> {
   @override
   void initState() {
     super.initState();
-    final progress = (ref.read(progressListProvider).value ?? const <ProgressEntry>[])
-        .where((p) => p.moduleId == widget.module.id)
-        .firstOrNull;
+    final progress =
+        (ref.read(progressListProvider).value ?? const <ProgressEntry>[])
+            .where((p) => p.moduleId == widget.module.id)
+            .firstOrNull;
     final count = widget.module.items.length;
     if (progress != null && count > 0) {
       final last = progress.lastPosition;
@@ -80,7 +81,9 @@ class _BodyState extends ConsumerState<_Body> {
     if (!mounted) return;
     final count = widget.module.items.length;
     try {
-      await ref.read(progressRepositoryProvider).touch(
+      await ref
+          .read(progressRepositoryProvider)
+          .touch(
             moduleId: widget.module.id,
             lastPosition: _selected,
             percent: count == 0 ? 0 : (((_selected + 1) / count) * 100).round(),
@@ -95,7 +98,9 @@ class _BodyState extends ConsumerState<_Body> {
   Future<void> _markDone() async {
     setState(() => _saving = true);
     try {
-      await ref.read(progressRepositoryProvider).touch(
+      await ref
+          .read(progressRepositoryProvider)
+          .touch(
             moduleId: widget.module.id,
             lastPosition: _selected,
             completed: true,
@@ -128,7 +133,9 @@ class _BodyState extends ConsumerState<_Body> {
             Text(m.description!, style: theme.textTheme.bodyLarge),
           ],
           const SizedBox(height: AppSpacing.lg),
-          const PremiumLockCard(message: 'Topik percakapan ini khusus pengguna Premium.'),
+          const PremiumLockCard(
+            message: 'Topik percakapan ini khusus pengguna Premium.',
+          ),
         ],
       );
     }
@@ -196,7 +203,8 @@ class _BodyState extends ConsumerState<_Body> {
           _DialogLine(
             item: items[i],
             selected: i == _selected,
-            isDifficult: items[i].signId != null && difficult.contains(items[i].signId),
+            isDifficult:
+                items[i].signId != null && difficult.contains(items[i].signId),
             onTap: () {
               setState(() => _selected = i);
               _touch();
@@ -209,8 +217,12 @@ class _BodyState extends ConsumerState<_Body> {
                           .read(difficultIdsProvider.notifier)
                           .toggle(items[i].signId!);
                       if (context.mounted) {
-                        showAppSnackBar(context,
-                            marked ? 'Ditambahkan ke daftar sulit' : 'Dihapus dari daftar sulit');
+                        showAppSnackBar(
+                          context,
+                          marked
+                              ? 'Ditambahkan ke daftar sulit'
+                              : 'Dihapus dari daftar sulit',
+                        );
                       }
                     } catch (error) {
                       if (context.mounted) showErrorSnackBar(context, error);
@@ -268,7 +280,9 @@ class _DialogLine extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      color: selected ? AppColors.primary.withValues(alpha: 0.08) : AppColors.surface,
+      color: selected
+          ? AppColors.primary.withValues(alpha: 0.08)
+          : AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.contentCard),
         side: BorderSide(
@@ -285,12 +299,16 @@ class _DialogLine extends StatelessWidget {
         ),
         title: Text(item.text, style: theme.textTheme.bodyLarge),
         subtitle: Text(
-          item.videoPath != null ? 'Ketuk untuk memutar video' : 'Video belum tersedia',
+          item.videoPath != null
+              ? 'Ketuk untuk memutar video'
+              : 'Video belum tersedia',
         ),
         trailing: onToggleDifficult == null
             ? null
             : IconButton(
-                tooltip: isDifficult ? 'Hapus dari daftar sulit' : 'Tandai sulit',
+                tooltip: isDifficult
+                    ? 'Hapus dari daftar sulit'
+                    : 'Tandai sulit',
                 onPressed: onToggleDifficult,
                 icon: Icon(isDifficult ? Icons.flag : Icons.flag_outlined),
               ),
@@ -307,7 +325,9 @@ class _ItemDetails extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final hasText = (item.translation?.isNotEmpty ?? false) || (item.explanation?.isNotEmpty ?? false);
+    final hasText =
+        (item.translation?.isNotEmpty ?? false) ||
+        (item.explanation?.isNotEmpty ?? false);
     if (!hasText && item.audioPath == null) return const SizedBox.shrink();
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.md),
@@ -322,7 +342,10 @@ class _ItemDetails extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             if (item.translation?.isNotEmpty ?? false) ...[
-              Text('Terjemahan / susunan isyarat', style: theme.textTheme.labelLarge),
+              Text(
+                'Terjemahan / susunan isyarat',
+                style: theme.textTheme.labelLarge,
+              ),
               Text(item.translation!, style: theme.textTheme.bodyLarge),
               const SizedBox(height: AppSpacing.sm),
             ],
@@ -331,7 +354,11 @@ class _ItemDetails extends StatelessWidget {
               Text(item.explanation!, style: theme.textTheme.bodyMedium),
               const SizedBox(height: AppSpacing.sm),
             ],
-            if (item.audioPath != null) AudioPlayButton(key: ValueKey('au${item.id}'), path: item.audioPath!),
+            if (item.audioPath != null)
+              AudioPlayButton(
+                key: ValueKey('au${item.id}'),
+                path: item.audioPath!,
+              ),
           ],
         ),
       ),
@@ -369,7 +396,12 @@ class _Simulation extends StatelessWidget {
       children: [
         Row(
           children: [
-            Expanded(child: Text('Simulasi: ${module.title}', style: theme.textTheme.titleMedium)),
+            Expanded(
+              child: Text(
+                'Simulasi: ${module.title}',
+                style: theme.textTheme.titleMedium,
+              ),
+            ),
             TextButton(onPressed: onExit, child: const Text('Keluar simulasi')),
           ],
         ),
@@ -382,7 +414,11 @@ class _Simulation extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         for (var i = 0; i <= revealed; i++)
-          _Bubble(item: items[i], right: speakers.indexOf(items[i].speaker).isOdd, active: i == revealed),
+          _Bubble(
+            item: items[i],
+            right: speakers.indexOf(items[i].speaker).isOdd,
+            active: i == revealed,
+          ),
         const SizedBox(height: AppSpacing.md),
         if (!done)
           FilledButton.icon(
@@ -394,10 +430,18 @@ class _Simulation extends StatelessWidget {
         else ...[
           Semantics(
             liveRegion: true,
-            child: Text('Percakapan selesai! 🎉', textAlign: TextAlign.center, style: theme.textTheme.titleMedium),
+            child: Text(
+              'Percakapan selesai! 🎉',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium,
+            ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          OutlinedButton.icon(onPressed: onRestart, icon: const Icon(Icons.replay), label: const Text('Ulangi simulasi')),
+          OutlinedButton.icon(
+            onPressed: onRestart,
+            icon: const Icon(Icons.replay),
+            label: const Text('Ulangi simulasi'),
+          ),
         ],
       ],
     );
@@ -405,7 +449,11 @@ class _Simulation extends StatelessWidget {
 }
 
 class _Bubble extends StatelessWidget {
-  const _Bubble({required this.item, required this.right, required this.active});
+  const _Bubble({
+    required this.item,
+    required this.right,
+    required this.active,
+  });
   final ConversationItem item;
   final bool right;
   final bool active;
@@ -424,19 +472,34 @@ class _Bubble extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(item.speaker,
-              style: theme.textTheme.labelMedium?.copyWith(color: right ? Colors.white70 : AppColors.textSecondary)),
-          Text(item.text, style: theme.textTheme.bodyLarge?.copyWith(color: right ? Colors.white : null)),
+          Text(
+            item.speaker,
+            style: theme.textTheme.labelMedium?.copyWith(
+              color: right ? Colors.white70 : AppColors.textSecondary,
+            ),
+          ),
+          Text(
+            item.text,
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: right ? Colors.white : null,
+            ),
+          ),
           if (item.translation?.isNotEmpty ?? false)
-            Text(item.translation!,
-                style: theme.textTheme.bodySmall?.copyWith(color: right ? Colors.white70 : AppColors.textSecondary)),
+            Text(
+              item.translation!,
+              style: theme.textTheme.bodySmall?.copyWith(
+                color: right ? Colors.white70 : AppColors.textSecondary,
+              ),
+            ),
         ],
       ),
     );
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
-        mainAxisAlignment: right ? MainAxisAlignment.end : MainAxisAlignment.start,
+        mainAxisAlignment: right
+            ? MainAxisAlignment.end
+            : MainAxisAlignment.start,
         children: [Flexible(child: bubble)],
       ),
     );

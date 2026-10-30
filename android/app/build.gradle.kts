@@ -1,8 +1,23 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     // The Flutter Gradle Plugin must be applied after the Android and Kotlin Gradle plugins.
     id("dev.flutter.flutter-gradle-plugin")
 }
+
+// ---- Signing release (v1.1.0) -------------------------------------------
+// android/key.properties dibuat oleh tool/create_keystore.ps1 (di-ignore git).
+// Tanpa keystore, build RELEASE ditolak dengan pesan jelas — kecuali untuk APK
+// uji di CI dengan BISINDO_ALLOW_DEBUG_SIGNING=true (ditandatangani debug key).
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    FileInputStream(keystorePropertiesFile).use { keystoreProperties.load(it) }
+}
+val hasReleaseKeystore = keystorePropertiesFile.exists()
+val allowDebugSigning = System.getenv("BISINDO_ALLOW_DEBUG_SIGNING") == "true"
 
 android {
     namespace = "com.example.bisindo"
@@ -29,11 +44,24 @@ android {
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        if (hasReleaseKeystore) {
+            create("release") {
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+                storeFile = file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (hasReleaseKeystore) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 }
@@ -46,4 +74,16 @@ kotlin {
 
 flutter {
     source = "../.."
+}
+
+// Tolak build release tanpa keystore (agar tidak diam-diam memakai debug key).
+gradle.taskGraph.whenReady {
+    val buildingRelease = allTasks.any { it.name.contains("Release") && it.project == project }
+    if (buildingRelease && !hasReleaseKeystore && !allowDebugSigning) {
+        throw GradleException(
+            "Keystore release belum ada (android/key.properties). Jalankan " +
+                "'powershell -ExecutionPolicy Bypass -File tool\\create_keystore.ps1' terlebih dahulu. " +
+                "Untuk APK uji saja: set BISINDO_ALLOW_DEBUG_SIGNING=true."
+        )
+    }
 }

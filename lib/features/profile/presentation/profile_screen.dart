@@ -23,7 +23,11 @@ const kAppVersion = '1.1.0';
 class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
-  Future<void> _editName(BuildContext context, WidgetRef ref, Profile profile) async {
+  Future<void> _editName(
+    BuildContext context,
+    WidgetRef ref,
+    Profile profile,
+  ) async {
     // Dibaca sebelum await: `ref` tidak boleh dipakai setelah widget unmount.
     final repo = ref.read(profileRepositoryProvider);
     final container = ProviderScope.containerOf(context, listen: false);
@@ -64,7 +68,8 @@ class ProfileScreen extends ConsumerWidget {
     final ok = await showConfirmDialog(
       context,
       title: 'Hapus akun?',
-      message: 'Akun, progres belajar, favorit, riwayat kuis, dan semua data pribadi Anda '
+      message:
+          'Akun, progres belajar, favorit, riwayat kuis, dan semua data pribadi Anda '
           'akan dihapus permanen dan tidak dapat dikembalikan.',
       confirmLabel: 'Hapus permanen',
       destructive: true,
@@ -100,12 +105,19 @@ class ProfileScreen extends ConsumerWidget {
                   radius: 26,
                   backgroundColor: AppColors.primary,
                   child: Text(
-                    (p?.fullName.isNotEmpty ?? false) ? p!.fullName[0].toUpperCase() : '?',
+                    (p?.fullName.isNotEmpty ?? false)
+                        ? p!.fullName[0].toUpperCase()
+                        : '?',
                     style: const TextStyle(color: Colors.white, fontSize: 22),
                   ),
                 ),
-                title: Text(p?.fullName ?? '-', style: Theme.of(context).textTheme.titleMedium),
-                subtitle: Text([email ?? '-', if (isPremium) 'Premium'].join(' · ')),
+                title: Text(
+                  p?.fullName ?? '-',
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+                subtitle: Text(
+                  [email ?? '-', if (isPremium) 'Premium'].join(' · '),
+                ),
                 trailing: p == null
                     ? null
                     : IconButton(
@@ -118,42 +130,74 @@ class ProfileScreen extends ConsumerWidget {
             const SectionHeader(title: 'Statistik belajar'),
             const _StatsCard(),
             const SectionHeader(title: 'Belajar saya'),
-            _MenuTile(icon: Icons.favorite_border, label: 'Favorit',
-                onTap: () => context.push(AppRoutes.favorites)),
-            _MenuTile(icon: Icons.flag_outlined, label: 'Kosakata Sulit',
-                onTap: () => context.push(AppRoutes.difficult)),
-            _MenuTile(icon: Icons.history_edu_outlined, label: 'Riwayat Belajar',
-                onTap: () => context.push(AppRoutes.history)),
-            _MenuTile(icon: Icons.quiz_outlined, label: 'Riwayat Kuis',
-                onTap: () => context.push(AppRoutes.quizHistory)),
-            _MenuTile(icon: Icons.insights_outlined, label: 'Progres Pelajaran',
-                onTap: () => context.push(AppRoutes.learnProgress)),
-            _MenuTile(icon: Icons.outlined_flag, label: 'Riwayat Laporan',
-                onTap: () => context.push(AppRoutes.reports)),
+            _MenuTile(
+              icon: Icons.favorite_border,
+              label: 'Favorit',
+              onTap: () => context.push(AppRoutes.favorites),
+            ),
+            _MenuTile(
+              icon: Icons.flag_outlined,
+              label: 'Kosakata Sulit',
+              onTap: () => context.push(AppRoutes.difficult),
+            ),
+            _MenuTile(
+              icon: Icons.history_edu_outlined,
+              label: 'Riwayat Belajar',
+              onTap: () => context.push(AppRoutes.history),
+            ),
+            _MenuTile(
+              icon: Icons.quiz_outlined,
+              label: 'Riwayat Kuis',
+              onTap: () => context.push(AppRoutes.quizHistory),
+            ),
+            _MenuTile(
+              icon: Icons.insights_outlined,
+              label: 'Progres Pelajaran',
+              onTap: () => context.push(AppRoutes.learnProgress),
+            ),
+            _MenuTile(
+              icon: Icons.outlined_flag,
+              label: 'Riwayat Laporan',
+              onTap: () => context.push(AppRoutes.reports),
+            ),
             const SectionHeader(title: 'Aplikasi'),
-            _MenuTile(icon: Icons.notifications_none, label: unread > 0 ? 'Notifikasi ($unread baru)' : 'Notifikasi',
-                onTap: () => context.push(AppRoutes.notifications)),
-            _MenuTile(icon: Icons.workspace_premium_outlined, label: isPremium ? 'Premium (aktif)' : 'Info Premium',
-                onTap: () => context.push(AppRoutes.premium)),
-            _MenuTile(icon: Icons.help_outline, label: 'FAQ & Bantuan',
-                onTap: () => context.push(AppRoutes.faq)),
+            _MenuTile(
+              icon: Icons.notifications_none,
+              label: unread > 0 ? 'Notifikasi ($unread baru)' : 'Notifikasi',
+              onTap: () => context.push(AppRoutes.notifications),
+            ),
+            _MenuTile(
+              icon: Icons.workspace_premium_outlined,
+              label: isPremium ? 'Premium (aktif)' : 'Info Premium',
+              onTap: () => context.push(AppRoutes.premium),
+            ),
+            _MenuTile(
+              icon: Icons.help_outline,
+              label: 'FAQ & Bantuan',
+              onTap: () => context.push(AppRoutes.faq),
+            ),
             if (p?.isAdmin ?? false) ...[
               const SectionHeader(title: 'Pengelola'),
-              _MenuTile(icon: Icons.admin_panel_settings_outlined, label: 'Admin',
-                  onTap: () => context.push(AppRoutes.admin)),
+              _MenuTile(
+                icon: Icons.admin_panel_settings_outlined,
+                label: 'Admin',
+                onTap: () => context.push(AppRoutes.admin),
+              ),
             ],
             const SectionHeader(title: 'Tentang'),
             const _InfoTile(
               icon: Icons.privacy_tip_outlined,
               title: 'Privasi transkripsi',
-              body: 'Transkripsi memakai layanan pengenal ucapan perangkat (umumnya '
+              body:
+                  'Transkripsi memakai layanan pengenal ucapan perangkat (umumnya '
                   'Google) dan dapat membutuhkan internet. Aplikasi tidak menyimpan '
                   'audio maupun teks transkripsi.',
             ),
             const _InfoTile(
               icon: Icons.info_outline,
               title: 'Tentang aplikasi',
-              body: 'BISINDO — belajar Bahasa Isyarat Indonesia. Versi $kAppVersion. '
+              body:
+                  'BISINDO — belajar Bahasa Isyarat Indonesia. Versi $kAppVersion. '
                   'Materi ditampilkan hanya setelah divalidasi; sumber dan validator '
                   'tercantum di setiap materi.',
             ),
@@ -191,31 +235,41 @@ class _StatsCard extends ConsumerWidget {
       error: (e, _) => Row(
         children: [
           Expanded(child: Text(errorMessageOf(e))),
-          TextButton(onPressed: () => ref.invalidate(progressSummaryProvider), child: const Text('Coba Lagi')),
+          TextButton(
+            onPressed: () => ref.invalidate(progressSummaryProvider),
+            child: const Text('Coba Lagi'),
+          ),
         ],
       ),
       data: (s) {
         Widget bar(String label, ModuleProgress m) => Padding(
-              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
-              child: Semantics(
-                label: '$label: ${m.learned} dari ${m.total}',
-                excludeSemantics: true,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+          child: Semantics(
+            label: '$label: ${m.learned} dari ${m.total}',
+            excludeSemantics: true,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
                   children: [
-                    Row(children: [
-                      Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
-                      Text('${m.learned}/${m.total}', style: theme.textTheme.labelMedium),
-                    ]),
-                    const SizedBox(height: 4),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(AppRadius.pill),
-                      child: LinearProgressIndicator(value: m.ratio, minHeight: 6),
+                    Expanded(
+                      child: Text(label, style: theme.textTheme.bodyMedium),
+                    ),
+                    Text(
+                      '${m.learned}/${m.total}',
+                      style: theme.textTheme.labelMedium,
                     ),
                   ],
                 ),
-              ),
-            );
+                const SizedBox(height: 4),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                  child: LinearProgressIndicator(value: m.ratio, minHeight: 6),
+                ),
+              ],
+            ),
+          ),
+        );
         return Card(
           margin: EdgeInsets.zero,
           child: Padding(
@@ -223,21 +277,36 @@ class _StatsCard extends ConsumerWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('${s.overallPercent}% materi dipelajari', style: theme.textTheme.titleMedium),
-                Text('${s.totalLearned} dari ${s.totalMaterials} materi · '
-                    '${s.quizSessions} kuis${s.quizSessions > 0 ? ' · terbaik ${s.quizBest}' : ''}',
-                    style: theme.textTheme.bodySmall),
+                Text(
+                  '${s.overallPercent}% materi dipelajari',
+                  style: theme.textTheme.titleMedium,
+                ),
+                Text(
+                  '${s.totalLearned} dari ${s.totalMaterials} materi · '
+                  '${s.quizSessions} kuis${s.quizSessions > 0 ? ' · terbaik ${s.quizBest}' : ''}',
+                  style: theme.textTheme.bodySmall,
+                ),
                 const SizedBox(height: AppSpacing.md),
                 bar('Alfabet', s.module('alphabet')),
                 bar('Angka', s.module('number')),
                 bar('Kosakata', s.module('vocabulary')),
-                bar('Percakapan', ModuleProgress(total: s.conversationsTotal, learned: s.conversationsCompleted)),
+                bar(
+                  'Percakapan',
+                  ModuleProgress(
+                    total: s.conversationsTotal,
+                    learned: s.conversationsCompleted,
+                  ),
+                ),
                 if (s.categories.isNotEmpty)
                   ExpansionTile(
                     tilePadding: EdgeInsets.zero,
                     title: const Text('Progres per kategori'),
                     children: [
-                      for (final c in s.categories) bar(c.name, ModuleProgress(total: c.total, learned: c.learned)),
+                      for (final c in s.categories)
+                        bar(
+                          c.name,
+                          ModuleProgress(total: c.total, learned: c.learned),
+                        ),
                     ],
                   ),
               ],
@@ -260,8 +329,9 @@ class _EditNameDialog extends StatefulWidget {
 
 class _EditNameDialogState extends State<_EditNameDialog> {
   final _formKey = GlobalKey<FormState>();
-  late final TextEditingController _controller =
-      TextEditingController(text: widget.initialName);
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialName,
+  );
 
   @override
   void dispose() {
@@ -307,7 +377,11 @@ class _EditNameDialogState extends State<_EditNameDialog> {
 }
 
 class _MenuTile extends StatelessWidget {
-  const _MenuTile({required this.icon, required this.label, required this.onTap});
+  const _MenuTile({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+  });
   final IconData icon;
   final String label;
   final VoidCallback onTap;
@@ -325,7 +399,11 @@ class _MenuTile extends StatelessWidget {
 }
 
 class _InfoTile extends StatelessWidget {
-  const _InfoTile({required this.icon, required this.title, required this.body});
+  const _InfoTile({
+    required this.icon,
+    required this.title,
+    required this.body,
+  });
   final IconData icon;
   final String title;
   final String body;

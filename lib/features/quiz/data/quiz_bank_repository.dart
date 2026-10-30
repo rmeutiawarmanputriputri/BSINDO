@@ -27,17 +27,20 @@ class SupabaseQuizBankRepository implements QuizBankRepository {
 
   @override
   Future<List<QuizQuestion>> fetch(QuizConfig config) => guardRequest(() async {
-        final result = await _client.rpc('get_quiz_questions', params: config.toRpcParams());
-        return rows(result).map(QuizQuestion.fromJson).toList();
-      });
+    final result = await _client.rpc(
+      'get_quiz_questions',
+      params: config.toRpcParams(),
+    );
+    return rows(result).map(QuizQuestion.fromJson).toList();
+  });
 
   @override
   Future<QuizReveal> check(String questionId, QuizAnswer answer) =>
       guardRequest(() async {
-        final result = await _client.rpc('check_quiz_answer', params: {
-          'p_question_id': questionId,
-          'p_answer': answer.toJson(),
-        });
+        final result = await _client.rpc(
+          'check_quiz_answer',
+          params: {'p_question_id': questionId, 'p_answer': answer.toJson()},
+        );
         return QuizReveal.fromJson(Map<String, dynamic>.from(result as Map));
       });
 
@@ -46,31 +49,35 @@ class SupabaseQuizBankRepository implements QuizBankRepository {
     QuizConfig config,
     Map<String, QuizAnswer?> answers, {
     DateTime? startedAt,
-  }) =>
-      guardRequest(() async {
-        final result = await _client.rpc('submit_quiz_session', params: {
-          'p_mode': config.mode.value,
-          'p_module': config.module?.value,
-          'p_category_id': config.categoryId,
-          'p_difficulty': config.difficulty?.value,
-          'p_started_at': startedAt?.toUtc().toIso8601String(),
-          'p_answers': [
-            for (final e in answers.entries)
-              {'question_id': e.key, 'answer': e.value?.toJson()},
-          ],
-        });
-        return QuizSessionResult.fromJson(Map<String, dynamic>.from(result as Map));
-      });
+  }) => guardRequest(() async {
+    final result = await _client.rpc(
+      'submit_quiz_session',
+      params: {
+        'p_mode': config.mode.value,
+        'p_module': config.module?.value,
+        'p_category_id': config.categoryId,
+        'p_difficulty': config.difficulty?.value,
+        'p_started_at': startedAt?.toUtc().toIso8601String(),
+        'p_answers': [
+          for (final e in answers.entries)
+            {'question_id': e.key, 'answer': e.value?.toJson()},
+        ],
+      },
+    );
+    return QuizSessionResult.fromJson(Map<String, dynamic>.from(result as Map));
+  });
 
   @override
   Future<List<QuizHistoryEntry>> history() => guardRequest(() async {
-        final data = await _client
-            .from('quiz_sessions')
-            .select('id, mode, module, score_percent, correct_count, total_count, submitted_at')
-            .order('submitted_at', ascending: false)
-            .limit(50);
-        return rows(data).map(QuizHistoryEntry.fromSession).toList();
-      });
+    final data = await _client
+        .from('quiz_sessions')
+        .select(
+          'id, mode, module, score_percent, correct_count, total_count, submitted_at',
+        )
+        .order('submitted_at', ascending: false)
+        .limit(50);
+    return rows(data).map(QuizHistoryEntry.fromSession).toList();
+  });
 }
 
 final quizBankRepositoryProvider = Provider<QuizBankRepository>(
@@ -78,7 +85,9 @@ final quizBankRepositoryProvider = Provider<QuizBankRepository>(
 );
 
 /// Riwayat gabungan: kuis bank (v1.1.0) + kuis pelajaran (versi lama).
-final quizHistoryProvider = FutureProvider.autoDispose<List<QuizHistoryEntry>>((ref) async {
+final quizHistoryProvider = FutureProvider.autoDispose<List<QuizHistoryEntry>>((
+  ref,
+) async {
   ref.watch(currentUserIdProvider);
   final bank = await ref.watch(quizBankRepositoryProvider).history();
   final legacy = await ref.watch(learningRepositoryProvider).attempts();

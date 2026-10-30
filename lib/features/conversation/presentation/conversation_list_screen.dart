@@ -22,7 +22,8 @@ class ConversationListScreen extends ConsumerStatefulWidget {
       _ConversationListScreenState();
 }
 
-class _ConversationListScreenState extends ConsumerState<ConversationListScreen> {
+class _ConversationListScreenState
+    extends ConsumerState<ConversationListScreen> {
   String? _categoryId;
 
   @override
@@ -30,7 +31,10 @@ class _ConversationListScreenState extends ConsumerState<ConversationListScreen>
     final categories = ref.watch(conversationCategoriesProvider);
     final modules = ref.watch(conversationModulesProvider(_categoryId));
     final progress = ref.watch(progressListProvider).value ?? const [];
-    final byModule = {for (final p in progress) if (p.moduleId != null) p.moduleId!: p};
+    final byModule = {
+      for (final p in progress)
+        if (p.moduleId != null) p.moduleId!: p,
+    };
 
     return Scaffold(
       appBar: AppBar(title: const Text('Percakapan')),
@@ -41,7 +45,9 @@ class _ConversationListScreenState extends ConsumerState<ConversationListScreen>
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
               children: [
                 Padding(
                   padding: const EdgeInsets.only(right: AppSpacing.sm),
@@ -71,12 +77,14 @@ class _ConversationListScreenState extends ConsumerState<ConversationListScreen>
           Expanded(
             child: AsyncValueView<List<ConversationModule>>(
               value: modules,
-              onRetry: () => ref.invalidate(conversationModulesProvider(_categoryId)),
+              onRetry: () =>
+                  ref.invalidate(conversationModulesProvider(_categoryId)),
               isEmpty: (list) => list.isEmpty,
               empty: const EmptyView(
                 icon: Icons.forum_outlined,
                 title: 'Modul akan segera hadir',
-                message: 'Materi percakapan sedang divalidasi oleh penutur BISINDO.',
+                message:
+                    'Materi percakapan sedang divalidasi oleh penutur BISINDO.',
               ),
               data: (list) => ContentListView(
                 children: [
@@ -125,7 +133,12 @@ class _ModuleCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(module.title, style: theme.textTheme.titleMedium)),
+                  Expanded(
+                    child: Text(
+                      module.title,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
                   if (module.isSample) const SampleBadge(),
                   if (module.isPremium) const PremiumBadge(),
                 ],
@@ -158,7 +171,10 @@ class _ModuleCard extends StatelessWidget {
                       color: done ? AppColors.success : AppColors.textSecondary,
                     ),
                     const SizedBox(width: 4),
-                    Text(done ? 'Selesai' : '$percent%', style: theme.textTheme.labelMedium),
+                    Text(
+                      done ? 'Selesai' : '$percent%',
+                      style: theme.textTheme.labelMedium,
+                    ),
                   ],
                 ),
               ),

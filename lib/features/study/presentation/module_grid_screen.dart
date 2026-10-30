@@ -20,8 +20,9 @@ class ModuleGridScreen extends ConsumerWidget {
 
   final ContentModule module;
 
-  QuizModule get _quizModule =>
-      module == ContentModule.alphabet ? QuizModule.alphabet : QuizModule.number;
+  QuizModule get _quizModule => module == ContentModule.alphabet
+      ? QuizModule.alphabet
+      : QuizModule.number;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -43,7 +44,8 @@ class ModuleGridScreen extends ConsumerWidget {
           empty: EmptyView(
             icon: isAlphabet ? Icons.abc : Icons.pin_outlined,
             title: 'Materi belum tersedia',
-            message: 'Materi ${module.label.toLowerCase()} sedang disiapkan. Coba lagi nanti.',
+            message:
+                'Materi ${module.label.toLowerCase()} sedang disiapkan. Coba lagi nanti.',
             actionLabel: 'Muat ulang',
             onAction: () => ref.invalidate(studyListProvider(module)),
           ),
@@ -64,22 +66,33 @@ class ModuleGridScreen extends ConsumerWidget {
                     Expanded(
                       child: FilledButton.icon(
                         onPressed: () => context.push(
-                          AppRoutes.study(module, items[next].id, learnMode: true),
+                          AppRoutes.study(
+                            module,
+                            items[next].id,
+                            learnMode: true,
+                          ),
                         ),
                         icon: const Icon(Icons.play_arrow_rounded),
-                        label: Text(doneCount == 0
-                            ? 'Mulai mode belajar'
-                            : doneCount == items.length
-                                ? 'Ulangi dari awal'
-                                : 'Lanjutkan belajar'),
+                        label: Text(
+                          doneCount == 0
+                              ? 'Mulai mode belajar'
+                              : doneCount == items.length
+                              ? 'Ulangi dari awal'
+                              : 'Lanjutkan belajar',
+                        ),
                       ),
                     ),
                     const SizedBox(width: AppSpacing.sm),
                     Expanded(
                       child: OutlinedButton.icon(
-                        onPressed: () => context.push(AppRoutes.quizPlay(
-                          QuizConfig(mode: QuizMode.category, module: _quizModule),
-                        )),
+                        onPressed: () => context.push(
+                          AppRoutes.quizPlay(
+                            QuizConfig(
+                              mode: QuizMode.category,
+                              module: _quizModule,
+                            ),
+                          ),
+                        ),
                         icon: const Icon(Icons.quiz_outlined),
                         label: Text('Kuis ${module.label}'),
                       ),
@@ -94,7 +107,9 @@ class ModuleGridScreen extends ConsumerWidget {
                     if (items.any((s) => s.numberGroup == group)) ...[
                       SectionHeader(title: 'Angka ${group.label}'),
                       _SymbolGrid(
-                        items: items.where((s) => s.numberGroup == group).toList(),
+                        items: items
+                            .where((s) => s.numberGroup == group)
+                            .toList(),
                         learned: learned,
                         module: module,
                       ),
@@ -117,7 +132,11 @@ class ModuleGridScreen extends ConsumerWidget {
 }
 
 class _ProgressHeader extends StatelessWidget {
-  const _ProgressHeader({required this.done, required this.total, required this.noun});
+  const _ProgressHeader({
+    required this.done,
+    required this.total,
+    required this.noun,
+  });
   final int done;
   final int total;
   final String noun;
@@ -138,10 +157,15 @@ class _ProgressHeader extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Kemajuan belajar', style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white)),
+            Text(
+              'Kemajuan belajar',
+              style: theme.textTheme.bodyMedium?.copyWith(color: Colors.white),
+            ),
             const SizedBox(height: AppSpacing.xs),
-            Text('$done / $total $noun',
-                style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
+            Text(
+              '$done / $total $noun',
+              style: theme.textTheme.titleLarge?.copyWith(color: Colors.white),
+            ),
             const SizedBox(height: AppSpacing.sm),
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -160,7 +184,11 @@ class _ProgressHeader extends StatelessWidget {
 }
 
 class _SymbolGrid extends StatelessWidget {
-  const _SymbolGrid({required this.items, required this.learned, required this.module});
+  const _SymbolGrid({
+    required this.items,
+    required this.learned,
+    required this.module,
+  });
   final List<Sign> items;
   final Set<String> learned;
   final ContentModule module;
@@ -183,13 +211,18 @@ class _SymbolGrid extends StatelessWidget {
         final done = learned.contains(s.id);
         return Semantics(
           button: true,
-          label: '${module.label} ${s.displayTitle}${done ? ', sudah dipelajari' : ''}${s.isPremium ? ', Premium' : ''}',
+          label:
+              '${module.label} ${s.displayTitle}${done ? ', sudah dipelajari' : ''}${s.isPremium ? ', Premium' : ''}',
           excludeSemantics: true,
           child: Material(
-            color: done ? AppColors.primary.withValues(alpha: 0.10) : AppColors.surface,
+            color: done
+                ? AppColors.primary.withValues(alpha: 0.10)
+                : AppColors.surface,
             shape: RoundedRectangleBorder(
               borderRadius: BorderRadius.circular(AppRadius.contentCard),
-              side: BorderSide(color: done ? AppColors.primary : const Color(0xFFE2E8F0)),
+              side: BorderSide(
+                color: done ? AppColors.primary : const Color(0xFFE2E8F0),
+              ),
             ),
             child: InkWell(
               borderRadius: BorderRadius.circular(AppRadius.contentCard),
@@ -214,13 +247,21 @@ class _SymbolGrid extends StatelessWidget {
                     const Positioned(
                       top: 6,
                       right: 6,
-                      child: Icon(Icons.check_circle, size: 18, color: AppColors.success),
+                      child: Icon(
+                        Icons.check_circle,
+                        size: 18,
+                        color: AppColors.success,
+                      ),
                     ),
                   if (s.isPremium)
                     const Positioned(
                       bottom: 6,
                       right: 6,
-                      child: Icon(Icons.lock_outline, size: 16, color: Color(0xFF8A5300)),
+                      child: Icon(
+                        Icons.lock_outline,
+                        size: 16,
+                        color: Color(0xFF8A5300),
+                      ),
                     ),
                 ],
               ),

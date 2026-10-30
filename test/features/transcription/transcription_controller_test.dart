@@ -74,32 +74,35 @@ void main() {
   Future<bool> yes() async => true;
   Future<bool> no() async => false;
 
-  test('idle → (penjelasan izin) → listening → hasil sementara → final → stopped', () async {
-    final c = controller();
-    var explained = false;
-    await c.start(
-      explainPermission: () async => explained = true,
-      askFallback: no,
-    );
-    expect(explained, isTrue);
-    expect(state().status, SttStatus.listening);
-    expect(speech.lastUseIndonesian, isTrue);
+  test(
+    'idle → (penjelasan izin) → listening → hasil sementara → final → stopped',
+    () async {
+      final c = controller();
+      var explained = false;
+      await c.start(
+        explainPermission: () async => explained = true,
+        askFallback: no,
+      );
+      expect(explained, isTrue);
+      expect(state().status, SttStatus.listening);
+      expect(speech.lastUseIndonesian, isTrue);
 
-    speech.onResult!('halo apa', false);
-    expect(state().partial, 'halo apa');
-    expect(state().text, '');
+      speech.onResult!('halo apa', false);
+      expect(state().partial, 'halo apa');
+      expect(state().text, '');
 
-    await c.stop();
-    speech.onResult!('halo apa kabar', true);
-    expect(state().text, 'halo apa kabar');
-    expect(state().partial, '');
-    expect(state().status, SttStatus.stopped);
+      await c.stop();
+      speech.onResult!('halo apa kabar', true);
+      expect(state().text, 'halo apa kabar');
+      expect(state().partial, '');
+      expect(state().status, SttStatus.stopped);
 
-    // Sesi kedua menyambung teks.
-    await c.start(explainPermission: yes, askFallback: no);
-    speech.onResult!('baik', true);
-    expect(state().text, 'halo apa kabar baik');
-  });
+      // Sesi kedua menyambung teks.
+      await c.start(explainPermission: yes, askFallback: no);
+      speech.onResult!('baik', true);
+      expect(state().text, 'halo apa kabar baik');
+    },
+  );
 
   test('izin ditolak permanen → error dengan aksi pengaturan', () async {
     speech.afterRequest = MicPermission.permanentlyDenied;
@@ -139,31 +142,40 @@ void main() {
     expect(speech.lastUseIndonesian, isFalse);
   });
 
-  test('error_no_match & error_network dipetakan; ke latar → berhenti', () async {
-    speech.status = MicPermission.granted;
-    final c = controller();
-    await c.start(explainPermission: yes, askFallback: no);
-    speech.onError!('error_no_match', false);
-    expect(state().error, SttError.noMatch);
-    expect(sttErrorMessage(SttError.noMatch), 'Suara tidak terdengar jelas. Coba lagi.');
-    expect(mapSpeechError('error_network'), SttError.network);
+  test(
+    'error_no_match & error_network dipetakan; ke latar → berhenti',
+    () async {
+      speech.status = MicPermission.granted;
+      final c = controller();
+      await c.start(explainPermission: yes, askFallback: no);
+      speech.onError!('error_no_match', false);
+      expect(state().error, SttError.noMatch);
+      expect(
+        sttErrorMessage(SttError.noMatch),
+        'Suara tidak terdengar jelas. Coba lagi.',
+      );
+      expect(mapSpeechError('error_network'), SttError.network);
 
-    await c.start(explainPermission: yes, askFallback: no);
-    await c.pause();
-    expect(state().status, SttStatus.stopped);
-    expect(speech.cancelCalls, greaterThan(0));
-  });
+      await c.start(explainPermission: yes, askFallback: no);
+      await c.pause();
+      expect(state().status, SttStatus.stopped);
+      expect(speech.cancelCalls, greaterThan(0));
+    },
+  );
 
-  test('salin/hapus: clear mengosongkan teks; dispose membatalkan mikrofon', () async {
-    speech.status = MicPermission.granted;
-    final c = controller();
-    c.setText('teks');
-    expect(state().text, 'teks');
-    c.clear();
-    expect(state().text, '');
-    final before = speech.cancelCalls;
-    container.dispose();
-    expect(speech.cancelCalls, before + 1);
-    container = ProviderContainer();
-  });
+  test(
+    'salin/hapus: clear mengosongkan teks; dispose membatalkan mikrofon',
+    () async {
+      speech.status = MicPermission.granted;
+      final c = controller();
+      c.setText('teks');
+      expect(state().text, 'teks');
+      c.clear();
+      expect(state().text, '');
+      final before = speech.cancelCalls;
+      container.dispose();
+      expect(speech.cancelCalls, before + 1);
+      container = ProviderContainer();
+    },
+  );
 }

@@ -54,13 +54,22 @@ class LearningHistoryScreen extends ConsumerWidget {
                   backgroundColor: AppColors.inputFill,
                   child: Text(
                     (e.symbol ?? e.title).characters.take(2).toString(),
-                    style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700),
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
                 ),
                 title: Text(e.title),
-                subtitle: Text('${e.moduleLabel} · ${formatDateTimeId(e.lastAccessedAt)}'),
+                subtitle: Text(
+                  '${e.moduleLabel} · ${formatDateTimeId(e.lastAccessedAt)}',
+                ),
                 trailing: e.completed
-                    ? const Icon(Icons.check_circle, color: AppColors.success, semanticLabel: 'Selesai')
+                    ? const Icon(
+                        Icons.check_circle,
+                        color: AppColors.success,
+                        semanticLabel: 'Selesai',
+                      )
                     : const Icon(Icons.chevron_right),
                 onTap: () => openHistoryEntry(context, e),
               ),
@@ -98,7 +107,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
       final q = value.trim();
       setState(() {
         _query = q;
-        _future = q.isEmpty ? null : ref.read(studyRepositoryProvider).searchAll(q);
+        _future = q.isEmpty
+            ? null
+            : ref.read(studyRepositoryProvider).searchAll(q);
       });
     });
   }
@@ -139,7 +150,9 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
           : FutureBuilder<List<Sign>>(
               future: _future,
               builder: (context, snap) {
-                if (snap.connectionState != ConnectionState.done) return const LoadingView();
+                if (snap.connectionState != ConnectionState.done) {
+                  return const LoadingView();
+                }
                 if (snap.hasError) {
                   return ErrorView(
                     message: errorMessageOf(snap.error!),
@@ -161,13 +174,27 @@ class _GlobalSearchScreenState extends ConsumerState<GlobalSearchScreen> {
                         contentPadding: EdgeInsets.zero,
                         leading: CircleAvatar(
                           backgroundColor: AppColors.inputFill,
-                          child: Text(s.displayTitle.characters.take(2).toString(),
-                              style: const TextStyle(color: AppColors.primary, fontWeight: FontWeight.w700)),
+                          child: Text(
+                            s.displayTitle.characters.take(2).toString(),
+                            style: const TextStyle(
+                              color: AppColors.primary,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                         title: Text(s.term),
-                        subtitle: Text([s.contentModule.label, if (s.categoryName != null) s.categoryName!].join(' · ')),
-                        trailing: s.isPremium ? const PremiumBadge() : const Icon(Icons.chevron_right),
-                        onTap: () => context.push(AppRoutes.study(s.contentModule, s.id)),
+                        subtitle: Text(
+                          [
+                            s.contentModule.label,
+                            if (s.categoryName != null) s.categoryName!,
+                          ].join(' · '),
+                        ),
+                        trailing: s.isPremium
+                            ? const PremiumBadge()
+                            : const Icon(Icons.chevron_right),
+                        onTap: () => context.push(
+                          AppRoutes.study(s.contentModule, s.id),
+                        ),
                       ),
                   ],
                 );

@@ -2,20 +2,24 @@ import 'package:bisindo_app/features/quiz/domain/quiz_bank.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 // Data uji bertanda TEST_ — bukan materi BISINDO.
-Map<String, dynamic> _question({String type = 'multiple_choice', List<Map<String, dynamic>>? options}) => {
-      'id': 'q1',
-      'question_type': type,
-      'prompt': 'TEST prompt',
-      'module': 'alphabet',
-      'difficulty': 'hard',
-      'video_path': 'library/video/x.mp4',
-      'is_premium': true,
-      'options': options ??
-          [
-            {'id': 'o1', 'label': 'TEST_A', 'side': null, 'image_path': null},
-            {'id': 'o2', 'label': 'TEST_B'},
-          ],
-    };
+Map<String, dynamic> _question({
+  String type = 'multiple_choice',
+  List<Map<String, dynamic>>? options,
+}) => {
+  'id': 'q1',
+  'question_type': type,
+  'prompt': 'TEST prompt',
+  'module': 'alphabet',
+  'difficulty': 'hard',
+  'video_path': 'library/video/x.mp4',
+  'is_premium': true,
+  'options':
+      options ??
+      [
+        {'id': 'o1', 'label': 'TEST_A', 'side': null, 'image_path': null},
+        {'id': 'o2', 'label': 'TEST_B'},
+      ],
+};
 
 void main() {
   group('QuizQuestion.fromJson', () {
@@ -31,21 +35,43 @@ void main() {
       expect(q.options.first.label, 'TEST_A');
     });
 
-    test('jenis tidak dikenal → pilihan ganda; kolom hilang tidak membuat crash', () {
-      final q = QuizQuestion.fromJson({'id': 'q', 'question_type': 'baru', 'options': 'bukan list'});
-      expect(q.type, QuizType.multipleChoice);
-      expect(q.options.isEmpty, true);
-      expect(q.prompt, '');
-      expect(q.module, null);
-    });
+    test(
+      'jenis tidak dikenal → pilihan ganda; kolom hilang tidak membuat crash',
+      () {
+        final q = QuizQuestion.fromJson({
+          'id': 'q',
+          'question_type': 'baru',
+          'options': 'bukan list',
+        });
+        expect(q.type, QuizType.multipleChoice);
+        expect(q.options.isEmpty, true);
+        expect(q.prompt, '');
+        expect(q.module, null);
+      },
+    );
 
     test('opsi kiri/kanan untuk soal cocokkan', () {
-      final q = QuizQuestion.fromJson(_question(type: 'match_image', options: [
-        {'id': 'l1', 'label': 'Gambar 1', 'side': 'left', 'image_path': 'i1.png'},
-        {'id': 'r1', 'label': 'TEST satu', 'side': 'right'},
-        {'id': 'l2', 'label': 'Gambar 2', 'side': 'left', 'image_path': 'i2.png'},
-        {'id': 'r2', 'label': 'TEST dua', 'side': 'right'},
-      ]));
+      final q = QuizQuestion.fromJson(
+        _question(
+          type: 'match_image',
+          options: [
+            {
+              'id': 'l1',
+              'label': 'Gambar 1',
+              'side': 'left',
+              'image_path': 'i1.png',
+            },
+            {'id': 'r1', 'label': 'TEST satu', 'side': 'right'},
+            {
+              'id': 'l2',
+              'label': 'Gambar 2',
+              'side': 'left',
+              'image_path': 'i2.png',
+            },
+            {'id': 'r2', 'label': 'TEST dua', 'side': 'right'},
+          ],
+        ),
+      );
       expect(q.type.isSingleChoice, false);
       expect(q.leftOptions.map((o) => o.id).toList(), ['l1', 'l2']);
       expect(q.rightOptions.map((o) => o.id).toList(), ['r1', 'r2']);
@@ -62,33 +88,54 @@ void main() {
     });
 
     test('SequenceAnswer harus memakai semua ubin tepat sekali', () {
-      final q = QuizQuestion.fromJson(_question(type: 'arrange_word', options: [
-        {'id': 't1', 'label': 'M'},
-        {'id': 't2', 'label': 'A'},
-        {'id': 't3', 'label': 'M'},
-      ]));
+      final q = QuizQuestion.fromJson(
+        _question(
+          type: 'arrange_word',
+          options: [
+            {'id': 't1', 'label': 'M'},
+            {'id': 't2', 'label': 'A'},
+            {'id': 't3', 'label': 'M'},
+          ],
+        ),
+      );
       expect(const SequenceAnswer(['t3', 't2', 't1']).isCompleteFor(q), true);
       expect(const SequenceAnswer(['t3', 't2']).isCompleteFor(q), false);
       expect(const SequenceAnswer(['t1', 't1', 't2']).isCompleteFor(q), false);
-      expect(const SequenceAnswer(['t1', 't2']).toJson(), {'sequence': ['t1', 't2']});
-    });
-
-    test('PairsAnswer lengkap bila semua gambar dipasangkan ke arti berbeda', () {
-      final q = QuizQuestion.fromJson(_question(type: 'match_image', options: [
-        {'id': 'l1', 'label': 'G1', 'side': 'left'},
-        {'id': 'r1', 'label': 'A1', 'side': 'right'},
-        {'id': 'l2', 'label': 'G2', 'side': 'left'},
-        {'id': 'r2', 'label': 'A2', 'side': 'right'},
-      ]));
-      expect(const PairsAnswer({'l1': 'r1', 'l2': 'r2'}).isCompleteFor(q), true);
-      expect(const PairsAnswer({'l1': 'r1'}).isCompleteFor(q), false);
-      expect(const PairsAnswer({'l1': 'r1', 'l2': 'r1'}).isCompleteFor(q), false);
-      expect(const PairsAnswer({'l1': 'r2'}).toJson(), {
-        'pairs': [
-          {'left': 'l1', 'right': 'r2'},
-        ],
+      expect(const SequenceAnswer(['t1', 't2']).toJson(), {
+        'sequence': ['t1', 't2'],
       });
     });
+
+    test(
+      'PairsAnswer lengkap bila semua gambar dipasangkan ke arti berbeda',
+      () {
+        final q = QuizQuestion.fromJson(
+          _question(
+            type: 'match_image',
+            options: [
+              {'id': 'l1', 'label': 'G1', 'side': 'left'},
+              {'id': 'r1', 'label': 'A1', 'side': 'right'},
+              {'id': 'l2', 'label': 'G2', 'side': 'left'},
+              {'id': 'r2', 'label': 'A2', 'side': 'right'},
+            ],
+          ),
+        );
+        expect(
+          const PairsAnswer({'l1': 'r1', 'l2': 'r2'}).isCompleteFor(q),
+          true,
+        );
+        expect(const PairsAnswer({'l1': 'r1'}).isCompleteFor(q), false);
+        expect(
+          const PairsAnswer({'l1': 'r1', 'l2': 'r1'}).isCompleteFor(q),
+          false,
+        );
+        expect(const PairsAnswer({'l1': 'r2'}).toJson(), {
+          'pairs': [
+            {'left': 'l1', 'right': 'r2'},
+          ],
+        });
+      },
+    );
   });
 
   group('Hasil & kunci dari server', () {
@@ -137,13 +184,21 @@ void main() {
       });
       expect(e.title, 'Kuis Angka');
       expect(e.totalCount, 10);
-      expect(QuizHistoryEntry.fromSession({'id': 'y', 'mode': 'weak'}).title, 'Latihan Ulang');
+      expect(
+        QuizHistoryEntry.fromSession({'id': 'y', 'mode': 'weak'}).title,
+        'Latihan Ulang',
+      );
     });
   });
 
   group('QuizConfig', () {
     test('parameter RPC & kesetaraan (dipakai sebagai kunci provider)', () {
-      const a = QuizConfig(mode: QuizMode.category, module: QuizModule.vocabulary, categoryId: 'c1', limit: 5);
+      const a = QuizConfig(
+        mode: QuizMode.category,
+        module: QuizModule.vocabulary,
+        categoryId: 'c1',
+        limit: 5,
+      );
       expect(a.toRpcParams(), {
         'p_mode': 'category',
         'p_module': 'vocabulary',
@@ -151,7 +206,16 @@ void main() {
         'p_difficulty': null,
         'p_limit': 5,
       });
-      expect(a == const QuizConfig(mode: QuizMode.category, module: QuizModule.vocabulary, categoryId: 'c1', limit: 5), true);
+      expect(
+        a ==
+            const QuizConfig(
+              mode: QuizMode.category,
+              module: QuizModule.vocabulary,
+              categoryId: 'c1',
+              limit: 5,
+            ),
+        true,
+      );
       expect(a == const QuizConfig(mode: QuizMode.mixed), false);
       expect(const QuizConfig(mode: QuizMode.weak).title, 'Latihan Ulang');
     });

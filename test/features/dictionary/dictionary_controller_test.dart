@@ -20,7 +20,11 @@ class FakeSignRepository implements SignRepository {
     final count = page == 0 ? kPageSize : 3;
     return [
       for (var i = 0; i < count; i++)
-        Sign(id: 'p$page-$i', term: 'Kata $page-$i', entryType: SignEntryType.word),
+        Sign(
+          id: 'p$page-$i',
+          term: 'Kata $page-$i',
+          entryType: SignEntryType.word,
+        ),
     ];
   }
 
@@ -45,7 +49,8 @@ void main() {
   });
   tearDown(() => container.dispose());
 
-  DictionaryController c() => container.read(dictionaryControllerProvider.notifier);
+  DictionaryController c() =>
+      container.read(dictionaryControllerProvider.notifier);
   DictionaryState s() => container.read(dictionaryControllerProvider);
 
   test('query kosong → tidak memanggil server (empty awal)', () async {
@@ -88,7 +93,9 @@ void main() {
     expect(s().items, isNotEmpty);
   });
 
-  testWidgets('DICT-03: 5 ketikan cepat → 1 aksi (debounce 350 ms)', (tester) async {
+  testWidgets('DICT-03: 5 ketikan cepat → 1 aksi (debounce 350 ms)', (
+    tester,
+  ) async {
     final debouncer = Debouncer();
     var calls = 0;
     for (var i = 0; i < 5; i++) {

@@ -24,7 +24,10 @@ class SignTile extends ConsumerWidget {
     final subtitle = [
       sign.entryType.label,
       if (sign.categoryName != null) sign.categoryName!,
-      if (sign.isPremium) 'Premium' else (sign.hasVideo ? 'ada video' : 'video belum tersedia'),
+      if (sign.isPremium)
+        'Premium'
+      else
+        (sign.hasVideo ? 'ada video' : 'video belum tersedia'),
       if (learned) 'sudah dipelajari',
     ].join(' · ');
     return Card(
@@ -38,28 +41,33 @@ class SignTile extends ConsumerWidget {
         minVerticalPadding: AppSpacing.md,
         onTap: onTap,
         leading: CircleAvatar(
-          backgroundColor: learned ? AppColors.success.withValues(alpha: 0.12) : AppColors.inputFill,
+          backgroundColor: learned
+              ? AppColors.success.withValues(alpha: 0.12)
+              : AppColors.inputFill,
           child: ExcludeSemantics(
             child: Icon(
               learned
                   ? Icons.check_circle
                   : sign.isPremium && !sign.hasVideo
-                      ? Icons.lock_outline
-                      : sign.hasVideo
-                          ? Icons.play_circle_outline
-                          : Icons.videocam_off_outlined,
+                  ? Icons.lock_outline
+                  : sign.hasVideo
+                  ? Icons.play_circle_outline
+                  : Icons.videocam_off_outlined,
               color: learned
                   ? AppColors.success
                   : sign.hasVideo
-                      ? AppColors.primary
-                      : AppColors.textSecondary,
+                  ? AppColors.primary
+                  : AppColors.textSecondary,
             ),
           ),
         ),
         title: Row(
           children: [
             Flexible(
-              child: Text(sign.term, style: Theme.of(context).textTheme.titleMedium),
+              child: Text(
+                sign.term,
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
             ),
             if (sign.isSample) ...[
               const SizedBox(width: AppSpacing.sm),
@@ -81,11 +89,14 @@ class SignTile extends ConsumerWidget {
           ),
           onPressed: () async {
             try {
-              final added =
-                  await ref.read(favoriteIdsProvider.notifier).toggle(sign.id);
+              final added = await ref
+                  .read(favoriteIdsProvider.notifier)
+                  .toggle(sign.id);
               if (context.mounted) {
-                showAppSnackBar(context,
-                    added ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit');
+                showAppSnackBar(
+                  context,
+                  added ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit',
+                );
               }
             } catch (error) {
               if (context.mounted) showErrorSnackBar(context, error);

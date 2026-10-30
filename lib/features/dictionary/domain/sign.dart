@@ -18,10 +18,10 @@ class Category {
   const Category({required this.id, required this.name, required this.kind});
 
   factory Category.fromJson(Json json) => Category(
-        id: reqString(json, 'id'),
-        name: reqString(json, 'name'),
-        kind: optString(json, 'kind') ?? 'sign',
-      );
+    id: reqString(json, 'id'),
+    name: reqString(json, 'name'),
+    kind: optString(json, 'kind') ?? 'sign',
+  );
 
   final String id;
   final String name;
@@ -39,10 +39,10 @@ enum ContentModule {
   final String label;
 
   static ContentModule parse(String? value) => switch (value) {
-        'alphabet' => ContentModule.alphabet,
-        'number' => ContentModule.number,
-        _ => ContentModule.vocabulary,
-      };
+    'alphabet' => ContentModule.alphabet,
+    'number' => ContentModule.number,
+    _ => ContentModule.vocabulary,
+  };
 }
 
 /// Kelompok angka (kolom `number_group`).
@@ -103,28 +103,28 @@ class Sign {
       'audio:media_assets!audio_asset_id(path)';
 
   factory Sign.fromJson(Json json) => Sign(
-        id: reqString(json, 'id'),
-        term: reqString(json, 'term'),
-        entryType: SignEntryType.parse(optString(json, 'entry_type')),
-        categoryId: optString(json, 'category_id'),
-        categoryName: optObject(json, 'category')?['name'] as String?,
-        meaning: optString(json, 'meaning'),
-        movementDescription: optString(json, 'movement_description'),
-        usageExample: optString(json, 'usage_example'),
-        videoPath: optObject(json, 'video')?['path'] as String?,
-        thumbnailPath: optObject(json, 'thumb')?['path'] as String?,
-        sourceNote: optString(json, 'source_note'),
-        validatedBy: optString(json, 'validated_by'),
-        verifiedAt: parseDate(json['verified_at']),
-        status: optString(json, 'status') ?? 'published',
-        contentModule: ContentModule.parse(optString(json, 'content_module')),
-        symbol: optString(json, 'symbol'),
-        numberGroup: NumberGroup.parse(optString(json, 'number_group')),
-        sortOrder: optInt(json, 'sort_order'),
-        imagePath: optObject(json, 'image')?['path'] as String?,
-        audioPath: optObject(json, 'audio')?['path'] as String?,
-        isPremium: optBool(json, 'is_premium'),
-      );
+    id: reqString(json, 'id'),
+    term: reqString(json, 'term'),
+    entryType: SignEntryType.parse(optString(json, 'entry_type')),
+    categoryId: optString(json, 'category_id'),
+    categoryName: optObject(json, 'category')?['name'] as String?,
+    meaning: optString(json, 'meaning'),
+    movementDescription: optString(json, 'movement_description'),
+    usageExample: optString(json, 'usage_example'),
+    videoPath: optObject(json, 'video')?['path'] as String?,
+    thumbnailPath: optObject(json, 'thumb')?['path'] as String?,
+    sourceNote: optString(json, 'source_note'),
+    validatedBy: optString(json, 'validated_by'),
+    verifiedAt: parseDate(json['verified_at']),
+    status: optString(json, 'status') ?? 'published',
+    contentModule: ContentModule.parse(optString(json, 'content_module')),
+    symbol: optString(json, 'symbol'),
+    numberGroup: NumberGroup.parse(optString(json, 'number_group')),
+    sortOrder: optInt(json, 'sort_order'),
+    imagePath: optObject(json, 'image')?['path'] as String?,
+    audioPath: optObject(json, 'audio')?['path'] as String?,
+    isPremium: optBool(json, 'is_premium'),
+  );
 
   final String id;
   final String term;

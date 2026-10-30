@@ -41,8 +41,9 @@ Future<void> _pumpSplash(WidgetTester tester, {required bool signedIn}) async {
 }
 
 void main() {
-  testWidgets('Splash biru solid + wordmark putih, lalu ke /login ≥ 600 ms',
-      (tester) async {
+  testWidgets('Splash biru solid + wordmark putih, lalu ke /login ≥ 600 ms', (
+    tester,
+  ) async {
     await _pumpSplash(tester, signedIn: false);
 
     final scaffold = tester.widget<Scaffold>(find.byType(Scaffold));
@@ -58,8 +59,9 @@ void main() {
     expect(find.text('LOGIN'), findsOneWidget);
   });
 
-  testWidgets('sesi tersimpan → Splash ke /home (F1, termasuk saat offline)',
-      (tester) async {
+  testWidgets('sesi tersimpan → Splash ke /home (F1, termasuk saat offline)', (
+    tester,
+  ) async {
     await _pumpSplash(tester, signedIn: true);
     await tester.pump(const Duration(milliseconds: 650));
     await tester.pumpAndSettle();

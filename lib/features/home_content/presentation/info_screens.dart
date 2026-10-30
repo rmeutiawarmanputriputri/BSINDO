@@ -14,7 +14,8 @@ class NotificationsScreen extends ConsumerStatefulWidget {
   const NotificationsScreen({super.key});
 
   @override
-  ConsumerState<NotificationsScreen> createState() => _NotificationsScreenState();
+  ConsumerState<NotificationsScreen> createState() =>
+      _NotificationsScreenState();
 }
 
 class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
@@ -47,7 +48,9 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
           message: 'Pengumuman dari pengelola akan tampil di sini.',
         ),
         data: (items) {
-          WidgetsBinding.instance.addPostFrameCallback((_) => _markAllRead(items));
+          WidgetsBinding.instance.addPostFrameCallback(
+            (_) => _markAllRead(items),
+          );
           return RefreshIndicator(
             onRefresh: () async {
               _marked = false;
@@ -67,16 +70,36 @@ class _NotificationsScreenState extends ConsumerState<NotificationsScreen> {
                             children: [
                               if (!a.isRead)
                                 const Padding(
-                                  padding: EdgeInsets.only(right: AppSpacing.sm),
-                                  child: Icon(Icons.circle, size: 10, color: AppColors.primary, semanticLabel: 'Belum dibaca'),
+                                  padding: EdgeInsets.only(
+                                    right: AppSpacing.sm,
+                                  ),
+                                  child: Icon(
+                                    Icons.circle,
+                                    size: 10,
+                                    color: AppColors.primary,
+                                    semanticLabel: 'Belum dibaca',
+                                  ),
                                 ),
-                              Expanded(child: Text(a.title, style: Theme.of(context).textTheme.titleMedium)),
+                              Expanded(
+                                child: Text(
+                                  a.title,
+                                  style: Theme.of(
+                                    context,
+                                  ).textTheme.titleMedium,
+                                ),
+                              ),
                             ],
                           ),
                           const SizedBox(height: AppSpacing.xs),
-                          Text(formatDateTimeId(a.publishedAt), style: Theme.of(context).textTheme.bodySmall),
+                          Text(
+                            formatDateTimeId(a.publishedAt),
+                            style: Theme.of(context).textTheme.bodySmall,
+                          ),
                           const SizedBox(height: AppSpacing.sm),
-                          Text(a.body, style: Theme.of(context).textTheme.bodyLarge),
+                          Text(
+                            a.body,
+                            style: Theme.of(context).textTheme.bodyLarge,
+                          ),
                         ],
                       ),
                     ),
@@ -114,10 +137,23 @@ class FaqScreen extends ConsumerWidget {
               Card(
                 margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                 child: ExpansionTile(
-                  title: Text(f.question, style: Theme.of(context).textTheme.titleSmall),
-                  childrenPadding: const EdgeInsets.fromLTRB(AppSpacing.lg, 0, AppSpacing.lg, AppSpacing.lg),
+                  title: Text(
+                    f.question,
+                    style: Theme.of(context).textTheme.titleSmall,
+                  ),
+                  childrenPadding: const EdgeInsets.fromLTRB(
+                    AppSpacing.lg,
+                    0,
+                    AppSpacing.lg,
+                    AppSpacing.lg,
+                  ),
                   expandedAlignment: Alignment.centerLeft,
-                  children: [Text(f.answer, style: Theme.of(context).textTheme.bodyLarge)],
+                  children: [
+                    Text(
+                      f.answer,
+                      style: Theme.of(context).textTheme.bodyLarge,
+                    ),
+                  ],
                 ),
               ),
           ],
@@ -134,7 +170,8 @@ class PremiumScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final info = ref.watch(premiumInfoProvider);
-    final status = ref.watch(premiumStatusProvider).value ?? const PremiumStatus();
+    final status =
+        ref.watch(premiumStatusProvider).value ?? const PremiumStatus();
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Premium')),
@@ -146,25 +183,43 @@ class PremiumScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.lg),
               decoration: BoxDecoration(
-                color: status.isPremium ? const Color(0xFFDCFCE7) : const Color(0xFFFFF4E0),
+                color: status.isPremium
+                    ? const Color(0xFFDCFCE7)
+                    : const Color(0xFFFFF4E0),
                 borderRadius: BorderRadius.circular(AppRadius.contentCard),
               ),
               child: Row(
                 children: [
-                  Icon(status.isPremium ? Icons.workspace_premium : Icons.lock_outline,
-                      size: 36, color: status.isPremium ? AppColors.success : const Color(0xFF8A5300)),
+                  Icon(
+                    status.isPremium
+                        ? Icons.workspace_premium
+                        : Icons.lock_outline,
+                    size: 36,
+                    color: status.isPremium
+                        ? AppColors.success
+                        : const Color(0xFF8A5300),
+                  ),
                   const SizedBox(width: AppSpacing.md),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(status.isPremium ? 'Akun Anda Premium' : 'Akun Anda gratis',
-                            style: theme.textTheme.titleMedium),
-                        if (status.isPremium && status.plan != null) Text('Paket: ${status.plan}'),
+                        Text(
+                          status.isPremium
+                              ? 'Akun Anda Premium'
+                              : 'Akun Anda gratis',
+                          style: theme.textTheme.titleMedium,
+                        ),
+                        if (status.isPremium && status.plan != null)
+                          Text('Paket: ${status.plan}'),
                         if (status.isPremium && status.expiresAt != null)
-                          Text('Berlaku sampai ${formatDateId(status.expiresAt!)}'),
+                          Text(
+                            'Berlaku sampai ${formatDateId(status.expiresAt!)}',
+                          ),
                         if (!status.isPremium)
-                          const Text('Materi bertanda Premium dapat dibuka setelah akun diaktifkan Premium.'),
+                          const Text(
+                            'Materi bertanda Premium dapat dibuka setelah akun diaktifkan Premium.',
+                          ),
                       ],
                     ),
                   ),
@@ -179,7 +234,8 @@ class PremiumScreen extends ConsumerWidget {
                 message: 'Hubungi pengelola untuk informasi Premium.',
               )
             else ...[
-              if (i.title != null) Text(i.title!, style: theme.textTheme.headlineSmall),
+              if (i.title != null)
+                Text(i.title!, style: theme.textTheme.headlineSmall),
               if (i.description != null) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(i.description!, style: theme.textTheme.bodyLarge),
@@ -189,15 +245,27 @@ class PremiumScreen extends ConsumerWidget {
                 Card(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: ListTile(
-                    leading: const Icon(Icons.star_outline, color: AppColors.accent),
+                    leading: const Icon(
+                      Icons.star_outline,
+                      color: AppColors.accent,
+                    ),
                     title: Text(p.name),
-                    subtitle: p.description == null ? null : Text(p.description!),
-                    trailing: p.priceLabel == null ? null : Text(p.priceLabel!, style: theme.textTheme.titleSmall),
+                    subtitle: p.description == null
+                        ? null
+                        : Text(p.description!),
+                    trailing: p.priceLabel == null
+                        ? null
+                        : Text(
+                            p.priceLabel!,
+                            style: theme.textTheme.titleSmall,
+                          ),
                   ),
                 ),
               const SizedBox(height: AppSpacing.sm),
-              Text('Aktivasi Premium dilakukan oleh pengelola. Hubungi admin untuk berlangganan.',
-                  style: theme.textTheme.bodySmall),
+              Text(
+                'Aktivasi Premium dilakukan oleh pengelola. Hubungi admin untuk berlangganan.',
+                style: theme.textTheme.bodySmall,
+              ),
             ],
           ],
         ),

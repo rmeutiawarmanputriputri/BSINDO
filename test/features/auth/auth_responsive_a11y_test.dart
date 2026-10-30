@@ -10,8 +10,9 @@ void main() {
   for (final route in [AppRoutes.login, AppRoutes.register]) {
     group(route, () {
       for (final scale in [1.0, 1.3, 2.0]) {
-        testWidgets('360×640 @ skala teks $scale → tanpa overflow',
-            (tester) async {
+        testWidgets('360×640 @ skala teks $scale → tanpa overflow', (
+          tester,
+        ) async {
           await pumpAuthApp(
             tester,
             initialLocation: route,
@@ -32,8 +33,9 @@ void main() {
         });
       }
 
-      testWidgets('360×640 @ 200% dengan semua pesan error → tanpa overflow',
-          (tester) async {
+      testWidgets('360×640 @ 200% dengan semua pesan error → tanpa overflow', (
+        tester,
+      ) async {
         await pumpAuthApp(
           tester,
           initialLocation: route,
@@ -47,8 +49,9 @@ void main() {
         expect(tester.takeException(), isNull);
       });
 
-      testWidgets('tablet 600×960: kartu dibatasi ≤ 480 dan terpusat',
-          (tester) async {
+      testWidgets('tablet 600×960: kartu dibatasi ≤ 480 dan terpusat', (
+        tester,
+      ) async {
         await pumpAuthApp(
           tester,
           initialLocation: route,
@@ -59,8 +62,9 @@ void main() {
         expect((rect.center.dx - 300).abs(), lessThan(1));
       });
 
-      testWidgets('target sentuh ≥ 48dp & semua tap target berlabel',
-          (tester) async {
+      testWidgets('target sentuh ≥ 48dp & semua tap target berlabel', (
+        tester,
+      ) async {
         final handle = tester.ensureSemantics();
         await pumpAuthApp(tester, initialLocation: route);
         await expectLater(tester, meetsGuideline(androidTapTargetGuideline));
@@ -68,8 +72,9 @@ void main() {
         handle.dispose();
       });
 
-      testWidgets('kolom teks punya label semantik dari label visual',
-          (tester) async {
+      testWidgets('kolom teks punya label semantik dari label visual', (
+        tester,
+      ) async {
         final handle = tester.ensureSemantics();
         await pumpAuthApp(tester, initialLocation: route);
         expect(find.bySemanticsLabel(RegExp('Alamat Email')), findsWidgets);

@@ -23,8 +23,12 @@ class LessonsScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final lessons = ref.watch(lessonsProvider);
-    final progress = ref.watch(progressListProvider).value ?? const <ProgressEntry>[];
-    final byLesson = {for (final p in progress) if (p.lessonId != null) p.lessonId!: p};
+    final progress =
+        ref.watch(progressListProvider).value ?? const <ProgressEntry>[];
+    final byLesson = {
+      for (final p in progress)
+        if (p.lessonId != null) p.lessonId!: p,
+    };
     return Scaffold(
       appBar: AppBar(
         title: const Text('Belajar'),
@@ -59,15 +63,23 @@ class LessonsScreen extends ConsumerWidget {
               ),
               data: (list) {
                 if (list.isEmpty) {
-                  return Text('Pelajaran belum tersedia.',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary));
+                  return Text(
+                    'Pelajaran belum tersedia.',
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  );
                 }
-                final done = list.where((l) => byLesson[l.id]?.completed ?? false).length;
+                final done = list
+                    .where((l) => byLesson[l.id]?.completed ?? false)
+                    .length;
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Text('$done dari ${list.length} pelajaran selesai',
-                        style: Theme.of(context).textTheme.bodyMedium),
+                    Text(
+                      '$done dari ${list.length} pelajaran selesai',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
                     const SizedBox(height: AppSpacing.md),
                     for (final lesson in list)
                       LessonCard(
@@ -87,7 +99,12 @@ class LessonsScreen extends ConsumerWidget {
 }
 
 class LessonCard extends StatelessWidget {
-  const LessonCard({super.key, required this.lesson, required this.onTap, this.progress});
+  const LessonCard({
+    super.key,
+    required this.lesson,
+    required this.onTap,
+    this.progress,
+  });
 
   final Lesson lesson;
   final ProgressEntry? progress;
@@ -97,10 +114,14 @@ class LessonCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final (icon, label, color) = progress == null
-        ? (Icons.radio_button_unchecked, 'Belum dimulai', AppColors.textSecondary)
+        ? (
+            Icons.radio_button_unchecked,
+            'Belum dimulai',
+            AppColors.textSecondary,
+          )
         : progress!.completed
-            ? (Icons.check_circle, 'Selesai', AppColors.success)
-            : (Icons.timelapse, 'Berjalan', AppColors.primary);
+        ? (Icons.check_circle, 'Selesai', AppColors.success)
+        : (Icons.timelapse, 'Berjalan', AppColors.primary);
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.md),
       color: AppColors.surface,
@@ -118,24 +139,38 @@ class LessonCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Expanded(child: Text(lesson.title, style: theme.textTheme.titleMedium)),
+                  Expanded(
+                    child: Text(
+                      lesson.title,
+                      style: theme.textTheme.titleMedium,
+                    ),
+                  ),
                   if (lesson.isSample) const SampleBadge(),
                 ],
               ),
               if (lesson.description != null) ...[
                 const SizedBox(height: AppSpacing.xs),
-                Text(lesson.description!,
-                    maxLines: 2, overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.bodyMedium),
+                Text(
+                  lesson.description!,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.bodyMedium,
+                ),
               ],
               const SizedBox(height: AppSpacing.sm),
               Row(
                 children: [
-                  Text('${lesson.itemCount} materi', style: theme.textTheme.bodySmall),
+                  Text(
+                    '${lesson.itemCount} materi',
+                    style: theme.textTheme.bodySmall,
+                  ),
                   const Spacer(),
                   ExcludeSemantics(child: Icon(icon, size: 18, color: color)),
                   const SizedBox(width: 4),
-                  Text(label, style: theme.textTheme.labelMedium?.copyWith(color: color)),
+                  Text(
+                    label,
+                    style: theme.textTheme.labelMedium?.copyWith(color: color),
+                  ),
                 ],
               ),
             ],

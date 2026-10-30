@@ -76,7 +76,11 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
           ContentWidth(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(
-                  AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, 0),
+                AppSpacing.lg,
+                AppSpacing.sm,
+                AppSpacing.lg,
+                0,
+              ),
               child: TextField(
                 controller: _search,
                 onChanged: _onChanged,
@@ -105,7 +109,9 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
             child: ListView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(
-                  horizontal: AppSpacing.lg, vertical: AppSpacing.sm),
+                horizontal: AppSpacing.lg,
+                vertical: AppSpacing.sm,
+              ),
               children: [
                 for (final type in SignEntryType.values)
                   Padding(
@@ -158,7 +164,8 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
       return const EmptyView(
         icon: Icons.manage_search,
         title: 'Cari kata atau pilih kategori',
-        message: 'Ketik kata yang ingin Anda pelajari, atau pilih kategori di atas.',
+        message:
+            'Ketik kata yang ingin Anda pelajari, atau pilih kategori di atas.',
       );
     }
     if (state.items.isEmpty) {
@@ -172,7 +179,11 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
     return ListView.builder(
       controller: _scroll,
       padding: const EdgeInsets.fromLTRB(
-          AppSpacing.lg, AppSpacing.sm, AppSpacing.lg, AppSpacing.xxl),
+        AppSpacing.lg,
+        AppSpacing.sm,
+        AppSpacing.lg,
+        AppSpacing.xxl,
+      ),
       itemCount: state.items.length + 1,
       itemBuilder: (context, index) {
         if (index == state.items.length) {

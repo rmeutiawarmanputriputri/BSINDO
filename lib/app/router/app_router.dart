@@ -58,19 +58,26 @@ Page<void> _page(GoRouterState state, Widget child) =>
     MaterialPage<void>(key: state.pageKey, child: child);
 
 /// Parameter ID rute divalidasi UUID (FLUTTER_ARCHITECTURE §6).
-Widget _withId(GoRouterState state, String name, Widget Function(String id) build) {
+Widget _withId(
+  GoRouterState state,
+  String name,
+  Widget Function(String id) build,
+) {
   final id = state.pathParameters[name];
   return isUuid(id) ? build(id!) : const _NotFoundScreen();
 }
 
-GoRoute _route(String path, Widget Function(GoRouterState state) build,
-        {List<RouteBase> routes = const [], bool root = false}) =>
-    GoRoute(
-      path: path,
-      parentNavigatorKey: root ? rootNavigatorKey : null,
-      pageBuilder: (context, state) => _page(state, build(state)),
-      routes: routes,
-    );
+GoRoute _route(
+  String path,
+  Widget Function(GoRouterState state) build, {
+  List<RouteBase> routes = const [],
+  bool root = false,
+}) => GoRoute(
+  path: path,
+  parentNavigatorKey: root ? rootNavigatorKey : null,
+  pageBuilder: (context, state) => _page(state, build(state)),
+  routes: routes,
+);
 
 final appRouterProvider = Provider<GoRouter>((ref) {
   final auth = ref.watch(authRouterNotifierProvider);
@@ -92,47 +99,90 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       StatefulShellRoute.indexedStack(
         builder: (context, state, shell) => AppShell(navigationShell: shell),
         branches: [
-          StatefulShellBranch(routes: [
-            _route(AppRoutes.home, (_) => const HomeScreen()),
-          ]),
-          StatefulShellBranch(routes: [
-            _route(AppRoutes.dictionary, (_) => const DictionaryScreen(), routes: [
-              _route('sign/:id',
-                  (s) => _withId(s, 'id', (id) => SignDetailScreen(signId: id)),
-                  root: true),
-            ]),
-          ]),
-          StatefulShellBranch(routes: [
-            _route(AppRoutes.conversations, (_) => const ConversationListScreen(), routes: [
-              _route(':id',
-                  (s) => _withId(s, 'id', (id) => ConversationDetailScreen(moduleId: id)),
-                  root: true),
-            ]),
-          ]),
-          StatefulShellBranch(routes: [
-            _route(AppRoutes.learn, (_) => const LessonsScreen(), routes: [
-              _route('progress', (_) => const ProgressScreen(), root: true),
-              _route(':id',
-                  (s) => _withId(s, 'id', (id) => LessonDetailScreen(lessonId: id)),
-                  root: true,
-                  routes: [
-                    _route('quiz',
-                        (s) => _withId(s, 'id', (id) => QuizScreen(lessonId: id)),
-                        root: true),
-                  ]),
-            ]),
-          ]),
-          StatefulShellBranch(routes: [
-            _route(AppRoutes.profile, (_) => const ProfileScreen()),
-          ]),
+          StatefulShellBranch(
+            routes: [_route(AppRoutes.home, (_) => const HomeScreen())],
+          ),
+          StatefulShellBranch(
+            routes: [
+              _route(
+                AppRoutes.dictionary,
+                (_) => const DictionaryScreen(),
+                routes: [
+                  _route(
+                    'sign/:id',
+                    (s) =>
+                        _withId(s, 'id', (id) => SignDetailScreen(signId: id)),
+                    root: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              _route(
+                AppRoutes.conversations,
+                (_) => const ConversationListScreen(),
+                routes: [
+                  _route(
+                    ':id',
+                    (s) => _withId(
+                      s,
+                      'id',
+                      (id) => ConversationDetailScreen(moduleId: id),
+                    ),
+                    root: true,
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              _route(
+                AppRoutes.learn,
+                (_) => const LessonsScreen(),
+                routes: [
+                  _route('progress', (_) => const ProgressScreen(), root: true),
+                  _route(
+                    ':id',
+                    (s) => _withId(
+                      s,
+                      'id',
+                      (id) => LessonDetailScreen(lessonId: id),
+                    ),
+                    root: true,
+                    routes: [
+                      _route(
+                        'quiz',
+                        (s) =>
+                            _withId(s, 'id', (id) => QuizScreen(lessonId: id)),
+                        root: true,
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [_route(AppRoutes.profile, (_) => const ProfileScreen())],
+          ),
         ],
       ),
       _route(AppRoutes.transcribe, (_) => const TranscriptionScreen()),
       _route(AppRoutes.favorites, (_) => const FavoritesScreen()),
-      _route(AppRoutes.difficult, (_) => const DifficultListScreen(), routes: [
-        _route('review/:signId',
-            (s) => _withId(s, 'signId', (id) => DifficultReviewScreen(signId: id))),
-      ]),
+      _route(
+        AppRoutes.difficult,
+        (_) => const DifficultListScreen(),
+        routes: [
+          _route(
+            'review/:signId',
+            (s) =>
+                _withId(s, 'signId', (id) => DifficultReviewScreen(signId: id)),
+          ),
+        ],
+      ),
       _route(AppRoutes.reports, (_) => const ReportHistoryScreen()),
       _route(AppRoutes.reportNew, (s) {
         final q = s.uri.queryParameters;
@@ -144,35 +194,63 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         );
       }),
       // ---------------------------------------------------------- v1.1.0
-      _route(AppRoutes.alphabet, (_) => const ModuleGridScreen(module: ContentModule.alphabet)),
-      _route(AppRoutes.numbers, (_) => const ModuleGridScreen(module: ContentModule.number)),
-      _route('/study/:module/:id', (s) => _withId(
-            s,
-            'id',
-            (id) => SignStudyScreen(
-              module: ContentModule.parse(s.pathParameters['module']),
-              signId: id,
-              learnMode: s.uri.queryParameters['mode'] == 'learn',
+      _route(
+        AppRoutes.alphabet,
+        (_) => const ModuleGridScreen(module: ContentModule.alphabet),
+      ),
+      _route(
+        AppRoutes.numbers,
+        (_) => const ModuleGridScreen(module: ContentModule.number),
+      ),
+      _route(
+        '/study/:module/:id',
+        (s) => _withId(
+          s,
+          'id',
+          (id) => SignStudyScreen(
+            module: ContentModule.parse(s.pathParameters['module']),
+            signId: id,
+            learnMode: s.uri.queryParameters['mode'] == 'learn',
+          ),
+        ),
+      ),
+      _route(
+        AppRoutes.quizHub,
+        (_) => const QuizHubScreen(),
+        routes: [
+          _route('history', (_) => const QuizHistoryScreen()),
+          _route(
+            'play',
+            (s) => QuizPlayScreen(
+              config: AppRoutes.parseQuizConfig(s.uri.queryParameters),
             ),
-          )),
-      _route(AppRoutes.quizHub, (_) => const QuizHubScreen(), routes: [
-        _route('history', (_) => const QuizHistoryScreen()),
-        _route('play', (s) => QuizPlayScreen(config: AppRoutes.parseQuizConfig(s.uri.queryParameters))),
-      ]),
+          ),
+        ],
+      ),
       _route(AppRoutes.search, (_) => const GlobalSearchScreen()),
       _route(AppRoutes.history, (_) => const LearningHistoryScreen()),
       _route(AppRoutes.notifications, (_) => const NotificationsScreen()),
       _route(AppRoutes.faq, (_) => const FaqScreen()),
       _route(AppRoutes.premium, (_) => const PremiumScreen()),
-      _route(AppRoutes.admin, (_) => const AdminDashboardScreen(), routes: [
-        _route(':entity', (s) => adminEntityPage(s.pathParameters['entity'] ?? ''),
+      _route(
+        AppRoutes.admin,
+        (_) => const AdminDashboardScreen(),
+        routes: [
+          _route(
+            ':entity',
+            (s) => adminEntityPage(s.pathParameters['entity'] ?? ''),
             routes: [
-              _route(':id', (s) => adminEditPage(
-                    s.pathParameters['entity'] ?? '',
-                    s.pathParameters['id'] ?? '',
-                  )),
-            ]),
-      ]),
+              _route(
+                ':id',
+                (s) => adminEditPage(
+                  s.pathParameters['entity'] ?? '',
+                  s.pathParameters['id'] ?? '',
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
     ],
     errorBuilder: (context, state) => const _NotFoundScreen(),
   );

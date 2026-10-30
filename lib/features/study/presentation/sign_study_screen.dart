@@ -55,7 +55,11 @@ class SignStudyScreen extends ConsumerWidget {
 }
 
 class _StudyBody extends ConsumerStatefulWidget {
-  const _StudyBody({required this.sign, required this.module, required this.learnMode});
+  const _StudyBody({
+    required this.sign,
+    required this.module,
+    required this.learnMode,
+  });
   final Sign sign;
   final ContentModule module;
   final bool learnMode;
@@ -78,7 +82,8 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
 
   /// Daftar saudara untuk navigasi: huruf/angka satu modul; kosakata satu kategori.
   List<Sign> _siblings() {
-    final all = ref.watch(studyListProvider(widget.module)).value ?? const <Sign>[];
+    final all =
+        ref.watch(studyListProvider(widget.module)).value ?? const <Sign>[];
     if (widget.module != ContentModule.vocabulary) return all;
     return all.where((s) => s.categoryId == widget.sign.categoryId).toList();
   }
@@ -92,12 +97,17 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
   Future<void> _setLearned(bool value, {Sign? thenGoTo}) async {
     setState(() => _busy = true);
     try {
-      await ref.read(signProgressProvider.notifier).setLearned(widget.sign.id, value);
+      await ref
+          .read(signProgressProvider.notifier)
+          .setLearned(widget.sign.id, value);
       if (!mounted) return;
       if (thenGoTo != null) {
         _goTo(thenGoTo);
       } else {
-        showAppSnackBar(context, value ? 'Ditandai sudah dipelajari 👍' : 'Tanda dipelajari dihapus');
+        showAppSnackBar(
+          context,
+          value ? 'Ditandai sudah dipelajari 👍' : 'Tanda dipelajari dihapus',
+        );
       }
     } catch (error) {
       if (mounted) showErrorSnackBar(context, error);
@@ -112,12 +122,21 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
     await showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        icon: const Icon(Icons.emoji_events_outlined, size: 40, color: AppColors.accent),
+        icon: const Icon(
+          Icons.emoji_events_outlined,
+          size: 40,
+          color: AppColors.accent,
+        ),
         title: const Text('Selesai!'),
-        content: Text('Anda telah menyelesaikan semua materi ${widget.module.label.toLowerCase()}. '
-            'Uji pemahaman Anda dengan kuis.'),
+        content: Text(
+          'Anda telah menyelesaikan semua materi ${widget.module.label.toLowerCase()}. '
+          'Uji pemahaman Anda dengan kuis.',
+        ),
         actions: [
-          TextButton(onPressed: () => Navigator.of(context).pop(), child: const Text('Tutup')),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Tutup'),
+          ),
         ],
       ),
     );
@@ -134,9 +153,17 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
     final siblings = _siblings();
     final index = siblings.indexWhere((s) => s.id == sign.id);
     final prev = index > 0 ? siblings[index - 1] : null;
-    final next = index >= 0 && index < siblings.length - 1 ? siblings[index + 1] : null;
-    final isFavorite = (ref.watch(favoriteIdsProvider).value ?? const <String>{}).contains(sign.id);
-    final isDifficult = (ref.watch(difficultIdsProvider).value ?? const <String>{}).contains(sign.id);
+    final next = index >= 0 && index < siblings.length - 1
+        ? siblings[index + 1]
+        : null;
+    final isFavorite =
+        (ref.watch(favoriteIdsProvider).value ?? const <String>{}).contains(
+          sign.id,
+        );
+    final isDifficult =
+        (ref.watch(difficultIdsProvider).value ?? const <String>{}).contains(
+          sign.id,
+        );
     final isVocab = widget.module == ContentModule.vocabulary;
 
     Widget section(String title, String? body) {
@@ -146,7 +173,10 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Semantics(header: true, child: Text(title, style: theme.textTheme.titleSmall)),
+            Semantics(
+              header: true,
+              child: Text(title, style: theme.textTheme.titleSmall),
+            ),
             const SizedBox(height: AppSpacing.xs),
             Text(body, style: theme.textTheme.bodyLarge),
           ],
@@ -158,9 +188,15 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
       children: [
         if (index >= 0 && siblings.length > 1) ...[
           Text(
-            '${widget.module == ContentModule.alphabet ? 'Huruf' : widget.module == ContentModule.number ? 'Angka' : 'Materi'} '
+            '${widget.module == ContentModule.alphabet
+                ? 'Huruf'
+                : widget.module == ContentModule.number
+                ? 'Angka'
+                : 'Materi'} '
             '${index + 1} dari ${siblings.length}',
-            style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
           ),
           const SizedBox(height: AppSpacing.xs),
           LinearProgressIndicator(value: (index + 1) / siblings.length),
@@ -196,28 +232,47 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
           crossAxisAlignment: WrapCrossAlignment.center,
           children: [
             if (isVocab || sign.term != sign.displayTitle)
-              Semantics(header: isVocab, child: Text(sign.term, style: theme.textTheme.headlineSmall)),
+              Semantics(
+                header: isVocab,
+                child: Text(sign.term, style: theme.textTheme.headlineSmall),
+              ),
             if (isVocab) Chip(label: Text(sign.entryType.label)),
             if (sign.isPremium) const PremiumBadge(),
             if (learned)
               const Chip(
-                avatar: Icon(Icons.check_circle, color: AppColors.success, size: 18),
+                avatar: Icon(
+                  Icons.check_circle,
+                  color: AppColors.success,
+                  size: 18,
+                ),
                 label: Text('Sudah dipelajari'),
               ),
             if (sign.isSample) const SampleBadge(),
           ],
         ),
         if (sign.categoryName != null)
-          Text('Kategori: ${sign.categoryName}', style: theme.textTheme.bodyMedium),
+          Text(
+            'Kategori: ${sign.categoryName}',
+            style: theme.textTheme.bodyMedium,
+          ),
         if (!locked && sign.audioPath != null) ...[
           const SizedBox(height: AppSpacing.md),
-          Align(alignment: Alignment.centerLeft, child: AudioPlayButton(path: sign.audioPath!)),
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AudioPlayButton(path: sign.audioPath!),
+          ),
         ],
         section(isVocab ? 'Arti' : 'Keterangan', sign.meaning),
         section('Petunjuk gerakan tangan', sign.movementDescription),
         if (!locked && sign.imagePath != null) ...[
           const SizedBox(height: AppSpacing.lg),
-          Semantics(header: true, child: Text('Panduan visual gerakan', style: theme.textTheme.titleSmall)),
+          Semantics(
+            header: true,
+            child: Text(
+              'Panduan visual gerakan',
+              style: theme.textTheme.titleSmall,
+            ),
+          ),
           const SizedBox(height: AppSpacing.sm),
           ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.contentCard),
@@ -237,17 +292,27 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
             onPressed: _busy
                 ? null
                 : next != null
-                    ? () => _setLearned(true, thenGoTo: next)
-                    : _finishLearnMode,
-            icon: Icon(next != null ? Icons.arrow_forward_rounded : Icons.flag_circle_outlined),
+                ? () => _setLearned(true, thenGoTo: next)
+                : _finishLearnMode,
+            icon: Icon(
+              next != null
+                  ? Icons.arrow_forward_rounded
+                  : Icons.flag_circle_outlined,
+            ),
             label: Text(next != null ? 'Sudah paham, lanjut' : 'Selesai'),
           )
         else
           FilledButton.icon(
             onPressed: _busy ? null : () => _setLearned(!learned),
-            style: learned ? FilledButton.styleFrom(backgroundColor: AppColors.success) : null,
-            icon: Icon(learned ? Icons.check_circle : Icons.check_circle_outline),
-            label: Text(learned ? 'Sudah dipelajari' : 'Tandai sudah dipelajari'),
+            style: learned
+                ? FilledButton.styleFrom(backgroundColor: AppColors.success)
+                : null,
+            icon: Icon(
+              learned ? Icons.check_circle : Icons.check_circle_outline,
+            ),
+            label: Text(
+              learned ? 'Sudah dipelajari' : 'Tandai sudah dipelajari',
+            ),
           ),
         const SizedBox(height: AppSpacing.sm),
         Row(
@@ -256,7 +321,10 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
               child: OutlinedButton.icon(
                 onPressed: prev == null ? null : () => _goTo(prev),
                 icon: const Icon(Icons.chevron_left),
-                label: Text(prev == null ? 'Sebelumnya' : prev.displayTitle, overflow: TextOverflow.ellipsis),
+                label: Text(
+                  prev == null ? 'Sebelumnya' : prev.displayTitle,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -265,13 +333,20 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
                 onPressed: next == null ? null : () => _goTo(next),
                 iconAlignment: IconAlignment.end,
                 icon: const Icon(Icons.chevron_right),
-                label: Text(next == null ? 'Berikutnya' : next.displayTitle, overflow: TextOverflow.ellipsis),
+                label: Text(
+                  next == null ? 'Berikutnya' : next.displayTitle,
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ),
           ],
         ),
         const SizedBox(height: AppSpacing.lg),
-        SourceCard(sourceNote: sign.sourceNote, validatedBy: sign.validatedBy, verifiedAt: sign.verifiedAt),
+        SourceCard(
+          sourceNote: sign.sourceNote,
+          validatedBy: sign.validatedBy,
+          verifiedAt: sign.verifiedAt,
+        ),
         const SizedBox(height: AppSpacing.lg),
         Wrap(
           spacing: AppSpacing.sm,
@@ -280,9 +355,14 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
             OutlinedButton.icon(
               onPressed: () async {
                 try {
-                  final added = await ref.read(favoriteIdsProvider.notifier).toggle(sign.id);
+                  final added = await ref
+                      .read(favoriteIdsProvider.notifier)
+                      .toggle(sign.id);
                   if (context.mounted) {
-                    showAppSnackBar(context, added ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit');
+                    showAppSnackBar(
+                      context,
+                      added ? 'Ditambahkan ke favorit' : 'Dihapus dari favorit',
+                    );
                   }
                 } catch (error) {
                   if (context.mounted) showErrorSnackBar(context, error);
@@ -294,20 +374,33 @@ class _StudyBodyState extends ConsumerState<_StudyBody> {
             OutlinedButton.icon(
               onPressed: () async {
                 try {
-                  final marked = await ref.read(difficultIdsProvider.notifier).toggle(sign.id);
+                  final marked = await ref
+                      .read(difficultIdsProvider.notifier)
+                      .toggle(sign.id);
                   if (context.mounted) {
-                    showAppSnackBar(context, marked ? 'Ditambahkan ke daftar sulit' : 'Dihapus dari daftar sulit');
+                    showAppSnackBar(
+                      context,
+                      marked
+                          ? 'Ditambahkan ke daftar sulit'
+                          : 'Dihapus dari daftar sulit',
+                    );
                   }
                 } catch (error) {
                   if (context.mounted) showErrorSnackBar(context, error);
                 }
               },
               icon: Icon(isDifficult ? Icons.flag : Icons.flag_outlined),
-              label: Text(isDifficult ? 'Hapus dari daftar sulit' : 'Tandai Sulit'),
+              label: Text(
+                isDifficult ? 'Hapus dari daftar sulit' : 'Tandai Sulit',
+              ),
             ),
             OutlinedButton.icon(
               onPressed: () => context.push(
-                AppRoutes.newReport(type: ReportTargetType.sign.value, id: sign.id, title: sign.term),
+                AppRoutes.newReport(
+                  type: ReportTargetType.sign.value,
+                  id: sign.id,
+                  title: sign.term,
+                ),
               ),
               icon: const Icon(Icons.report_outlined),
               label: const Text('Laporkan'),

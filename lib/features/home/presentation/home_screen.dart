@@ -20,7 +20,9 @@ import '../../study/presentation/history_and_search_screens.dart';
 import '../../study/presentation/learn_module_grid.dart';
 
 /// Blok "Latihan ulang" Beranda: maks 5 kosakata `learning`.
-final homeReviewProvider = FutureProvider.autoDispose<List<DifficultItem>>((ref) {
+final homeReviewProvider = FutureProvider.autoDispose<List<DifficultItem>>((
+  ref,
+) {
   ref.watch(currentUserIdProvider);
   return ref
       .watch(difficultRepositoryProvider)
@@ -28,7 +30,9 @@ final homeReviewProvider = FutureProvider.autoDispose<List<DifficultItem>>((ref)
 });
 
 /// Rekomendasi: materi berikutnya yang belum dipelajari (alfabet → angka → kosakata).
-final homeRecommendationsProvider = FutureProvider.autoDispose<List<Sign>>((ref) async {
+final homeRecommendationsProvider = FutureProvider.autoDispose<List<Sign>>((
+  ref,
+) async {
   final learned = ref.watch(learnedIdsProvider);
   final out = <Sign>[];
   for (final module in ContentModule.values.reversed) {
@@ -57,7 +61,9 @@ class HomeScreen extends ConsumerWidget {
             onPressed: () => context.push(AppRoutes.search),
           ),
           IconButton(
-            tooltip: unread > 0 ? 'Notifikasi, $unread belum dibaca' : 'Notifikasi',
+            tooltip: unread > 0
+                ? 'Notifikasi, $unread belum dibaca'
+                : 'Notifikasi',
             icon: Badge(
               isLabelVisible: unread > 0,
               label: Text('$unread'),
@@ -94,8 +100,12 @@ class HomeScreen extends ConsumerWidget {
               ),
             ),
             const SizedBox(height: AppSpacing.xs),
-            Text('Ayo lanjutkan belajar isyarat hari ini.',
-                style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+            Text(
+              'Ayo lanjutkan belajar isyarat hari ini.',
+              style: theme.textTheme.bodyMedium?.copyWith(
+                color: AppColors.textSecondary,
+              ),
+            ),
             if (profile != null && !profile.isActive) ...[
               const SizedBox(height: AppSpacing.md),
               Container(
@@ -173,13 +183,17 @@ class _ContinueCard extends ConsumerWidget {
         child: history.when(
           loading: () => const SizedBox(
             height: 72,
-            child: Center(child: CircularProgressIndicator(color: Colors.white)),
+            child: Center(
+              child: CircularProgressIndicator(color: Colors.white),
+            ),
           ),
           error: (e, _) => DefaultTextStyle.merge(
             style: const TextStyle(color: Colors.white),
             child: Row(
               children: [
-                const Expanded(child: Text('Tidak dapat memuat materi terakhir.')),
+                const Expanded(
+                  child: Text('Tidak dapat memuat materi terakhir.'),
+                ),
                 TextButton(
                   style: TextButton.styleFrom(foregroundColor: Colors.white),
                   onPressed: () => ref.invalidate(learningHistoryProvider),
@@ -194,9 +208,17 @@ class _ContinueCard extends ConsumerWidget {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Mulai belajar', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
+                  Text(
+                    'Mulai belajar',
+                    style: theme.textTheme.titleLarge?.copyWith(
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: AppSpacing.xs),
-                  Text('Awali dengan mengenal huruf A–Z dalam BISINDO.', style: white),
+                  Text(
+                    'Awali dengan mengenal huruf A–Z dalam BISINDO.',
+                    style: white,
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   FilledButton.tonal(
                     onPressed: () => context.push(AppRoutes.alphabet),
@@ -208,12 +230,19 @@ class _ContinueCard extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Terakhir dipelajari · ${latest.moduleLabel}', style: white),
+                Text(
+                  'Terakhir dipelajari · ${latest.moduleLabel}',
+                  style: white,
+                ),
                 const SizedBox(height: AppSpacing.xs),
-                Text(latest.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
+                Text(
+                  latest.title,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.md),
                 Wrap(
                   spacing: AppSpacing.sm,
@@ -224,7 +253,9 @@ class _ContinueCard extends ConsumerWidget {
                       child: const Text('Lanjutkan'),
                     ),
                     TextButton(
-                      style: TextButton.styleFrom(foregroundColor: Colors.white),
+                      style: TextButton.styleFrom(
+                        foregroundColor: Colors.white,
+                      ),
                       onPressed: () => context.push(AppRoutes.history),
                       child: const Text('Riwayat belajar'),
                     ),
@@ -245,10 +276,26 @@ class _QuickGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <(IconData, String, VoidCallback)>[
-      (Icons.record_voice_over_outlined, 'Transkripsi', () => context.push(AppRoutes.transcribe)),
-      (Icons.flag_outlined, 'Kosakata Sulit', () => context.push(AppRoutes.difficult)),
-      (Icons.favorite_border, 'Favorit', () => context.push(AppRoutes.favorites)),
-      (Icons.history_edu_outlined, 'Riwayat Belajar', () => context.push(AppRoutes.history)),
+      (
+        Icons.record_voice_over_outlined,
+        'Transkripsi',
+        () => context.push(AppRoutes.transcribe),
+      ),
+      (
+        Icons.flag_outlined,
+        'Kosakata Sulit',
+        () => context.push(AppRoutes.difficult),
+      ),
+      (
+        Icons.favorite_border,
+        'Favorit',
+        () => context.push(AppRoutes.favorites),
+      ),
+      (
+        Icons.history_edu_outlined,
+        'Riwayat Belajar',
+        () => context.push(AppRoutes.history),
+      ),
     ];
     return GridView.builder(
       shrinkWrap: true,
@@ -273,13 +320,17 @@ class _QuickGrid extends StatelessWidget {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  ExcludeSemantics(child: Icon(icon, color: AppColors.primary, size: 28)),
+                  ExcludeSemantics(
+                    child: Icon(icon, color: AppColors.primary, size: 28),
+                  ),
                   const SizedBox(height: AppSpacing.xs),
-                  Text(label,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.labelLarge),
+                  Text(
+                    label,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
                 ],
               ),
             ),
@@ -300,7 +351,10 @@ class _SummaryBlock extends ConsumerWidget {
     final theme = Theme.of(context);
     return summary.when(
       loading: () => const LinearProgressIndicator(),
-      error: (e, _) => _BlockError(error: e, onRetry: () => ref.invalidate(progressSummaryProvider)),
+      error: (e, _) => _BlockError(
+        error: e,
+        onRetry: () => ref.invalidate(progressSummaryProvider),
+      ),
       data: (s) => Column(
         children: [
           Row(
@@ -308,7 +362,8 @@ class _SummaryBlock extends ConsumerWidget {
               Expanded(
                 child: _StatTile(
                   value: '${s.overallPercent}%',
-                  label: 'Materi dipelajari (${s.totalLearned}/${s.totalMaterials})',
+                  label:
+                      'Materi dipelajari (${s.totalLearned}/${s.totalMaterials})',
                   theme: theme,
                 ),
               ),
@@ -366,16 +421,14 @@ class _RecommendationBlock extends ConsumerWidget {
           children: [
             for (final s in recs)
               ActionChip(
-                avatar: Icon(
-                  switch (s.contentModule) {
-                    ContentModule.alphabet => Icons.abc_rounded,
-                    ContentModule.number => Icons.pin_outlined,
-                    ContentModule.vocabulary => Icons.menu_book_outlined,
-                  },
-                  size: 18,
-                ),
+                avatar: Icon(switch (s.contentModule) {
+                  ContentModule.alphabet => Icons.abc_rounded,
+                  ContentModule.number => Icons.pin_outlined,
+                  ContentModule.vocabulary => Icons.menu_book_outlined,
+                }, size: 18),
                 label: Text('${s.contentModule.label}: ${s.displayTitle}'),
-                onPressed: () => context.push(AppRoutes.study(s.contentModule, s.id)),
+                onPressed: () =>
+                    context.push(AppRoutes.study(s.contentModule, s.id)),
               ),
           ],
         ),
@@ -401,12 +454,22 @@ class _PremiumBlock extends ConsumerWidget {
         margin: EdgeInsets.zero,
         color: isPremium ? const Color(0xFFDCFCE7) : const Color(0xFFFFF4E0),
         child: ListTile(
-          leading: Icon(isPremium ? Icons.workspace_premium : Icons.lock_open_outlined,
-              color: isPremium ? AppColors.success : const Color(0xFF8A5300)),
-          title: Text(isPremium ? 'Akun Premium aktif' : (info?.title ?? 'Buka semua materi dengan Premium')),
-          subtitle: Text(isPremium
-              ? (status?.plan != null ? 'Paket ${status!.plan}' : 'Semua materi Premium terbuka.')
-              : 'Lihat informasi paket Premium.'),
+          leading: Icon(
+            isPremium ? Icons.workspace_premium : Icons.lock_open_outlined,
+            color: isPremium ? AppColors.success : const Color(0xFF8A5300),
+          ),
+          title: Text(
+            isPremium
+                ? 'Akun Premium aktif'
+                : (info?.title ?? 'Buka semua materi dengan Premium'),
+          ),
+          subtitle: Text(
+            isPremium
+                ? (status?.plan != null
+                      ? 'Paket ${status!.plan}'
+                      : 'Semua materi Premium terbuka.')
+                : 'Lihat informasi paket Premium.',
+          ),
           trailing: const Icon(Icons.chevron_right),
           onTap: () => context.push(AppRoutes.premium),
         ),
@@ -416,7 +479,11 @@ class _PremiumBlock extends ConsumerWidget {
 }
 
 class _StatTile extends StatelessWidget {
-  const _StatTile({required this.value, required this.label, required this.theme});
+  const _StatTile({
+    required this.value,
+    required this.label,
+    required this.theme,
+  });
   final String value;
   final String label;
   final ThemeData theme;
@@ -454,11 +521,16 @@ class _ReviewBlock extends ConsumerWidget {
     final review = ref.watch(homeReviewProvider);
     return review.when(
       loading: () => const LinearProgressIndicator(),
-      error: (e, _) => _BlockError(error: e, onRetry: () => ref.invalidate(homeReviewProvider)),
+      error: (e, _) => _BlockError(
+        error: e,
+        onRetry: () => ref.invalidate(homeReviewProvider),
+      ),
       data: (items) {
         final available = items.where((i) => i.sign != null).toList();
         if (available.isEmpty) {
-          return const Text('Belum ada kosakata sulit. Tandai dari halaman detail kosakata.');
+          return const Text(
+            'Belum ada kosakata sulit. Tandai dari halaman detail kosakata.',
+          );
         }
         return Wrap(
           spacing: AppSpacing.sm,
@@ -468,7 +540,8 @@ class _ReviewBlock extends ConsumerWidget {
               ActionChip(
                 avatar: const Icon(Icons.replay, size: 18),
                 label: Text(item.sign!.term),
-                onPressed: () => context.push(AppRoutes.difficultReview(item.signId)),
+                onPressed: () =>
+                    context.push(AppRoutes.difficultReview(item.signId)),
               ),
           ],
         );

@@ -34,15 +34,29 @@ void main() {
   });
 
   test('PremiumStatus & Announcement', () {
-    expect(PremiumStatus.fromJson({'is_premium': true, 'plan': 'P'}).isPremium, true);
-    final a = Announcement.fromJson({'id': 'a', 'title': 'T', 'body': 'B', 'published_at': '2026-10-30T00:00:00Z'}, isRead: true);
+    expect(
+      PremiumStatus.fromJson({'is_premium': true, 'plan': 'P'}).isPremium,
+      true,
+    );
+    final a = Announcement.fromJson({
+      'id': 'a',
+      'title': 'T',
+      'body': 'B',
+      'published_at': '2026-10-30T00:00:00Z',
+    }, isRead: true);
     expect(a.isRead, true);
   });
 
   group('Rute v1.1.0', () {
     test('rute belajar & mode belajar', () {
-      expect(AppRoutes.study(ContentModule.alphabet, 'abc'), '/study/alphabet/abc');
-      expect(AppRoutes.study(ContentModule.number, 'abc', learnMode: true), '/study/number/abc?mode=learn');
+      expect(
+        AppRoutes.study(ContentModule.alphabet, 'abc'),
+        '/study/alphabet/abc',
+      );
+      expect(
+        AppRoutes.study(ContentModule.number, 'abc', learnMode: true),
+        '/study/number/abc?mode=learn',
+      );
     });
 
     test('konfigurasi kuis bolak-balik lewat query', () {

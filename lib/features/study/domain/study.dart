@@ -30,7 +30,10 @@ class ProgressSummary {
     final quiz = optObject(json, 'quizzes') ?? const <String, dynamic>{};
     return ProgressSummary(
       modules: modules,
-      categories: optList(json, 'categories').map(CategoryProgress.fromJson).toList(),
+      categories: optList(
+        json,
+        'categories',
+      ).map(CategoryProgress.fromJson).toList(),
       conversationsTotal: optInt(conv, 'total'),
       conversationsCompleted: optInt(conv, 'completed'),
       quizSessions: optInt(quiz, 'sessions'),
@@ -55,8 +58,9 @@ class ProgressSummary {
   int get totalMaterials => modules.values.fold(0, (s, m) => s + m.total);
 
   /// Persentase keseluruhan 0–100.
-  int get overallPercent =>
-      totalMaterials == 0 ? 0 : ((totalLearned / totalMaterials) * 100).round().clamp(0, 100);
+  int get overallPercent => totalMaterials == 0
+      ? 0
+      : ((totalLearned / totalMaterials) * 100).round().clamp(0, 100);
 }
 
 class ModuleProgress {
@@ -76,11 +80,11 @@ class CategoryProgress {
   });
 
   factory CategoryProgress.fromJson(Json json) => CategoryProgress(
-        categoryId: reqString(json, 'category_id'),
-        name: optString(json, 'name') ?? '-',
-        total: optInt(json, 'total'),
-        learned: optInt(json, 'learned'),
-      );
+    categoryId: reqString(json, 'category_id'),
+    name: optString(json, 'name') ?? '-',
+    total: optInt(json, 'total'),
+    learned: optInt(json, 'learned'),
+  );
 
   final String categoryId;
   final String name;
@@ -103,16 +107,18 @@ class HistoryEntry {
   });
 
   factory HistoryEntry.fromJson(Json json) => HistoryEntry(
-        itemType: optString(json, 'item_type') ?? 'sign',
-        module: optString(json, 'module') ?? 'vocabulary',
-        itemId: reqString(json, 'item_id'),
-        title: optString(json, 'title') ?? '-',
-        symbol: optString(json, 'symbol'),
-        completed: optBool(json, 'completed'),
-        lastAccessedAt:
-            DateTime.tryParse(optString(json, 'last_accessed_at') ?? '')?.toLocal() ??
-                DateTime.fromMillisecondsSinceEpoch(0),
-      );
+    itemType: optString(json, 'item_type') ?? 'sign',
+    module: optString(json, 'module') ?? 'vocabulary',
+    itemId: reqString(json, 'item_id'),
+    title: optString(json, 'title') ?? '-',
+    symbol: optString(json, 'symbol'),
+    completed: optBool(json, 'completed'),
+    lastAccessedAt:
+        DateTime.tryParse(
+          optString(json, 'last_accessed_at') ?? '',
+        )?.toLocal() ??
+        DateTime.fromMillisecondsSinceEpoch(0),
+  );
 
   /// `sign`, `lesson`, atau `conversation`.
   final String itemType;
@@ -126,24 +132,28 @@ class HistoryEntry {
   final DateTime lastAccessedAt;
 
   String get moduleLabel => switch (module) {
-        'alphabet' => 'Alfabet',
-        'number' => 'Angka',
-        'vocabulary' => 'Kosakata',
-        'lesson' => 'Pelajaran',
-        'conversation' => 'Percakapan',
-        _ => module,
-      };
+    'alphabet' => 'Alfabet',
+    'number' => 'Angka',
+    'vocabulary' => 'Kosakata',
+    'lesson' => 'Pelajaran',
+    'conversation' => 'Percakapan',
+    _ => module,
+  };
 }
 
 /// Status progres satu materi milik pengguna (tabel `sign_progress`).
 class SignProgress {
-  const SignProgress({required this.signId, required this.learned, this.viewCount = 0});
+  const SignProgress({
+    required this.signId,
+    required this.learned,
+    this.viewCount = 0,
+  });
 
   factory SignProgress.fromJson(Json json) => SignProgress(
-        signId: reqString(json, 'sign_id'),
-        learned: json['learned_at'] != null || optBool(json, 'learned'),
-        viewCount: optInt(json, 'view_count'),
-      );
+    signId: reqString(json, 'sign_id'),
+    learned: json['learned_at'] != null || optBool(json, 'learned'),
+    viewCount: optInt(json, 'view_count'),
+  );
 
   final String signId;
   final bool learned;

@@ -17,15 +17,27 @@ void main() {
 
   test('ekstensi salah / terlalu besar / kosong ditolak', () {
     expect(validateMedia(file('a.mov', 10), MediaKind.video).error, isNotNull);
-    expect(validateMedia(file('a.mp4', kMaxMediaBytes + 1), MediaKind.video).error, isNotNull);
+    expect(
+      validateMedia(file('a.mp4', kMaxMediaBytes + 1), MediaKind.video).error,
+      isNotNull,
+    );
     expect(validateMedia(file('a.mp4', 0), MediaKind.video).error, isNotNull);
     expect(validateMedia(file('a.gif', 10), MediaKind.image).error, isNotNull);
-    expect(validateMedia(file('a.jpeg', 10), MediaKind.image).mime, 'image/jpeg');
+    expect(
+      validateMedia(file('a.jpeg', 10), MediaKind.image).mime,
+      'image/jpeg',
+    );
   });
 
   test('path objek huruf kecil, id aset, ekstensi sesuai MIME', () {
     expect(
-      mediaObjectPath(folder: 'signs', ownerId: 'S1', prefix: 'thumb', assetId: 'A1', extension: 'jpeg'),
+      mediaObjectPath(
+        folder: 'signs',
+        ownerId: 'S1',
+        prefix: 'thumb',
+        assetId: 'A1',
+        extension: 'jpeg',
+      ),
       'signs/S1/thumb-A1.jpg',
     );
   });

@@ -9,11 +9,11 @@ class Profile {
   });
 
   factory Profile.fromJson(Json json) => Profile(
-        id: reqString(json, 'id'),
-        fullName: optString(json, 'full_name') ?? 'Pengguna',
-        role: optString(json, 'role') ?? 'user',
-        isActive: optBool(json, 'is_active', true),
-      );
+    id: reqString(json, 'id'),
+    fullName: optString(json, 'full_name') ?? 'Pengguna',
+    role: optString(json, 'role') ?? 'user',
+    isActive: optBool(json, 'is_active', true),
+  );
 
   final String id;
   final String fullName;
@@ -26,6 +26,10 @@ class Profile {
 
   bool get isAdmin => role == 'admin';
 
-  Profile copyWith({String? fullName}) =>
-      Profile(id: id, fullName: fullName ?? this.fullName, role: role, isActive: isActive);
+  Profile copyWith({String? fullName}) => Profile(
+    id: id,
+    fullName: fullName ?? this.fullName,
+    role: role,
+    isActive: isActive,
+  );
 }

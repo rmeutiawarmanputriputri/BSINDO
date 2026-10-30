@@ -17,8 +17,10 @@ enum QuizType {
   bool get isSingleChoice =>
       this != QuizType.matchImage && this != QuizType.arrangeWord;
 
-  static QuizType parse(String? value) => QuizType.values
-      .firstWhere((t) => t.value == value, orElse: () => QuizType.multipleChoice);
+  static QuizType parse(String? value) => QuizType.values.firstWhere(
+    (t) => t.value == value,
+    orElse: () => QuizType.multipleChoice,
+  );
 }
 
 /// Modul kuis (kolom `questions.module`).
@@ -64,8 +66,10 @@ enum QuizMode {
   final String value;
   final String label;
 
-  static QuizMode parse(String? value) =>
-      QuizMode.values.firstWhere((m) => m.value == value, orElse: () => QuizMode.mixed);
+  static QuizMode parse(String? value) => QuizMode.values.firstWhere(
+    (m) => m.value == value,
+    orElse: () => QuizMode.mixed,
+  );
 }
 
 /// Konfigurasi sesi kuis (dikirim ke RPC `get_quiz_questions`).
@@ -87,18 +91,18 @@ class QuizConfig {
   final int limit;
 
   String get title => switch (mode) {
-        QuizMode.category => 'Kuis ${categoryName ?? module?.label ?? ''}'.trim(),
-        QuizMode.mixed => 'Kuis Campuran',
-        QuizMode.weak => 'Latihan Ulang',
-      };
+    QuizMode.category => 'Kuis ${categoryName ?? module?.label ?? ''}'.trim(),
+    QuizMode.mixed => 'Kuis Campuran',
+    QuizMode.weak => 'Latihan Ulang',
+  };
 
   Map<String, dynamic> toRpcParams() => {
-        'p_mode': mode.value,
-        'p_module': module?.value,
-        'p_category_id': categoryId,
-        'p_difficulty': difficulty?.value,
-        'p_limit': limit,
-      };
+    'p_mode': mode.value,
+    'p_module': module?.value,
+    'p_category_id': categoryId,
+    'p_difficulty': difficulty?.value,
+    'p_limit': limit,
+  };
 
   @override
   bool operator ==(Object other) =>
@@ -114,14 +118,19 @@ class QuizConfig {
 }
 
 class QuizOption {
-  const QuizOption({required this.id, required this.label, this.side, this.imagePath});
+  const QuizOption({
+    required this.id,
+    required this.label,
+    this.side,
+    this.imagePath,
+  });
 
   factory QuizOption.fromJson(Json json) => QuizOption(
-        id: reqString(json, 'id'),
-        label: optString(json, 'label') ?? '',
-        side: optString(json, 'side'),
-        imagePath: optString(json, 'image_path'),
-      );
+    id: reqString(json, 'id'),
+    label: optString(json, 'label') ?? '',
+    side: optString(json, 'side'),
+    imagePath: optString(json, 'image_path'),
+  );
 
   final String id;
   final String label;
@@ -146,16 +155,16 @@ class QuizQuestion {
   });
 
   factory QuizQuestion.fromJson(Json json) => QuizQuestion(
-        id: reqString(json, 'id'),
-        type: QuizType.parse(optString(json, 'question_type')),
-        prompt: optString(json, 'prompt') ?? '',
-        module: QuizModule.parse(optString(json, 'module')),
-        difficulty: QuizDifficulty.parse(optString(json, 'difficulty')),
-        videoPath: optString(json, 'video_path'),
-        imagePath: optString(json, 'image_path'),
-        isPremium: optBool(json, 'is_premium'),
-        options: optList(json, 'options').map(QuizOption.fromJson).toList(),
-      );
+    id: reqString(json, 'id'),
+    type: QuizType.parse(optString(json, 'question_type')),
+    prompt: optString(json, 'prompt') ?? '',
+    module: QuizModule.parse(optString(json, 'module')),
+    difficulty: QuizDifficulty.parse(optString(json, 'difficulty')),
+    videoPath: optString(json, 'video_path'),
+    imagePath: optString(json, 'image_path'),
+    isPremium: optBool(json, 'is_premium'),
+    options: optList(json, 'options').map(QuizOption.fromJson).toList(),
+  );
 
   final String id;
   final QuizType type;
@@ -167,8 +176,10 @@ class QuizQuestion {
   final String? imagePath;
   final bool isPremium;
 
-  List<QuizOption> get leftOptions => options.where((o) => o.side == 'left').toList();
-  List<QuizOption> get rightOptions => options.where((o) => o.side == 'right').toList();
+  List<QuizOption> get leftOptions =>
+      options.where((o) => o.side == 'left').toList();
+  List<QuizOption> get rightOptions =>
+      options.where((o) => o.side == 'right').toList();
 }
 
 /// Jawaban pengguna untuk satu soal.
@@ -201,7 +212,8 @@ class SequenceAnswer extends QuizAnswer {
 
   @override
   bool isCompleteFor(QuizQuestion q) =>
-      optionIds.length == q.options.length && optionIds.toSet().length == optionIds.length;
+      optionIds.length == q.options.length &&
+      optionIds.toSet().length == optionIds.length;
 }
 
 class PairsAnswer extends QuizAnswer {
@@ -212,10 +224,10 @@ class PairsAnswer extends QuizAnswer {
 
   @override
   Map<String, dynamic> toJson() => {
-        'pairs': [
-          for (final e in pairs.entries) {'left': e.key, 'right': e.value},
-        ],
-      };
+    'pairs': [
+      for (final e in pairs.entries) {'left': e.key, 'right': e.value},
+    ],
+  };
 
   @override
   bool isCompleteFor(QuizQuestion q) {
@@ -244,7 +256,9 @@ class QuizReveal {
       questionId: reqString(json, 'question_id'),
       isCorrect: optBool(json, 'is_correct'),
       correctOptionId: optString(json, 'correct_option_id'),
-      correctSequence: seq is List ? seq.whereType<String>().toList() : const [],
+      correctSequence: seq is List
+          ? seq.whereType<String>().toList()
+          : const [],
       correctPairs: pairs is List
           ? {
               for (final p in pairs.whereType<Map<String, dynamic>>())
@@ -275,12 +289,12 @@ class QuizSessionResult {
   });
 
   factory QuizSessionResult.fromJson(Json json) => QuizSessionResult(
-        sessionId: optString(json, 'session_id') ?? '',
-        scorePercent: optInt(json, 'score_percent'),
-        correctCount: optInt(json, 'correct_count'),
-        totalCount: optInt(json, 'total_count'),
-        details: optList(json, 'details').map(QuizReveal.fromJson).toList(),
-      );
+    sessionId: optString(json, 'session_id') ?? '',
+    scorePercent: optInt(json, 'score_percent'),
+    correctCount: optInt(json, 'correct_count'),
+    totalCount: optInt(json, 'total_count'),
+    details: optList(json, 'details').map(QuizReveal.fromJson).toList(),
+  );
 
   final String sessionId;
   final int scorePercent;
@@ -288,8 +302,10 @@ class QuizSessionResult {
   final int totalCount;
   final List<QuizReveal> details;
 
-  List<String> get wrongQuestionIds =>
-      [for (final d in details) if (!d.isCorrect) d.questionId];
+  List<String> get wrongQuestionIds => [
+    for (final d in details)
+      if (!d.isCorrect) d.questionId,
+  ];
 }
 
 /// Satu baris riwayat kuis (bank `quiz_sessions` atau kuis pelajaran lama).
@@ -317,7 +333,8 @@ class QuizHistoryEntry {
       scorePercent: optInt(json, 'score_percent'),
       correctCount: optInt(json, 'correct_count'),
       totalCount: optInt(json, 'total_count'),
-      submittedAt: DateTime.tryParse(optString(json, 'submitted_at') ?? '')?.toLocal() ??
+      submittedAt:
+          DateTime.tryParse(optString(json, 'submitted_at') ?? '')?.toLocal() ??
           DateTime.fromMillisecondsSinceEpoch(0),
     );
   }

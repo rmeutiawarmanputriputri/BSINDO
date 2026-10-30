@@ -14,10 +14,10 @@ import '../data/quiz_bank_repository.dart';
 import '../domain/quiz_bank.dart';
 
 /// Soal untuk satu konfigurasi (diambil acak oleh server; tanpa kunci).
-final quizQuestionsProvider =
-    FutureProvider.autoDispose.family<List<QuizQuestion>, QuizConfig>(
-  (ref, config) => ref.watch(quizBankRepositoryProvider).fetch(config),
-);
+final quizQuestionsProvider = FutureProvider.autoDispose
+    .family<List<QuizQuestion>, QuizConfig>(
+      (ref, config) => ref.watch(quizBankRepositoryProvider).fetch(config),
+    );
 
 class QuizPlayScreen extends ConsumerWidget {
   const QuizPlayScreen({super.key, required this.config});
@@ -35,7 +35,9 @@ class QuizPlayScreen extends ConsumerWidget {
         isEmpty: (l) => l.isEmpty,
         empty: EmptyView(
           icon: Icons.quiz_outlined,
-          title: config.mode == QuizMode.weak ? 'Belum ada soal untuk diulang' : 'Soal belum tersedia',
+          title: config.mode == QuizMode.weak
+              ? 'Belum ada soal untuk diulang'
+              : 'Soal belum tersedia',
           message: config.mode == QuizMode.weak
               ? 'Kerjakan kuis terlebih dahulu. Soal yang dijawab salah akan muncul di sini.'
               : 'Soal untuk pilihan ini sedang disiapkan. Coba pilihan lain.',
@@ -92,7 +94,9 @@ class _QuizSessionState extends ConsumerState<QuizSession> {
     }
     setState(() => _checking = true);
     try {
-      final reveal = await ref.read(quizBankRepositoryProvider).check(q.id, answer);
+      final reveal = await ref
+          .read(quizBankRepositoryProvider)
+          .check(q.id, answer);
       if (mounted) setState(() => _reveals[q.id] = reveal);
     } catch (error) {
       if (mounted) showErrorSnackBar(context, error);
@@ -162,24 +166,40 @@ class _QuizSessionState extends ConsumerState<QuizSession> {
           Row(
             children: [
               Expanded(
-                child: Text('Soal ${_index + 1} dari ${_questions.length}',
-                    style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+                child: Text(
+                  'Soal ${_index + 1} dari ${_questions.length}',
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ),
               Chip(label: Text(q.type.label)),
             ],
           ),
           LinearProgressIndicator(value: (_index + 1) / _questions.length),
           const SizedBox(height: AppSpacing.lg),
-          Semantics(header: true, child: Text(q.prompt, style: theme.textTheme.titleLarge)),
+          Semantics(
+            header: true,
+            child: Text(q.prompt, style: theme.textTheme.titleLarge),
+          ),
           const SizedBox(height: AppSpacing.md),
           if (q.videoPath != null) ...[
-            VideoPlayerView(key: ValueKey('v${q.id}'), videoPath: q.videoPath, semanticTitle: 'Video soal'),
+            VideoPlayerView(
+              key: ValueKey('v${q.id}'),
+              videoPath: q.videoPath,
+              semanticTitle: 'Video soal',
+            ),
             const SizedBox(height: AppSpacing.md),
           ],
           if (q.imagePath != null) ...[
             ClipRRect(
               borderRadius: BorderRadius.circular(AppRadius.contentCard),
-              child: SignedImage(path: q.imagePath!, fit: BoxFit.contain, aspectRatio: 4 / 3, semanticLabel: 'Gambar soal'),
+              child: SignedImage(
+                path: q.imagePath!,
+                fit: BoxFit.contain,
+                aspectRatio: 4 / 3,
+                semanticLabel: 'Gambar soal',
+              ),
             ),
             const SizedBox(height: AppSpacing.md),
           ],
@@ -187,23 +207,23 @@ class _QuizSessionState extends ConsumerState<QuizSession> {
             key: ValueKey('a${q.id}'),
             child: switch (q.type) {
               QuizType.arrangeWord => ArrangeAnswerView(
-                  question: q,
-                  answer: _answers[q.id] as SequenceAnswer?,
-                  reveal: reveal,
-                  onChanged: (a) => setState(() => _answers[q.id] = a),
-                ),
+                question: q,
+                answer: _answers[q.id] as SequenceAnswer?,
+                reveal: reveal,
+                onChanged: (a) => setState(() => _answers[q.id] = a),
+              ),
               QuizType.matchImage => MatchAnswerView(
-                  question: q,
-                  answer: _answers[q.id] as PairsAnswer?,
-                  reveal: reveal,
-                  onChanged: (a) => setState(() => _answers[q.id] = a),
-                ),
+                question: q,
+                answer: _answers[q.id] as PairsAnswer?,
+                reveal: reveal,
+                onChanged: (a) => setState(() => _answers[q.id] = a),
+              ),
               _ => ChoiceAnswerView(
-                  question: q,
-                  answer: _answers[q.id] as ChoiceAnswer?,
-                  reveal: reveal,
-                  onChanged: (a) => setState(() => _answers[q.id] = a),
-                ),
+                question: q,
+                answer: _answers[q.id] as ChoiceAnswer?,
+                reveal: reveal,
+                onChanged: (a) => setState(() => _answers[q.id] = a),
+              ),
             },
           ),
           if (reveal != null) ...[
@@ -215,7 +235,11 @@ class _QuizSessionState extends ConsumerState<QuizSession> {
             FilledButton(
               onPressed: _checking ? null : _check,
               child: _checking
-                  ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Text('Periksa jawaban'),
             )
           else
@@ -223,15 +247,27 @@ class _QuizSessionState extends ConsumerState<QuizSession> {
               onPressed: _submitting ? null : _next,
               iconAlignment: IconAlignment.end,
               icon: _submitting
-                  ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
                   : const Icon(Icons.arrow_forward_rounded),
-              label: Text(_index < _questions.length - 1 ? 'Soal berikutnya' : 'Lihat hasil'),
+              label: Text(
+                _index < _questions.length - 1
+                    ? 'Soal berikutnya'
+                    : 'Lihat hasil',
+              ),
             ),
           if (reveal == null) ...[
             const SizedBox(height: AppSpacing.sm),
             TextButton(
               onPressed: _submitting ? null : _next,
-              child: Text(_index < _questions.length - 1 ? 'Lewati soal' : 'Selesai & lihat hasil'),
+              child: Text(
+                _index < _questions.length - 1
+                    ? 'Lewati soal'
+                    : 'Selesai & lihat hasil',
+              ),
             ),
           ],
         ],
@@ -261,12 +297,19 @@ class _FeedbackBox extends StatelessWidget {
           children: [
             Row(
               children: [
-                Icon(ok ? Icons.check_circle : Icons.cancel, color: ok ? AppColors.success : AppColors.error),
+                Icon(
+                  ok ? Icons.check_circle : Icons.cancel,
+                  color: ok ? AppColors.success : AppColors.error,
+                ),
                 const SizedBox(width: AppSpacing.sm),
-                Text(ok ? 'Benar!' : 'Belum tepat', style: theme.textTheme.titleMedium),
+                Text(
+                  ok ? 'Benar!' : 'Belum tepat',
+                  style: theme.textTheme.titleMedium,
+                ),
               ],
             ),
-            if (reveal.explanation != null && reveal.explanation!.trim().isNotEmpty) ...[
+            if (reveal.explanation != null &&
+                reveal.explanation!.trim().isNotEmpty) ...[
               const SizedBox(height: AppSpacing.xs),
               Text('Pembahasan', style: theme.textTheme.labelLarge),
               Text(reveal.explanation!, style: theme.textTheme.bodyMedium),
@@ -307,10 +350,10 @@ class ChoiceAnswerView extends StatelessWidget {
             state: !locked
                 ? _OptState.normal
                 : o.id == reveal!.correctOptionId
-                    ? _OptState.correct
-                    : answer?.optionId == o.id
-                        ? _OptState.wrong
-                        : _OptState.normal,
+                ? _OptState.correct
+                : answer?.optionId == o.id
+                ? _OptState.wrong
+                : _OptState.normal,
             onTap: locked ? null : () => onChanged(ChoiceAnswer(o.id)),
           ),
       ],
@@ -321,7 +364,12 @@ class ChoiceAnswerView extends StatelessWidget {
 enum _OptState { normal, correct, wrong }
 
 class _OptionTile extends StatelessWidget {
-  const _OptionTile({required this.option, required this.selected, required this.state, this.onTap});
+  const _OptionTile({
+    required this.option,
+    required this.selected,
+    required this.state,
+    this.onTap,
+  });
   final QuizOption option;
   final bool selected;
   final _OptState state;
@@ -332,14 +380,20 @@ class _OptionTile extends StatelessWidget {
     final color = switch (state) {
       _OptState.correct => AppColors.success,
       _OptState.wrong => AppColors.error,
-      _OptState.normal => selected ? AppColors.primary : const Color(0xFFE2E8F0),
+      _OptState.normal =>
+        selected ? AppColors.primary : const Color(0xFFE2E8F0),
     };
     return Card(
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
-      color: selected || state != _OptState.normal ? color.withValues(alpha: 0.08) : AppColors.surface,
+      color: selected || state != _OptState.normal
+          ? color.withValues(alpha: 0.08)
+          : AppColors.surface,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(AppRadius.contentCard),
-        side: BorderSide(color: color, width: selected || state != _OptState.normal ? 2 : 1),
+        side: BorderSide(
+          color: color,
+          width: selected || state != _OptState.normal ? 2 : 1,
+        ),
       ),
       child: InkWell(
         borderRadius: BorderRadius.circular(AppRadius.contentCard),
@@ -347,7 +401,12 @@ class _OptionTile extends StatelessWidget {
         child: Semantics(
           selected: selected,
           button: true,
-          label: '${option.label}${state == _OptState.correct ? ', jawaban benar' : state == _OptState.wrong ? ', jawaban Anda salah' : ''}',
+          label:
+              '${option.label}${state == _OptState.correct
+                  ? ', jawaban benar'
+                  : state == _OptState.wrong
+                  ? ', jawaban Anda salah'
+                  : ''}',
           excludeSemantics: true,
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.md),
@@ -357,21 +416,32 @@ class _OptionTile extends StatelessWidget {
                   state == _OptState.correct
                       ? Icons.check_circle
                       : state == _OptState.wrong
-                          ? Icons.cancel
-                          : selected
-                              ? Icons.radio_button_checked
-                              : Icons.radio_button_unchecked,
-                  color: color == const Color(0xFFE2E8F0) ? AppColors.textSecondary : color,
+                      ? Icons.cancel
+                      : selected
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_unchecked,
+                  color: color == const Color(0xFFE2E8F0)
+                      ? AppColors.textSecondary
+                      : color,
                 ),
                 const SizedBox(width: AppSpacing.md),
                 if (option.imagePath != null) ...[
                   ClipRRect(
                     borderRadius: BorderRadius.circular(8),
-                    child: SizedBox(width: 72, height: 72, child: SignedImage(path: option.imagePath!)),
+                    child: SizedBox(
+                      width: 72,
+                      height: 72,
+                      child: SignedImage(path: option.imagePath!),
+                    ),
                   ),
                   const SizedBox(width: AppSpacing.md),
                 ],
-                Expanded(child: Text(option.label, style: Theme.of(context).textTheme.bodyLarge)),
+                Expanded(
+                  child: Text(
+                    option.label,
+                    style: Theme.of(context).textTheme.bodyLarge,
+                  ),
+                ),
               ],
             ),
           ),
@@ -417,7 +487,10 @@ class ArrangeAnswerView extends StatelessWidget {
             borderRadius: BorderRadius.circular(AppRadius.contentCard),
           ),
           child: chosen.isEmpty
-              ? Text('Ketuk ubin di bawah sesuai urutan.', style: theme.textTheme.bodyMedium)
+              ? Text(
+                  'Ketuk ubin di bawah sesuai urutan.',
+                  style: theme.textTheme.bodyMedium,
+                )
               : Wrap(
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
@@ -427,7 +500,9 @@ class ArrangeAnswerView extends StatelessWidget {
                         label: Text(byId[chosen[i]]?.label ?? '?'),
                         onPressed: locked
                             ? null
-                            : () => onChanged(SequenceAnswer([...chosen]..removeAt(i))),
+                            : () => onChanged(
+                                SequenceAnswer([...chosen]..removeAt(i)),
+                              ),
                       ),
                   ],
                 ),
@@ -440,14 +515,23 @@ class ArrangeAnswerView extends StatelessWidget {
             for (final o in pool)
               ActionChip(
                 label: Text(o.label, style: theme.textTheme.titleMedium),
-                onPressed: locked ? null : () => onChanged(SequenceAnswer([...chosen, o.id])),
+                onPressed: locked
+                    ? null
+                    : () => onChanged(SequenceAnswer([...chosen, o.id])),
               ),
           ],
         ),
-        if (locked && !reveal!.isCorrect && reveal!.correctSequence.isNotEmpty) ...[
+        if (locked &&
+            !reveal!.isCorrect &&
+            reveal!.correctSequence.isNotEmpty) ...[
           const SizedBox(height: AppSpacing.md),
-          Text('Urutan benar: ${reveal!.correctSequence.map((id) => byId[id]?.label ?? '?').join(' ')}',
-              style: theme.textTheme.bodyLarge?.copyWith(color: AppColors.success, fontWeight: FontWeight.w600)),
+          Text(
+            'Urutan benar: ${reveal!.correctSequence.map((id) => byId[id]?.label ?? '?').join(' ')}',
+            style: theme.textTheme.bodyLarge?.copyWith(
+              color: AppColors.success,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
         ],
       ],
     );
@@ -485,8 +569,8 @@ class MatchAnswerView extends StatelessWidget {
                 color: !locked
                     ? const Color(0xFFE2E8F0)
                     : reveal!.correctPairs[left.id] == pairs[left.id]
-                        ? AppColors.success
-                        : AppColors.error,
+                    ? AppColors.success
+                    : AppColors.error,
               ),
             ),
             child: Padding(
@@ -499,8 +583,14 @@ class MatchAnswerView extends StatelessWidget {
                       width: 96,
                       height: 96,
                       child: left.imagePath == null
-                          ? const ColoredBox(color: AppColors.inputFill, child: Icon(Icons.image_not_supported_outlined))
-                          : SignedImage(path: left.imagePath!, semanticLabel: 'Gambar ${i + 1}'),
+                          ? const ColoredBox(
+                              color: AppColors.inputFill,
+                              child: Icon(Icons.image_not_supported_outlined),
+                            )
+                          : SignedImage(
+                              path: left.imagePath!,
+                              semanticLabel: 'Gambar ${i + 1}',
+                            ),
                     ),
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -511,13 +601,18 @@ class MatchAnswerView extends StatelessWidget {
                         DropdownButtonFormField<String>(
                           initialValue: pairs[left.id],
                           isExpanded: true,
-                          decoration: InputDecoration(labelText: 'Arti gambar ${i + 1}'),
+                          decoration: InputDecoration(
+                            labelText: 'Arti gambar ${i + 1}',
+                          ),
                           items: [
                             for (final r in rights)
                               DropdownMenuItem(
                                 value: r.id,
                                 // Arti yang sudah dipakai gambar lain tetap terlihat (bisa ditukar).
-                                child: Text(r.label, overflow: TextOverflow.ellipsis),
+                                child: Text(
+                                  r.label,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
                           ],
                           onChanged: locked
@@ -525,17 +620,23 @@ class MatchAnswerView extends StatelessWidget {
                               : (v) {
                                   if (v == null) return;
                                   final next = Map<String, String>.from(pairs)
-                                    ..removeWhere((k, val) => val == v && k != left.id)
+                                    ..removeWhere(
+                                      (k, val) => val == v && k != left.id,
+                                    )
                                     ..[left.id] = v;
                                   onChanged(PairsAnswer(next));
                                 },
                         ),
-                        if (locked && reveal!.correctPairs[left.id] != pairs[left.id])
+                        if (locked &&
+                            reveal!.correctPairs[left.id] != pairs[left.id])
                           Padding(
                             padding: const EdgeInsets.only(top: 4),
                             child: Text(
                               'Benar: ${rights.where((r) => r.id == reveal!.correctPairs[left.id]).firstOrNull?.label ?? '-'}',
-                              style: const TextStyle(color: AppColors.success, fontWeight: FontWeight.w600),
+                              style: const TextStyle(
+                                color: AppColors.success,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
                           ),
                       ],
@@ -576,19 +677,33 @@ class _ResultView extends StatelessWidget {
           child: Column(
             children: [
               Icon(
-                result.scorePercent >= 70 ? Icons.emoji_events_rounded : Icons.auto_awesome_outlined,
+                result.scorePercent >= 70
+                    ? Icons.emoji_events_rounded
+                    : Icons.auto_awesome_outlined,
                 size: 64,
                 color: AppColors.accent,
               ),
               const SizedBox(height: AppSpacing.sm),
               Semantics(
                 liveRegion: true,
-                child: Text('${result.scorePercent}', style: theme.textTheme.displayMedium?.copyWith(
-                  fontWeight: FontWeight.w800, color: AppColors.primary)),
+                child: Text(
+                  '${result.scorePercent}',
+                  style: theme.textTheme.displayMedium?.copyWith(
+                    fontWeight: FontWeight.w800,
+                    color: AppColors.primary,
+                  ),
+                ),
               ),
-              Text('${result.correctCount} benar dari ${result.totalCount} soal', style: theme.textTheme.titleMedium),
+              Text(
+                '${result.correctCount} benar dari ${result.totalCount} soal',
+                style: theme.textTheme.titleMedium,
+              ),
               const SizedBox(height: AppSpacing.xs),
-              Text(quizFeedback(result.scorePercent), textAlign: TextAlign.center, style: theme.textTheme.bodyLarge),
+              Text(
+                quizFeedback(result.scorePercent),
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge,
+              ),
             ],
           ),
         ),
@@ -600,23 +715,40 @@ class _ResultView extends StatelessWidget {
             label: Text('Ulangi ${wrong.length} soal yang salah'),
           ),
         const SizedBox(height: AppSpacing.sm),
-        OutlinedButton.icon(onPressed: onAgain, icon: const Icon(Icons.refresh), label: const Text('Kuis baru')),
+        OutlinedButton.icon(
+          onPressed: onAgain,
+          icon: const Icon(Icons.refresh),
+          label: const Text('Kuis baru'),
+        ),
         const SizedBox(height: AppSpacing.sm),
-        TextButton(onPressed: () => context.pop(), child: const Text('Selesai')),
+        TextButton(
+          onPressed: () => context.pop(),
+          child: const Text('Selesai'),
+        ),
         const SizedBox(height: AppSpacing.lg),
-        Semantics(header: true, child: Text('Ringkasan & pembahasan', style: theme.textTheme.titleMedium)),
+        Semantics(
+          header: true,
+          child: Text(
+            'Ringkasan & pembahasan',
+            style: theme.textTheme.titleMedium,
+          ),
+        ),
         const SizedBox(height: AppSpacing.sm),
         for (final (i, d) in result.details.indexed)
           Card(
             margin: const EdgeInsets.only(bottom: AppSpacing.sm),
             child: ListTile(
-              leading: Icon(d.isCorrect ? Icons.check_circle : Icons.cancel,
-                  color: d.isCorrect ? AppColors.success : AppColors.error),
+              leading: Icon(
+                d.isCorrect ? Icons.check_circle : Icons.cancel,
+                color: d.isCorrect ? AppColors.success : AppColors.error,
+              ),
               title: Text('${i + 1}. ${byId[d.questionId]?.prompt ?? 'Soal'}'),
               subtitle: Text(
                 [
-                  if (!d.isCorrect && byId[d.questionId] != null) 'Jawaban benar: ${_correctText(byId[d.questionId]!, d)}',
-                  if (d.explanation != null && d.explanation!.isNotEmpty) d.explanation!,
+                  if (!d.isCorrect && byId[d.questionId] != null)
+                    'Jawaban benar: ${_correctText(byId[d.questionId]!, d)}',
+                  if (d.explanation != null && d.explanation!.isNotEmpty)
+                    d.explanation!,
                 ].join('\n').ifEmpty(d.isCorrect ? 'Benar' : 'Belum tepat'),
               ),
             ),
@@ -628,9 +760,13 @@ class _ResultView extends StatelessWidget {
   static String _correctText(QuizQuestion q, QuizReveal r) {
     final byId = {for (final o in q.options) o.id: o.label};
     if (r.correctOptionId != null) return byId[r.correctOptionId] ?? '-';
-    if (r.correctSequence.isNotEmpty) return r.correctSequence.map((id) => byId[id] ?? '?').join(' ');
+    if (r.correctSequence.isNotEmpty) {
+      return r.correctSequence.map((id) => byId[id] ?? '?').join(' ');
+    }
     if (r.correctPairs.isNotEmpty) {
-      return r.correctPairs.entries.map((e) => '${byId[e.key]} → ${byId[e.value]}').join(', ');
+      return r.correctPairs.entries
+          .map((e) => '${byId[e.key]} → ${byId[e.value]}')
+          .join(', ');
     }
     return '-';
   }

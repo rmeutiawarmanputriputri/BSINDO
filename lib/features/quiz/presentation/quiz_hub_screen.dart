@@ -29,7 +29,10 @@ class _QuizHubScreenState extends ConsumerState<QuizHubScreen> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final categories = ref.watch(signCategoriesProvider).value ?? const [];
-    final categoryName = categories.where((c) => c.id == _categoryId).firstOrNull?.name;
+    final categoryName = categories
+        .where((c) => c.id == _categoryId)
+        .firstOrNull
+        ?.name;
 
     return Scaffold(
       appBar: AppBar(
@@ -44,8 +47,12 @@ class _QuizHubScreenState extends ConsumerState<QuizHubScreen> {
       ),
       body: ContentListView(
         children: [
-          Text('Pilih jenis latihan. Jawaban dinilai langsung dan setiap soal punya pembahasan.',
-              style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+          Text(
+            'Pilih jenis latihan. Jawaban dinilai langsung dan setiap soal punya pembahasan.',
+            style: theme.textTheme.bodyMedium?.copyWith(
+              color: AppColors.textSecondary,
+            ),
+          ),
           const SectionHeader(title: 'Pengaturan'),
           Text('Tingkat kesulitan', style: theme.textTheme.labelLarge),
           const SizedBox(height: AppSpacing.xs),
@@ -100,22 +107,28 @@ class _QuizHubScreenState extends ConsumerState<QuizHubScreen> {
               isExpanded: true,
               decoration: const InputDecoration(labelText: 'Kategori kosakata'),
               items: [
-                const DropdownMenuItem<String?>(value: null, child: Text('Semua kategori')),
-                for (final c in categories) DropdownMenuItem<String?>(value: c.id, child: Text(c.name)),
+                const DropdownMenuItem<String?>(
+                  value: null,
+                  child: Text('Semua kategori'),
+                ),
+                for (final c in categories)
+                  DropdownMenuItem<String?>(value: c.id, child: Text(c.name)),
               ],
               onChanged: (v) => setState(() => _categoryId = v),
             ),
           ],
           const SizedBox(height: AppSpacing.sm),
           FilledButton.icon(
-            onPressed: () => _start(QuizConfig(
-              mode: QuizMode.category,
-              module: _module,
-              categoryId: _categoryId,
-              categoryName: categoryName,
-              difficulty: _difficulty,
-              limit: _limit,
-            )),
+            onPressed: () => _start(
+              QuizConfig(
+                mode: QuizMode.category,
+                module: _module,
+                categoryId: _categoryId,
+                categoryName: categoryName,
+                difficulty: _difficulty,
+                limit: _limit,
+              ),
+            ),
             icon: const Icon(Icons.play_arrow_rounded),
             label: Text('Mulai kuis ${categoryName ?? _module.label}'),
           ),
@@ -124,13 +137,26 @@ class _QuizHubScreenState extends ConsumerState<QuizHubScreen> {
             icon: Icons.shuffle_rounded,
             title: 'Kuis campuran',
             subtitle: 'Soal acak dari semua modul.',
-            onTap: () => _start(QuizConfig(mode: QuizMode.mixed, difficulty: _difficulty, limit: _limit)),
+            onTap: () => _start(
+              QuizConfig(
+                mode: QuizMode.mixed,
+                difficulty: _difficulty,
+                limit: _limit,
+              ),
+            ),
           ),
           _ModeCard(
             icon: Icons.replay_circle_filled_outlined,
             title: 'Latihan yang belum dikuasai',
-            subtitle: 'Soal yang terakhir dijawab salah dan kosakata yang Anda tandai sulit.',
-            onTap: () => _start(QuizConfig(mode: QuizMode.weak, difficulty: _difficulty, limit: _limit)),
+            subtitle:
+                'Soal yang terakhir dijawab salah dan kosakata yang Anda tandai sulit.',
+            onTap: () => _start(
+              QuizConfig(
+                mode: QuizMode.weak,
+                difficulty: _difficulty,
+                limit: _limit,
+              ),
+            ),
           ),
           _ModeCard(
             icon: Icons.history,
@@ -145,7 +171,12 @@ class _QuizHubScreenState extends ConsumerState<QuizHubScreen> {
 }
 
 class _ModeCard extends StatelessWidget {
-  const _ModeCard({required this.icon, required this.title, required this.subtitle, required this.onTap});
+  const _ModeCard({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
   final IconData icon;
   final String title;
   final String subtitle;
@@ -160,7 +191,10 @@ class _ModeCard extends StatelessWidget {
         side: const BorderSide(color: Color(0xFFE2E8F0)),
       ),
       child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg, vertical: AppSpacing.xs),
+        contentPadding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.lg,
+          vertical: AppSpacing.xs,
+        ),
         leading: CircleAvatar(
           backgroundColor: AppColors.primary.withValues(alpha: 0.1),
           child: Icon(icon, color: AppColors.primary),

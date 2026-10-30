@@ -35,19 +35,29 @@ class QuizHistoryScreen extends ConsumerWidget {
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: (e.scorePercent >= 70 ? AppColors.success : AppColors.warning)
-                          .withValues(alpha: 0.12),
-                      child: Text('${e.scorePercent}',
-                          style: TextStyle(
-                            fontWeight: FontWeight.w700,
-                            color: e.scorePercent >= 70 ? AppColors.success : AppColors.warning,
-                          )),
+                      backgroundColor:
+                          (e.scorePercent >= 70
+                                  ? AppColors.success
+                                  : AppColors.warning)
+                              .withValues(alpha: 0.12),
+                      child: Text(
+                        '${e.scorePercent}',
+                        style: TextStyle(
+                          fontWeight: FontWeight.w700,
+                          color: e.scorePercent >= 70
+                              ? AppColors.success
+                              : AppColors.warning,
+                        ),
+                      ),
                     ),
                     title: Text(e.title),
-                    subtitle: Text([
-                      formatDateTimeId(e.submittedAt),
-                      if (e.totalCount != null) '${e.correctCount}/${e.totalCount} benar',
-                    ].join(' · ')),
+                    subtitle: Text(
+                      [
+                        formatDateTimeId(e.submittedAt),
+                        if (e.totalCount != null)
+                          '${e.correctCount}/${e.totalCount} benar',
+                      ].join(' · '),
+                    ),
                   ),
                 ),
             ],

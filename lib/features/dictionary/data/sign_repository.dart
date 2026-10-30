@@ -24,12 +24,11 @@ class DictionaryQuery {
     String? text,
     String? Function()? categoryId,
     SignEntryType? Function()? entryType,
-  }) =>
-      DictionaryQuery(
-        text: text ?? this.text,
-        categoryId: categoryId != null ? categoryId() : this.categoryId,
-        entryType: entryType != null ? entryType() : this.entryType,
-      );
+  }) => DictionaryQuery(
+    text: text ?? this.text,
+    categoryId: categoryId != null ? categoryId() : this.categoryId,
+    entryType: entryType != null ? entryType() : this.entryType,
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -82,13 +81,13 @@ class SupabaseSignRepository implements SignRepository {
 
   @override
   Future<Sign> getById(String id) => guardRequest(() async {
-        final row = await _client
-            .from('signs')
-            .select(Sign.selectColumns)
-            .eq('id', id)
-            .single();
-        return Sign.fromJson(row);
-      });
+    final row = await _client
+        .from('signs')
+        .select(Sign.selectColumns)
+        .eq('id', id)
+        .single();
+    return Sign.fromJson(row);
+  });
 
   @override
   Future<List<Category>> categories({String kind = 'sign'}) =>

@@ -24,7 +24,8 @@ class SupabaseStudyRepository implements StudyRepository {
   final SupabaseClient _client;
 
   @override
-  Future<List<Sign>> listByModule(ContentModule module) => guardRequest(() async {
+  Future<List<Sign>> listByModule(ContentModule module) =>
+      guardRequest(() async {
         final data = await _client
             .from('signs')
             .select(Sign.selectColumns)
@@ -40,8 +41,12 @@ class SupabaseStudyRepository implements StudyRepository {
             final ga = a.numberGroup?.index ?? 99;
             final gb = b.numberGroup?.index ?? 99;
             if (ga != gb) return ga.compareTo(gb);
-            if (a.sortOrder != b.sortOrder) return a.sortOrder.compareTo(b.sortOrder);
-            return (num.tryParse(a.symbol ?? '') ?? 0).compareTo(num.tryParse(b.symbol ?? '') ?? 0);
+            if (a.sortOrder != b.sortOrder) {
+              return a.sortOrder.compareTo(b.sortOrder);
+            }
+            return (num.tryParse(a.symbol ?? '') ?? 0).compareTo(
+              num.tryParse(b.symbol ?? '') ?? 0,
+            );
           });
         }
         return list;
@@ -49,31 +54,32 @@ class SupabaseStudyRepository implements StudyRepository {
 
   @override
   Future<Map<String, SignProgress>> myProgress() => guardRequest(() async {
-        final data = await _client
-            .from('sign_progress')
-            .select('sign_id, learned_at, view_count')
-            .limit(5000);
-        return {for (final p in rows(data).map(SignProgress.fromJson)) p.signId: p};
-      });
+    final data = await _client
+        .from('sign_progress')
+        .select('sign_id, learned_at, view_count')
+        .limit(5000);
+    return {for (final p in rows(data).map(SignProgress.fromJson)) p.signId: p};
+  });
 
   @override
   Future<SignProgress> recordView(String signId, {bool? learned}) =>
       guardRequest(() async {
-        final result = await _client.rpc('record_sign_view', params: {
-          'p_sign_id': signId,
-          'p_learned': learned,
-        });
+        final result = await _client.rpc(
+          'record_sign_view',
+          params: {'p_sign_id': signId, 'p_learned': learned},
+        );
         return SignProgress.fromJson(Map<String, dynamic>.from(result as Map));
       });
 
   @override
   Future<ProgressSummary> summary() => guardRequest(() async {
-        final result = await _client.rpc('my_progress_summary');
-        return ProgressSummary.fromJson(Map<String, dynamic>.from(result as Map));
-      });
+    final result = await _client.rpc('my_progress_summary');
+    return ProgressSummary.fromJson(Map<String, dynamic>.from(result as Map));
+  });
 
   @override
-  Future<List<HistoryEntry>> history({int limit = 30}) => guardRequest(() async {
+  Future<List<HistoryEntry>> history({int limit = 30}) =>
+      guardRequest(() async {
         final data = await _client
             .from('my_learning_history')
             .select()
@@ -83,18 +89,26 @@ class SupabaseStudyRepository implements StudyRepository {
       });
 
   @override
-  Future<List<Sign>> searchAll(String text, {int limit = 30}) => guardRequest(() async {
-        final escaped = text.replaceAll(RegExp(r'[\\%_,()]'), ' ').trim().toLowerCase();
-        if (escaped.isEmpty) return const <Sign>[];
-        final data = await _client
-            .from('signs')
-            .select(Sign.selectColumns)
-            .eq('status', 'published')
-            .or('term_normalized.ilike.%$escaped%,symbol.ilike.%$escaped%,meaning.ilike.%$escaped%')
-            .order('term_normalized', ascending: true)
-            .limit(limit);
-        return rows(data).map(Sign.fromJson).toList();
-      });
+  Future<List<Sign>> searchAll(
+    String text, {
+    int limit = 30,
+  }) => guardRequest(() async {
+    final escaped = text
+        .replaceAll(RegExp(r'[\\%_,()]'), ' ')
+        .trim()
+        .toLowerCase();
+    if (escaped.isEmpty) return const <Sign>[];
+    final data = await _client
+        .from('signs')
+        .select(Sign.selectColumns)
+        .eq('status', 'published')
+        .or(
+          'term_normalized.ilike.%$escaped%,symbol.ilike.%$escaped%,meaning.ilike.%$escaped%',
+        )
+        .order('term_normalized', ascending: true)
+        .limit(limit);
+    return rows(data).map(Sign.fromJson).toList();
+  });
 }
 
 final studyRepositoryProvider = Provider<StudyRepository>(
@@ -103,7 +117,10 @@ final studyRepositoryProvider = Provider<StudyRepository>(
 
 /// Daftar materi per modul. Tidak autoDispose: materi yang sudah dibuka tetap
 /// tersedia selama aplikasi berjalan (cache sesi, juga saat koneksi putus).
-final studyListProvider = FutureProvider.family<List<Sign>, ContentModule>((ref, module) {
+final studyListProvider = FutureProvider.family<List<Sign>, ContentModule>((
+  ref,
+  module,
+) {
   ref.watch(currentUserIdProvider);
   return ref.watch(studyRepositoryProvider).listByModule(module);
 });
@@ -130,7 +147,9 @@ class SignProgressNotifier extends AsyncNotifier<Map<String, SignProgress>> {
 
   /// Tandai/batalkan "sudah dipelajari". Melempar error agar UI bisa memberi tahu.
   Future<bool> setLearned(String signId, bool learned) async {
-    final p = await ref.read(studyRepositoryProvider).recordView(signId, learned: learned);
+    final p = await ref
+        .read(studyRepositoryProvider)
+        .recordView(signId, learned: learned);
     if (ref.mounted) {
       state = AsyncData({...?state.value, signId: p});
       ref.invalidate(progressSummaryProvider);
@@ -142,21 +161,28 @@ class SignProgressNotifier extends AsyncNotifier<Map<String, SignProgress>> {
 
 final signProgressProvider =
     AsyncNotifierProvider<SignProgressNotifier, Map<String, SignProgress>>(
-  SignProgressNotifier.new,
-);
+      SignProgressNotifier.new,
+    );
 
 /// Id materi yang sudah dipelajari.
 final learnedIdsProvider = Provider<Set<String>>((ref) {
   final map = ref.watch(signProgressProvider).value ?? const {};
-  return {for (final e in map.entries) if (e.value.learned) e.key};
+  return {
+    for (final e in map.entries)
+      if (e.value.learned) e.key,
+  };
 });
 
-final progressSummaryProvider = FutureProvider.autoDispose<ProgressSummary>((ref) {
+final progressSummaryProvider = FutureProvider.autoDispose<ProgressSummary>((
+  ref,
+) {
   ref.watch(currentUserIdProvider);
   return ref.watch(studyRepositoryProvider).summary();
 });
 
-final learningHistoryProvider = FutureProvider.autoDispose<List<HistoryEntry>>((ref) {
+final learningHistoryProvider = FutureProvider.autoDispose<List<HistoryEntry>>((
+  ref,
+) {
   ref.watch(currentUserIdProvider);
   return ref.watch(studyRepositoryProvider).history();
 });
