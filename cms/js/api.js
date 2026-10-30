@@ -106,11 +106,15 @@ export const invalidateCategories = () => { catCache = null; };
 
 // ------------------------------------------------------------------ media
 export const MEDIA_RULES = {
-  video: { mimes: ['video/mp4', 'video/webm'], ext: ['mp4', 'webm'], label: 'Video (MP4/WebM)' },
+  video: { mimes: ['video/mp4', 'video/webm', 'image/gif'], ext: ['mp4', 'webm', 'gif'], label: 'Video/Animasi (MP4/WebM/GIF)' },
   audio: { mimes: ['audio/mpeg', 'audio/mp4', 'audio/aac', 'audio/x-m4a'], ext: ['mp3', 'm4a', 'aac', 'mp4'], label: 'Audio (MP3/M4A/AAC)' },
-  image: { mimes: ['image/jpeg', 'image/png', 'image/webp'], ext: ['jpg', 'jpeg', 'png', 'webp'], label: 'Gambar (JPG/PNG/WebP)' },
+  image: { mimes: ['image/jpeg', 'image/png', 'image/webp', 'image/gif'], ext: ['jpg', 'jpeg', 'png', 'webp', 'gif'], label: 'Gambar (JPG/PNG/WebP/GIF)' },
 };
-const EXT_MIME = { mp4: null, webm: 'video/webm', mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp' };
+const EXT_MIME = { mp4: null, webm: 'video/webm', mp3: 'audio/mpeg', m4a: 'audio/mp4', aac: 'audio/aac', jpg: 'image/jpeg', jpeg: 'image/jpeg', png: 'image/png', webp: 'image/webp', gif: 'image/gif' };
+
+/** GIF diperlakukan sebagai gambar bergerak (diputar dengan <img>). */
+export const isGif = (x) => !!x && ((x.mime_type || x.type || '').toLowerCase() === 'image/gif'
+  || /\.gif$/i.test(x.path || x.name || ''));
 
 /** MIME yang dipakai + validasi format/ukuran. Melempar Error berpesan jelas. */
 export async function validateMediaFile(file, kind) {
@@ -140,7 +144,7 @@ export function probeMedia(file, kind) {
     const url = URL.createObjectURL(file);
     const done = (v) => { URL.revokeObjectURL(url); resolve(v); };
     const timer = setTimeout(() => done({ playable: false }), 15000);
-    if (kind === 'image') {
+    if (kind === 'image' || isGif(file)) {
       const img = new Image();
       img.onload = () => { clearTimeout(timer); done({ width: img.naturalWidth, height: img.naturalHeight, playable: true }); };
       img.onerror = () => { clearTimeout(timer); done({ playable: false }); };

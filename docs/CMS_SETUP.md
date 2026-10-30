@@ -85,15 +85,18 @@ index.html  config.js  css/  js/  vendor/  assets/  (_headers atau .htaccess)
 | Hosting | Langkah |
 |---|---|
 | Netlify / Cloudflare Pages | Folder publikasi `cms`. `_headers` sudah berisi header keamanan (CSP, X-Frame-Options, noindex) |
-| cPanel / Apache | Unggah ke subfolder, misalnya `public_html/cms-bisindo/`. `.htaccess` menolak listing folder dan berkas sensitif |
+| cPanel / Apache / **hosting PHP** | Unggah ke subfolder, misalnya `public_html/cms-bisindo/`. `.htaccess` menolak listing folder dan berkas sensitif. CMS tidak butuh kode PHP: hosting PHP biasa cukup menyajikan file-nya, dan keamanan dijaga di database Supabase (RLS + RPC admin), sehingga tidak ada kunci rahasia di server |
 | Nginx | Sajikan folder statis, lalu salin header dari `_headers` ke blok `add_header` |
 
 Wajib **HTTPS**. Disarankan juga membatasi akses URL CMS (Basic Auth hosting / IP allowlist) sebagai lapisan tambahan. Lapisan utama tetap RLS.
 
-## 6. Media (video & audio)
+## 6. Media (video, animasi GIF & audio)
 
 - Bucket `bisindo-media` bersifat **privat**. Aplikasi dan CMS memutar media lewat *signed URL* yang berlaku 1 jam.
-- Format untuk Android: **MP4 (H.264 + AAC)** atau WebM untuk video, **MP3 / M4A / AAC** untuk audio, JPG / PNG / WebP untuk gambar.
+- Format untuk Android: **MP4 (H.264 + AAC)**, WebM, atau **GIF** untuk video/animasi gerakan; **MP3 / M4A / AAC** untuk audio; JPG / PNG / WebP / GIF untuk gambar.
+- Animasi GIF bisa diputar ulang di aplikasi, tetapi tombol perlambat (0,5×/0,75×) hanya tersedia untuk MP4/WebM. Bila butuh slow motion, unggah versi MP4 (`ffmpeg -i anim.gif -movflags +faststart -pix_fmt yuv420p -vf "scale=trunc(iw/2)*2:trunc(ih/2)*2" anim.mp4`).
+- Setiap media punya **judul/identitas** (mis. "Huruf A – animasi utama"). Bila judul dikosongkan, server mengisinya dari nama berkas.
+- Standar animasi (daftar fitur bagian J) — periksa sebelum unggah: satu karakter utama yang konsisten (wajah, rambut, pakaian, warna kulit, proporsi), latar & framing seragam, tangan dan jari terlihat jelas, gerakan sesuai referensi BISINDO yang sudah diverifikasi. Video/animasi **bukan buatan AI**; CMS hanya menyimpan dan memutar berkas yang Anda unggah.
 - Batas ukuran per jenis diatur di CMS → **Pengaturan** (default video 50 MB, audio 20 MB, gambar 5 MB). Batas keras bucket 50 MB. Paket gratis Supabase juga membatasi 50 MB per berkas.
 - Saran kompresi video sebelum unggah: `ffmpeg -i in.mov -vf scale=-2:720 -c:v libx264 -crf 26 -preset slow -c:a aac -b:a 96k -movflags +faststart out.mp4`
 - Hapus media: CMS menampilkan daftar materi yang memakainya. Materi Published yang mewajibkan media itu **tidak bisa** dilepas; server menolak.

@@ -123,6 +123,18 @@ try {
     await page.reload(); await page.waitForLoadState('networkidle');
   });
 
+  await step('CMS-14', 'Unggah animasi GIF sebagai Video/Animasi → tersimpan image/gif, pratinjau gambar', async () => {
+    await uploadVia('+ Video/Animasi', path.join(MEDIA, 'TEST_anim.gif'), 'TEST animasi GIF');
+    await page.locator('#toasts', { hasText: 'Media berhasil diunggah' }).last().waitFor();
+    await page.waitForTimeout(500);
+    const r = await q1(`select kind::text k, mime_type m from media_assets where title = 'TEST animasi GIF'`);
+    assert(r && r.k === 'video' && r.m === 'image/gif', JSON.stringify(r));
+    await page.locator('.media-card', { hasText: 'TEST animasi GIF' }).getByRole('button', { name: 'Putar' }).click();
+    await modalEl().locator('img').waitFor();
+    assert(await modalEl().locator('video').count() === 0, 'GIF tidak boleh diputar dengan <video>');
+    await modalEl().getByRole('button', { name: 'Tutup' }).click();
+  });
+
   // -------------------------------------------------------------- alfabet
   await step('CMS-20', 'Alfabet: publish tanpa video ditolak, kekurangan ditampilkan', async () => {
     await go('alphabet/new');
@@ -130,12 +142,14 @@ try {
     await page.getByRole('button', { name: 'Simpan & Publikasikan' }).click();
     await page.getByText('Video gerakan wajib diunggah').waitFor();
     await page.getByText('Nama validator wajib diisi').waitFor();
+    await page.getByText('Penjelasan gerakan wajib diisi').waitFor();
     const r = await q1(`select status::text s from signs where symbol = 'Q'`);
     assert(r.s === 'draft', 'harus tersimpan draft');
     await page.screenshot({ path: path.join(OUT, '02_publish_blocked.png'), fullPage: true });
   });
   await step('CMS-21', 'Alfabet: pilih video dari Media + lengkapi → Published', async () => {
-    const vid = page.locator('label.field', { hasText: 'Video gerakan' });
+    const vid = page.locator('label.field', { hasText: 'Video/animasi gerakan' });
+    await page.getByLabel('Penjelasan gerakan tangan').fill('TEST penjelasan');
     await vid.getByRole('button', { name: 'Pilih' }).click();
     await modalEl().locator('.media-card', { hasText: 'TEST video A' }).click();
     await page.getByLabel('Sumber materi').fill('TEST sumber');
@@ -154,7 +168,7 @@ try {
     await page.getByLabel('Nama materi / kosakata').fill('TEST_KATA');
     await page.getByLabel(/^Kategori/).selectOption({ label: 'Keluarga' });
     await page.getByLabel(/^Arti/).fill('TEST arti');
-    for (const [label, title] of [['Video gerakan', 'TEST video A'], ['Gambar panduan visual gerakan', 'TEST gambar 1'], ['Audio / voice', 'TEST audio']]) {
+    for (const [label, title] of [['Video/animasi gerakan', 'TEST video A'], ['Gambar panduan visual gerakan', 'TEST gambar 1'], ['Audio / voice', 'TEST audio']]) {
       await page.locator('label.field', { hasText: label }).getByRole('button', { name: 'Pilih' }).click();
       await modalEl().locator('.media-card', { hasText: title }).click();
     }
@@ -215,13 +229,35 @@ try {
     assert((await q1(`select status::text s from conversation_modules where title='TEST Topik'`)).s === 'published', 'status');
   });
 
+  await step('CMS-32', 'Percakapan: pecah kalimat menjadi bagian (kosakata + teks/arti) tersimpan berurutan', async () => {
+    await page.locator('tr', { hasText: 'TEST Topik' }).getByRole('button', { name: 'Ubah' }).click();
+    const item = page.locator('.list-editor .item').nth(0);
+    await item.getByRole('button', { name: '+ Tambah bagian' }).click();
+    await item.getByRole('button', { name: '+ Tambah bagian' }).click();
+    await item.getByLabel('Kosakata').nth(0).selectOption({ label: 'TEST_KATA' });
+    await item.getByLabel('Teks bagian').nth(1).fill('TEST bagian');
+    await item.getByLabel('Arti bagian').nth(1).fill('TEST arti bagian');
+    await page.getByRole('button', { name: 'Simpan perubahan' }).click();
+    await page.getByRole('heading', { name: 'Percakapan', exact: true }).waitFor();
+    const rows = (await db.query(`select p.position, s.term, p.part_text, p.meaning from conversation_item_parts p
+        join conversation_items i on i.id = p.item_id join conversation_modules m on m.id = i.module_id
+        left join signs s on s.id = p.sign_id where m.title = 'TEST Topik' and i.position = 0 order by p.position`)).rows;
+    assert(rows.length === 2 && rows[0].term === 'TEST_KATA' && rows[1].part_text === 'TEST bagian'
+           && rows[1].meaning === 'TEST arti bagian', JSON.stringify(rows));
+    await page.locator('tr', { hasText: 'TEST Topik' }).getByRole('button', { name: 'Ubah' }).click();
+    await page.locator('.list-editor .item').nth(0).locator('.part-row').nth(1).waitFor();
+    assert(await page.locator('.list-editor .item').nth(0).locator('.part-row').count() === 2, 'bagian tidak termuat ulang');
+    assert(await page.locator('.list-editor .item').nth(0).getByLabel('Teks bagian').nth(1).inputValue() === 'TEST bagian', 'isi bagian');
+    await page.screenshot({ path: path.join(OUT, '08_conversation_parts.png'), fullPage: true });
+  });
+
   // -------------------------------------------------------------- kuis
   await step('CMS-40', 'Kuis: pilihan ganda tebak huruf → Published, kunci tersimpan', async () => {
     await go('quiz/new');
     await page.getByLabel('Jenis soal').selectOption('guess_letter');
     await page.getByLabel('Modul').selectOption('alphabet');
     await page.getByLabel('Pertanyaan').fill('TEST huruf apa ini?');
-    await page.locator('label.field', { hasText: 'Video soal' }).getByRole('button', { name: 'Pilih' }).click();
+    await page.locator('label.field', { hasText: 'Video/animasi soal' }).getByRole('button', { name: 'Pilih' }).click();
     await modalEl().locator('.media-card', { hasText: 'TEST video A' }).click();
     await page.getByLabel('Pilihan 1').fill('TEST_P'); await page.getByLabel('Pilihan 2').fill('TEST_Q');
     await page.locator('.list-editor .item').nth(1).getByLabel('Jawaban benar').check();
@@ -256,6 +292,21 @@ try {
   });
 
   // -------------------------------------------------------------- media dipakai
+  await step('CMS-42', 'Kuis: soal percakapan terkait topik (pilihan topik hanya untuk modul Percakapan)', async () => {
+    await go('quiz/new');
+    const topic = page.locator('label.field', { hasText: 'Topik percakapan' });
+    assert(!(await topic.isVisible()), 'pilihan topik tampil untuk modul non-percakapan');
+    await page.getByLabel('Modul').selectOption('conversation');
+    await topic.waitFor();
+    await page.getByLabel('Topik percakapan').selectOption({ label: 'TEST Topik' });
+    await page.getByLabel('Pertanyaan').fill('TEST soal topik?');
+    await page.getByLabel('Pilihan 1').fill('TEST_A'); await page.getByLabel('Pilihan 2').fill('TEST_B');
+    await page.getByRole('button', { name: 'Simpan & Publikasikan' }).click();
+    await page.getByRole('heading', { name: 'Kuis', exact: true }).waitFor();
+    const r = await q1(`select q.status::text s, m.title from questions q join conversation_modules m on m.id = q.conversation_module_id
+                        where q.prompt = 'TEST soal topik?'`);
+    assert(r && r.s === 'published' && r.title === 'TEST Topik', JSON.stringify(r));
+  });
   await step('CMS-50', 'Hapus media yang dipakai → peringatan + daftar pemakaian; batal', async () => {
     await go('media');
     const card = page.locator('.media-card', { hasText: 'TEST video A' });
@@ -415,6 +466,16 @@ try {
     await page.getByRole('button', { name: 'Simpan', exact: true }).click();
     await page.locator('#toasts', { hasText: 'Batas media disimpan' }).waitFor();
     assert((await q1(`select (value->>'audio_max_mb')::int n from app_settings where key='media_limits'`)).n === 15, 'setting');
+  });
+  await step('CMS-94', 'Konten beranda: teks perkenalan & bagian beranda tersimpan', async () => {
+    await go('settings');
+    await page.getByLabel('Judul banner perkenalan').fill('TEST judul');
+    await page.getByLabel('Rekomendasi materi').uncheck();
+    await page.getByRole('button', { name: 'Simpan konten beranda' }).click();
+    await page.locator('#toasts', { hasText: 'Konten beranda disimpan' }).waitFor();
+    const r = await q1(`select value from app_settings where key = 'home_layout'`);
+    assert(r.value.intro_title === 'TEST judul' && r.value.sections.recommendations === false && r.value.sections.modules === true,
+           JSON.stringify(r.value));
   });
   await step('CMS-93', 'Dashboard memperbarui angka setelah perubahan', async () => {
     await go('dashboard');

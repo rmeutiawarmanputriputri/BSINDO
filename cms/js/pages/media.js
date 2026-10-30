@@ -1,10 +1,10 @@
 import { h, clear, modal, toast, confirmDialog, fmtBytes, fmtDate, fmtDuration, statusBadge, select, field,
   loading, emptyState, errorState, pager, debounce, STATUS_OPTIONS } from '../ui.js';
 import { sb, unwrap, rpc, MEDIA_RULES, createMedia, replaceMediaFile, signedUrl, removeObjects, escapeLike,
-  getSettings, cacheMedia, forgetMedia, forgetSignedUrl, validateMediaFile, probeMedia, friendlyError } from '../api.js';
+  getSettings, cacheMedia, forgetMedia, forgetSignedUrl, validateMediaFile, probeMedia, friendlyError, isGif } from '../api.js';
 
 const KIND_ICON = { video: '🎬', audio: '🔊', image: '🖼️' };
-const KIND_LABEL = { video: 'Video', audio: 'Audio', image: 'Gambar' };
+const KIND_LABEL = { video: 'Video/Animasi', audio: 'Audio', image: 'Gambar' };
 const USAGE_LABEL = { sign: 'Materi', conversation: 'Topik percakapan', conversation_item: 'Kalimat percakapan', lesson: 'Pelajaran',
   category: 'Kategori', banner: 'Banner', question: 'Soal kuis', question_option: 'Pilihan soal' };
 const MODULE_LABEL = { vocabulary: 'Kosakata', alphabet: 'Alfabet', number: 'Angka' };
@@ -14,7 +14,7 @@ export const mediaName = (m) => (m ? (m.title || m.original_filename || m.path.s
 /** Elemen pratinjau (signed URL). */
 export async function previewEl(asset) {
   const url = await signedUrl(asset.path);
-  if (asset.kind === 'video') return h('video', { src: url, controls: true, preload: 'metadata', playsinline: true });
+  if (asset.kind === 'video' && !isGif(asset)) return h('video', { src: url, controls: true, preload: 'metadata', playsinline: true });
   if (asset.kind === 'audio') return h('audio', { src: url, controls: true, preload: 'metadata' });
   return h('img', { src: url, alt: mediaName(asset) });
 }
@@ -62,7 +62,7 @@ export function uploadDialog(kind, { title: presetTitle } = {}) {
       file = f;
       if (!titleIn.value) titleIn.value = f.name.replace(/\.[^.]+$/, '').slice(0, 160);
       const url = URL.createObjectURL(f);
-      const el = kind === 'video' ? h('video', { src: url, controls: true, playsinline: true })
+      const el = kind === 'video' && !isGif(f) ? h('video', { src: url, controls: true, playsinline: true })
         : kind === 'audio' ? h('audio', { src: url, controls: true }) : h('img', { src: url, alt: 'Pratinjau' });
       clear(preview, el);
       const p = await probeMedia(f, kind);
@@ -177,7 +177,7 @@ export function mediaField(kind, initialId, { onChange } = {}) {
 export async function mediaPage(root) {
   const state = { kind: '', status: '', q: '', page: 0, size: 24 };
   const listBox = h('div');
-  const kindSel = select([['', 'Semua jenis'], ['video', 'Video'], ['audio', 'Audio'], ['image', 'Gambar']], '', { 'aria-label': 'Jenis', onchange: (e) => { state.kind = e.target.value; state.page = 0; load(); } });
+  const kindSel = select([['', 'Semua jenis'], ['video', 'Video/Animasi'], ['audio', 'Audio'], ['image', 'Gambar']], '', { 'aria-label': 'Jenis', onchange: (e) => { state.kind = e.target.value; state.page = 0; load(); } });
   const statusSel = select([['', 'Semua status'], ...STATUS_OPTIONS], '', { 'aria-label': 'Status', onchange: (e) => { state.status = e.target.value; state.page = 0; load(); } });
   const search = h('input', { type: 'search', placeholder: 'Cari judul / nama berkas', 'aria-label': 'Cari', oninput: debounce((e) => { state.q = e.target.value.trim(); state.page = 0; load(); }) });
 
@@ -253,7 +253,7 @@ export async function mediaPage(root) {
     input.addEventListener('change', () => {
       clear(preview); const f = input.files[0]; if (!f) return;
       const url = URL.createObjectURL(f);
-      clear(preview, m.kind === 'video' ? h('video', { src: url, controls: true }) : m.kind === 'audio' ? h('audio', { src: url, controls: true }) : h('img', { src: url, alt: '' }));
+      clear(preview, m.kind === 'video' && !isGif(f) ? h('video', { src: url, controls: true }) : m.kind === 'audio' ? h('audio', { src: url, controls: true }) : h('img', { src: url, alt: '' }));
     });
     modal({
       title: `Ganti berkas: ${mediaName(m)}`, wide: m.kind === 'video',

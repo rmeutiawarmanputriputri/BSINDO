@@ -70,6 +70,8 @@ export async function quizFormPage(root, id) {
     }
   } catch (e) { clear(root, errorState(e.message, () => quizFormPage(root, id))); return; }
   const cats = await getCategories();
+  let topics = [];
+  try { topics = unwrap(await sb.from('conversation_modules').select('id, title, status').order('sort_order').order('title')); } catch { topics = []; }
 
   const f = {
     question_type: select(QTYPES, q.question_type),
@@ -79,7 +81,12 @@ export async function quizFormPage(root, id) {
     prompt: h('textarea', { maxlength: 500 }, q.prompt || ''),
     explanation: h('textarea', { maxlength: 2000 }, key?.explanation || ''),
     sort_order: h('input', { type: 'number', value: q.sort_order ?? 0 }),
+    conversation_module_id: select([['', '— semua topik —'], ...topics.map((t) => [t.id, t.status === 'published' ? t.title : `${t.title} (${t.status})`])],
+      q.conversation_module_id || ''),
   };
+  const topicField = field('Topik percakapan', f.conversation_module_id, { help: 'Soal muncul di tombol "Latihan percakapan" pada topik ini.' });
+  const syncTopic = () => { topicField.hidden = f.module.value !== 'conversation'; };
+  f.module.addEventListener('change', syncTopic); syncTopic();
   const active = checkbox('Aktif', q.is_active);
   const premium = checkbox('Soal Premium', q.is_premium);
   const video = mediaField('video', q.video_asset_id);
@@ -145,6 +152,7 @@ export async function quizFormPage(root, id) {
     const t = f.question_type.value;
     const base = {
       id: id || null, module: f.module.value, category_id: f.category_id.value || null, question_type: t,
+      conversation_module_id: f.module.value === 'conversation' ? (f.conversation_module_id.value || null) : null,
       prompt: f.prompt.value.trim(), difficulty: f.difficulty.value, sort_order: parseInt(f.sort_order.value, 10) || 0,
       is_active: active.input.checked, is_premium: premium.input.checked, status,
       sign_id: q.sign_id || null, video_asset_id: video.getValue(), image_asset_id: image.getValue(),
@@ -197,8 +205,9 @@ export async function quizFormPage(root, id) {
       h('div', { class: 'card' }, h('div', { class: 'form-grid' },
         field('Jenis soal', f.question_type, { required: true }), field('Modul', f.module, { required: true }),
         field('Kategori', f.category_id, { help: 'Untuk kuis per kategori.' }), field('Tingkat kesulitan', f.difficulty),
+        topicField,
         field('Pertanyaan', f.prompt, { required: true, full: true }),
-        h('div', { class: 'full' }, field('Video soal', video.el), mediaHint),
+        h('div', { class: 'full' }, field('Video/animasi soal', video.el), mediaHint),
         field('Gambar soal', image.el, { full: true }),
         field('Urutan', f.sort_order), h('div', { class: 'stack' }, active.el, premium.el))),
       h('div', { class: 'card' }, h('h2', {}, 'Jawaban'), editor),

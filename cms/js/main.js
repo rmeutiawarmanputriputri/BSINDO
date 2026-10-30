@@ -20,7 +20,7 @@ let me = null;
 const NAV = [
   ['Ringkasan', [['dashboard', '📊', 'Dashboard']]],
   ['Materi', [['categories', '🗂️', 'Kategori'], ['alphabet', '🔤', 'Alfabet'], ['numbers', '🔢', 'Angka'],
-    ['vocabulary', '📚', 'Kosakata'], ['conversations', '💬', 'Percakapan'], ['media', '🎬', 'Media (video & audio)']]],
+    ['vocabulary', '📚', 'Kosakata'], ['conversations', '💬', 'Percakapan'], ['media', '🎬', 'Media (video, GIF & audio)']]],
   ['Latihan', [['quiz', '📝', 'Kuis']]],
   ['Aplikasi', [['banners', '🖼️', 'Banner Beranda'], ['announcements', '🔔', 'Pengumuman'], ['faqs', '❓', 'FAQ'], ['reports', '🚩', 'Laporan konten']]],
   ['Pengguna', [['users', '👥', 'Pengguna'], ['premium', '⭐', 'Premium']]],

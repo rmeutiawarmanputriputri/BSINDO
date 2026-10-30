@@ -189,3 +189,6 @@ td.actions { white-space: nowrap; text-align: right; }
   .topbar .muted { display: none; }
   .filters > * { min-width: 0; flex: 1 1 100%; }
 }
+.part-row { display: grid; grid-template-columns: 24px minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1.4fr) auto auto; gap: 6px; align-items: center; }
+.part-row select, .part-row input { min-width: 0; width: 100%; }
+@media (max-width: 640px) { .part-row { grid-template-columns: 24px 1fr auto auto; } .part-row input { grid-column: 2 / -1; } }

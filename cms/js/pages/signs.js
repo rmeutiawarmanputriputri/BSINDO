@@ -129,9 +129,11 @@ export async function signFormPage(root, module, id) {
   fields.push(field(module === 'vocabulary' ? 'Nama materi / kosakata' : 'Judul', f.term, { required: true }));
   if (module === 'vocabulary') fields.push(field('Kategori', f.category_id, { required: true }), field('Jenis', f.entry_type));
   fields.push(field(module === 'vocabulary' ? 'Arti' : 'Keterangan singkat', f.meaning, { required: module === 'vocabulary', full: true }));
-  fields.push(field(module === 'vocabulary' ? 'Penjelasan gerakan' : 'Penjelasan gerakan tangan', f.movement_description, { full: true }));
+  fields.push(field(module === 'vocabulary' ? 'Penjelasan gerakan' : 'Penjelasan gerakan tangan', f.movement_description,
+    module === 'vocabulary' ? { full: true }
+      : { required: true, full: true, help: 'Wajib untuk dipublikasikan: posisi jari, telapak tangan, dan arah gerakan.' }));
   if (module === 'vocabulary') fields.push(field('Contoh penggunaan', f.usage_example, { full: true }));
-  fields.push(field('Video gerakan', media.video_asset_id.el, { required: true, full: true, help: 'Wajib untuk dipublikasikan.' }));
+  fields.push(field('Video/animasi gerakan', media.video_asset_id.el, { required: true, full: true, help: 'Wajib untuk dipublikasikan. Format MP4, WebM, atau GIF.' }));
   fields.push(field('Gambar panduan visual gerakan', media.image_asset_id.el, { full: true }));
   fields.push(field('Audio / voice', media.audio_asset_id.el, { full: true }));
   fields.push(field('Thumbnail', media.thumbnail_asset_id.el, { full: true }));

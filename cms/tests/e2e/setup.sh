@@ -26,4 +26,7 @@ if [ ! -f "$M/TEST_video_a.mp4" ]; then
   ffmpeg -loglevel error -y -f lavfi -i color=c=orange:size=320x180 -frames:v 1 "$M/TEST_image_1.png"
   ffmpeg -loglevel error -y -f lavfi -i color=c=teal:size=320x180 -frames:v 1 "$M/TEST_image_2.png"
 fi
+if [ ! -f "$M/TEST_anim.gif" ]; then
+  ffmpeg -loglevel error -y -f lavfi -i testsrc=size=160x120:rate=5 -t 1 "$M/TEST_anim.gif"
+fi
 echo "OK $DB"; ls -la "$M"

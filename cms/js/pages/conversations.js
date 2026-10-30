@@ -14,7 +14,7 @@ export async function conversationListPage(root) {
   clear(root,
     h('div', { class: 'page-head' }, h('h1', {}, 'Percakapan'), h('span', { class: 'spacer' }),
       h('button', { class: 'btn', type: 'button', onclick: () => navigate('conversations/new') }, '+ Tambah topik')),
-    h('p', { class: 'muted' }, 'Setiap topik berisi kalimat berurutan (video, audio, terjemahan, penjelasan). Aplikasi memakai urutan ini untuk simulasi percakapan.'),
+    h('p', { class: 'muted' }, 'Setiap topik berisi kalimat berurutan (video, audio, terjemahan, penjelasan, bagian kalimat). Aplikasi memakai urutan ini untuk simulasi percakapan. Susunan isyarat BISINDO tidak selalu sama dengan susunan kata bahasa Indonesia — isi hanya materi yang sudah diverifikasi.'),
     h('div', { class: 'filters' },
       select([['', 'Semua status'], ...STATUS_OPTIONS], '', { 'aria-label': 'Status', onchange: (e) => { state.status = e.target.value; load(); } }),
       h('input', { type: 'search', placeholder: 'Cari topik…', 'aria-label': 'Cari', oninput: debounce((e) => { state.q = e.target.value.trim(); load(); }) })),
@@ -51,13 +51,20 @@ export async function conversationFormPage(root, id) {
   clear(root, loading());
   let mod = { status: 'draft', sort_order: 0, is_premium: false };
   let items = [];
+  let vocab = [];
   try {
     if (id) {
       mod = unwrap(await sb.from('conversation_modules').select(MOD_COLS).eq('id', id).single());
       items = unwrap(await sb.from('conversation_items')
         .select('id, position, speaker_label, text_id, translation, explanation, context_note, sign_id, video_asset_id, audio_asset_id')
         .eq('module_id', id).order('position'));
+      if (items.length) {
+        const parts = unwrap(await sb.from('conversation_item_parts')
+          .select('item_id, position, part_text, meaning, sign_id').in('item_id', items.map((i) => i.id)).order('position'));
+        items.forEach((i) => { i.parts = parts.filter((p) => p.item_id === i.id); });
+      }
     }
+    vocab = unwrap(await sb.from('signs').select('id, term, status').eq('content_module', 'vocabulary').order('term').limit(2000));
   } catch (e) { clear(root, errorState(e.message, () => conversationFormPage(root, id))); return; }
   const cats = (await getCategories()).filter((c) => c.kind === 'conversation');
 
@@ -91,8 +98,29 @@ export async function conversationFormPage(root, id) {
       sign_id: it.sign_id || null,
       video: mediaField('video', it.video_asset_id),
       audio: mediaField('audio', it.audio_asset_id),
+      parts: (it.parts || []).map((p) => makePart(p)),
+      partsBox: h('div', { class: 'stack' }),
     };
     return r;
+  }
+  // Bagian kalimat: kosakata dari kamus dan/atau teks bagian + arti bagian (diisi pemilik).
+  function makePart(p = {}) {
+    const statusLabel = { draft: 'Draft', published: 'Published', archived: 'Archived', inactive: 'Inactive' };
+    return {
+      sign: select([['', '— tanpa kosakata —'], ...vocab.map((v) => [v.id, v.status === 'published' ? v.term : `${v.term} (${statusLabel[v.status] || v.status})`])],
+        p.sign_id || '', { 'aria-label': 'Kosakata' }),
+      text: h('input', { type: 'text', value: p.part_text || '', maxlength: 120, placeholder: 'Teks bagian (opsional bila kosakata dipilih)', 'aria-label': 'Teks bagian' }),
+      meaning: h('input', { type: 'text', value: p.meaning || '', maxlength: 500, placeholder: 'Arti bagian (opsional)', 'aria-label': 'Arti bagian' }),
+    };
+  }
+  function renderParts(r) {
+    clear(r.partsBox,
+      r.parts.length ? r.parts.map((p, j) => h('div', { class: 'part-row' },
+        h('span', { class: 'small muted' }, `${j + 1}.`), p.sign, p.text, p.meaning,
+        h('button', { class: 'btn ghost sm', type: 'button', disabled: j === 0, 'aria-label': `Naikkan bagian ${j + 1}`, onclick: () => { [r.parts[j - 1], r.parts[j]] = [r.parts[j], r.parts[j - 1]]; renderParts(r); } }, '↑'),
+        h('button', { class: 'btn ghost sm', type: 'button', style: { color: 'var(--error)' }, 'aria-label': `Hapus bagian ${j + 1}`, onclick: () => { r.parts.splice(j, 1); renderParts(r); } }, '✕')))
+        : h('p', { class: 'small muted' }, 'Belum ada bagian. Pecah kalimat menjadi kosakata/isyarat sesuai susunan BISINDO yang sudah diverifikasi.'),
+      h('div', {}, h('button', { class: 'btn secondary sm', type: 'button', onclick: () => { r.parts.push(makePart()); renderParts(r); } }, '+ Tambah bagian')));
   }
   function renderItems() {
     clear(list, rows.length ? rows.map((r, i) => h('div', { class: 'item' },
@@ -107,7 +135,10 @@ export async function conversationFormPage(root, id) {
         field('Terjemahan / susunan isyarat', r.translation),
         field('Penjelasan makna', r.explanation),
         field('Video kalimat', r.video.el, { required: true, full: true }),
-        field('Audio / voice', r.audio.el, { full: true }))))
+        field('Audio / voice', r.audio.el, { full: true }),
+        h('div', { class: 'field full', role: 'group', 'aria-label': `Bagian kalimat ${i + 1}` },
+          h('span', {}, 'Bagian kalimat (kosakata · teks bagian · arti bagian)'), (renderParts(r), r.partsBox),
+          h('div', { class: 'help' }, 'Urutan bagian = urutan isyarat. Pilih kosakata dari kamus, atau isi teks bagian bila belum ada di kamus.')))))
       : h('div', { class: 'empty' }, 'Belum ada kalimat. Tambahkan kalimat sesuai materi Anda.'));
   }
   renderItems();
@@ -134,6 +165,8 @@ export async function conversationFormPage(root, id) {
         id: r.id, speaker_label: r.speaker.value.trim() || 'A', text_id: r.text.value.trim(),
         translation: r.translation.value.trim(), explanation: r.explanation.value.trim(), context_note: r.context.value.trim(),
         sign_id: r.sign_id, video_asset_id: r.video.getValue(), audio_asset_id: r.audio.getValue(),
+        parts: r.parts.map((p) => ({ sign_id: p.sign.value || null, part_text: p.text.value.trim(), meaning: p.meaning.value.trim() }))
+          .filter((p) => p.sign_id || p.part_text),
       })) });
       if (publish) {
         const issues = await setContentStatus('conversation', 'conversation_modules', mid, 'published');

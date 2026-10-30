@@ -1,4 +1,4 @@
-import { h, clear, toast, field, loading, errorState, table, select, fmtDate, badge } from '../ui.js';
+import { h, clear, toast, field, loading, errorState, table, select, fmtDate, badge, checkbox } from '../ui.js';
 import { sb, unwrap, getSettings, saveSetting } from '../api.js';
 
 export async function settingsPage(root) {
@@ -16,7 +16,32 @@ export async function settingsPage(root) {
         const v = { video_max_mb: +video.value, audio_max_mb: +audio.value, image_max_mb: +image.value };
         if (Object.values(v).some((x) => !Number.isFinite(x) || x < 1 || x > 50)) { toast('Nilai harus 1–50 MB.', 'error'); return; }
         try { await saveSetting('media_limits', v); toast('Batas media disimpan.', 'ok'); } catch (e) { toast(e.message, 'error'); }
-      } }, 'Simpan'))));
+      } }, 'Simpan'))),
+    homeLayoutCard(s.home_layout || {}));
+}
+
+// Konten beranda aplikasi (I.15): teks banner perkenalan + bagian yang ditampilkan.
+const HOME_SECTIONS = [
+  ['intro', 'Banner perkenalan aplikasi (tampil bila tidak ada banner aktif)'], ['continue', 'Mulai belajar / materi terakhir'],
+  ['modules', 'Kartu modul pembelajaran'], ['progress', 'Ringkasan progres'], ['recommendations', 'Rekomendasi materi'],
+  ['premium', 'Informasi Premium'],
+];
+function homeLayoutCard(cur) {
+  const sec = cur.sections || {};
+  const title = h('input', { type: 'text', maxlength: 80, value: cur.intro_title || '', placeholder: 'Kosong = teks bawaan aplikasi' });
+  const text = h('textarea', { maxlength: 300, placeholder: 'Kosong = teks bawaan aplikasi' }, cur.intro_text || '');
+  const checks = HOME_SECTIONS.map(([k, label]) => [k, checkbox(label, sec[k] !== false)]);
+  return h('div', { class: 'card stack' }, h('h2', {}, 'Konten beranda aplikasi'),
+    h('p', { class: 'muted small' }, 'Banner bergambar diatur di menu Banner. Di sini Anda mengatur teks banner perkenalan dan bagian beranda yang ditampilkan. Sapaan, pencarian, dan notifikasi selalu tampil.'),
+    h('div', { class: 'form-grid' }, field('Judul banner perkenalan', title), field('Teks banner perkenalan', text, { full: true })),
+    h('div', { class: 'stack', role: 'group', 'aria-label': 'Bagian beranda' }, checks.map(([, c]) => c.el)),
+    h('div', { class: 'form-actions' }, h('button', { class: 'btn', type: 'button', onclick: async () => {
+      const v = {
+        intro_title: title.value.trim() || null, intro_text: text.value.trim() || null,
+        sections: Object.fromEntries(checks.map(([k, c]) => [k, c.input.checked])),
+      };
+      try { await saveSetting('home_layout', v); toast('Konten beranda disimpan.', 'ok'); } catch (e) { toast(e.message, 'error'); }
+    } }, 'Simpan konten beranda')));
 }
 
 // ------------------------------------------------------------------ laporan konten (fitur lama, dipindah ke CMS)
