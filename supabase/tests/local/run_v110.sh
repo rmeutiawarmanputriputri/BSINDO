@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 # Uji database v1.1.0 lengkap (PostgreSQL 16 lokal + stub Supabase):
-#  1) migrasi 0001–0120 + seed struktur
+#  1) migrasi 0001–0121 + seed struktur
 #  2) uji lama 10_rls_tests.sql (kompatibilitas aplikasi 1.0.0)
-#  3) uji baru 20_v110_tests.sql
-#  4) rollback 0120→0110 lalu bandingkan skema dengan 0001–0010
+#  3) uji baru 20_v110_tests.sql + 21_feature_list_tests.sql (migrasi 0121 + seed struktur)
+#  4) rollback 0121→0110 lalu bandingkan skema dengan 0001–0010
 # Prasyarat: psql di PATH; PGHOST/PGPORT/PGUSER menunjuk server lokal (superuser).
 set -euo pipefail
 cd "$(dirname "$0")/../.."
@@ -24,6 +24,12 @@ echo "== 3. uji v1.1.0 (20_v110_tests)"
 DB=v110_new bash tests/local/apply.sh
 $P -d v110_new -f tests/local/20_v110_tests.sql > "$OUT/20_v110.txt" 2>&1
 echo "   $(grep -c '| LULUS' "$OUT/20_v110.txt") LULUS, $(grep -c '| GAGAL' "$OUT/20_v110.txt" || true) GAGAL"
+
+echo "== 3b. uji daftar fitur (21_feature_list_tests)"
+DB=v121_feat bash tests/local/apply.sh
+$P -d v121_feat -f seed/20_v110_struktur.sql
+$P -d v121_feat -f tests/local/21_feature_list_tests.sql > "$OUT/21_feature_list.txt" 2>&1
+echo "   $(grep -c '| LULUS' "$OUT/21_feature_list.txt") LULUS, $(grep -c '| GAGAL' "$OUT/21_feature_list.txt" || true) GAGAL"
 
 echo "== 4. rollback"
 $P -d postgres -c "drop database if exists v110_base" -c "create database v110_base" >/dev/null

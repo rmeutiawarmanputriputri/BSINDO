@@ -29,6 +29,7 @@ supabase/migrations/0117_v110_access_rules.sql
 supabase/migrations/0118_v110_publish_validation.sql
 supabase/migrations/0119_v110_admin_rpc.sql
 supabase/migrations/0120_v110_import.sql
+supabase/migrations/0121_v110_feature_list.sql
 ```
 
 Cara A (disarankan): Supabase CLI.
@@ -36,11 +37,11 @@ Cara A (disarankan): Supabase CLI.
 
 Cara B: Dashboard → **SQL Editor**. Tempel isi tiap file sesuai urutan, lalu **Run** per file.
 
-Opsional (struktur saja, tanpa materi): `supabase/seed/20_v110_struktur.sql`. File ini menambah kategori kosakata bawaan dan 9 topik percakapan bawaan sebagai **Draft kosong**. Aman dijalankan ulang.
+Disarankan (struktur saja, tanpa materi): `supabase/seed/20_v110_struktur.sql`. File ini menambah 12 kategori kosakata dan 8 topik percakapan sesuai daftar fitur Anda, plus 18 kosakata contoh dari daftar itu (ayah, ibu, …) sebagai **Draft berisi nama saja**. Arti, penjelasan, dan video diisi lewat CMS. Draft tidak tampil di aplikasi. Kategori/topik/kosakata yang sudah ada dengan nama sama tidak diubah. Aman dijalankan ulang.
 
 Pemeriksaan setelah migrasi:
 ```sql
-select count(*) from public.app_settings;                         -- 2
+select count(*) from public.app_settings;                         -- 3
 select public.can_read_media('x');                                -- false (fungsi ada)
 select count(*) from public.signs where validated_by like 'DEV-SAMPLE%';  -- harus 0 di produksi
 ```

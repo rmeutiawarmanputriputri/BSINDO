@@ -97,7 +97,8 @@ begin
   insert into public.signs (content_module, term, status) values ('alphabet', 'TEST_HURUF', 'draft') returning id into v;
   perform t.put('alpha', v);
   r := public.publish_issues('sign', v);
-  perform t.check('V-10a', r ? 'Huruf wajib diisi' and r ? 'Video gerakan wajib diunggah', r::text);
+  perform t.check('V-10a', r ? 'Huruf wajib diisi' and r ? 'Video gerakan wajib diunggah'
+                       and r ? 'Penjelasan gerakan wajib diisi', r::text);
   begin
     update public.signs set status = 'published' where id = v;
     perform t.fail('V-10b', 'publish tanpa video diterima');
@@ -105,13 +106,14 @@ begin
   end;
   update public.signs set symbol = 'Z', video_asset_id = 'f0000000-0000-0000-0000-000000000001',
          image_asset_id = 'f0000000-0000-0000-0000-000000000004', audio_asset_id = 'f0000000-0000-0000-0000-000000000003',
-         validated_by = 'TEST validator', source_note = 'TEST sumber', verified_at = now(), status = 'published'
+         validated_by = 'TEST validator', source_note = 'TEST sumber', verified_at = now(),
+         movement_description = 'TEST penjelasan', status = 'published'
    where id = v;
   perform t.check('V-10c', (select status from public.signs where id = v) = 'published', 'lengkap → published');
 
   -- angka: number_group wajib
-  insert into public.signs (content_module, term, symbol, status, video_asset_id, validated_by, source_note, verified_at)
-  values ('number', 'TEST_ANGKA', '7', 'draft', 'f0000000-0000-0000-0000-000000000002', 'TEST', 'TEST', now()) returning id into v;
+  insert into public.signs (content_module, term, symbol, status, video_asset_id, validated_by, source_note, verified_at, movement_description)
+  values ('number', 'TEST_ANGKA', '7', 'draft', 'f0000000-0000-0000-0000-000000000002', 'TEST', 'TEST', now(), 'TEST penjelasan') returning id into v;
   perform t.put('num', v);
   begin
     update public.signs set status = 'published' where id = v;

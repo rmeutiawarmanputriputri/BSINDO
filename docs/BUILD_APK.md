@@ -1,6 +1,6 @@
 # Cara mendapatkan APK BISINDO v1.1.0
 
-> **Wajib sebelum memasang APK 1.1.0:** migrasi database 0110–0120 sudah diterapkan di Supabase (lihat `docs/CMS_SETUP.md` §1).
+> **Wajib sebelum memasang APK 1.1.0:** migrasi database 0110–0121 sudah diterapkan di Supabase (lihat `docs/CMS_SETUP.md` §1).
 > Aplikasi 1.1.0 membaca kolom/tabel baru. Tanpa migrasi, halaman materi akan menampilkan error.
 
 ## Cara A — GitHub Actions (tanpa Flutter di komputer)

@@ -1,0 +1,39 @@
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"cccccccc-0000-0000-0000-00000000000c","role":"authenticated"}
+(1 row)
+
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}
+(1 row)
+
+  id   | hasil |                                   detail                                   
+-------+-------+----------------------------------------------------------------------------
+ F-01  | LULUS | 12 kategori sesuai daftar pemilik
+ F-02  | LULUS | 18 kosakata Draft, nama saja (tanpa arti/penjelasan/video), kategori benar
+ F-03  | LULUS | 8 topik percakapan Draft sesuai daftar
+ F-04  | LULUS | GIF diterima (video & gambar); bucket mengizinkan image/gif
+ F-05  | LULUS | GIF sebagai audio ditolak
+ F-06  | LULUS | media tanpa judul diberi identitas dari nama berkas
+ F-06b | LULUS | judul manual tidak ditimpa
+ F-10a | LULUS | ["Penjelasan gerakan wajib diisi"]
+ F-10b | LULUS | ditolak: publish_blocked: Penjelasan gerakan wajib diisi
+ F-10c | LULUS | GIF + penjelasan → published
+ F-11a | LULUS | bagian kalimat tersimpan berurutan; baris kosong diabaikan
+ F-11b | LULUS | tanpa "parts" bagian tidak berubah
+ F-11c | LULUS | urutan bagian diperbarui; kalimat yang tidak dikirim terhapus
+ F-12a | LULUS | topik percakapan hanya untuk modul percakapan
+ F-12b | LULUS | soal tersimpan + terkait topik
+ F-20  | LULUS | Draft dari seed tidak terlihat pengguna
+ F-21  | LULUS | bagian kalimat topik published terlihat: 2
+ F-22  | LULUS | pengguna tidak bisa menulis bagian
+ F-23  | LULUS | filter soal per topik percakapan; tanpa kunci
+ F-24  | LULUS | tanpa topik → semua soal percakapan: 2
+ F-25  | LULUS | kompatibel pemanggilan 2 argumen
+ F-26  | LULUS | home_layout terbaca aplikasi
+ F-27  | LULUS | animasi GIF materi published bisa diputar
+ F-28  | LULUS | pengguna tidak bisa mengubah home_layout
+ F-30  | LULUS | bagian ikut terhapus bersama kalimat
+(25 rows)
+

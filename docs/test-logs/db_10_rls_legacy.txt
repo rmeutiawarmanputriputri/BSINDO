@@ -22,7 +22,7 @@
 -----------+-------+--------------------------------------------------------------------------------------
  ADM-READ  | LULUS | admin melihat draf & objeknya
  ADM-RPC   | LULUS | non-admin ditolak
- ADM-RPC2  | LULUS | {"drafts": 11, "in_review": 0, "open_reports": 9}
+ ADM-RPC2  | LULUS | {"drafts": 28, "in_review": 0, "open_reports": 9}
  AUTH-06   | LULUS | trigger membuat profil role=user (metadata role diabaikan)
  FAV-DRAFT | LULUS | favorit sign draf ditolak (0009)
  PROG-RPC  | LULUS | pelajaran: 1 baris, completed tidak turun; modul: last_position lalu completed
