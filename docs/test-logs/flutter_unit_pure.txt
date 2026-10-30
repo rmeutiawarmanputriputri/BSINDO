@@ -1,0 +1,32 @@
+== test/features/quiz/quiz_bank_test.dart
+LULUS  QuizQuestion.fromJson › membaca semua kolom RPC get_quiz_questions
+LULUS  QuizQuestion.fromJson › jenis tidak dikenal → pilihan ganda; kolom hilang tidak membuat crash
+LULUS  QuizQuestion.fromJson › opsi kiri/kanan untuk soal cocokkan
+LULUS  QuizAnswer › ChoiceAnswer → {option_id} & lengkap hanya untuk opsi soal itu
+LULUS  QuizAnswer › SequenceAnswer harus memakai semua ubin tepat sekali
+LULUS  QuizAnswer › PairsAnswer lengkap bila semua gambar dipasangkan ke arti berbeda
+LULUS  Hasil & kunci dari server › QuizReveal membaca kunci tiap jenis
+LULUS  Hasil & kunci dari server › QuizSessionResult & daftar soal salah
+LULUS  Hasil & kunci dari server › riwayat sesi: judul sesuai mode
+LULUS  QuizConfig › parameter RPC & kesetaraan (dipakai sebagai kunci provider)
+LULUS  umpan balik skor
+-- 11 lulus, 0 gagal
+== test/features/study/study_test.dart
+LULUS  ProgressSummary › membaca hasil my_progress_summary
+LULUS  ProgressSummary › kosong / materi belum ada → 0% tanpa pembagian nol
+LULUS  HistoryEntry: label modul & waktu lokal
+LULUS  SignProgress: learned dari learned_at atau flag RPC
+LULUS  mode belajar mulai dari materi pertama yang belum dipelajari
+LULUS  Sign v1.1.0 › kolom baru: modul, simbol, kelompok angka, media, Premium
+LULUS  Sign v1.1.0 › JSON lama (tanpa kolom v1.1.0) tetap terbaca sebagai kosakata
+LULUS  Sign v1.1.0 › kolom select memuat relasi media baru
+-- 8 lulus, 0 gagal
+== test/features/home_content/home_content_test.dart
+LULUS  PremiumInfo: paket tanpa nama diabaikan
+LULUS  HomeBanner dapat diketuk hanya bila punya tujuan
+LULUS  PremiumStatus & Announcement
+LULUS  Rute v1.1.0 › rute belajar & mode belajar
+LULUS  Rute v1.1.0 › konfigurasi kuis bolak-balik lewat query
+LULUS  Rute v1.1.0 › banner hanya boleh ke rute yang dikenal
+LULUS  kecepatan video 1× → 0,75× → 0,5× → 1×
+-- 7 lulus, 0 gagal

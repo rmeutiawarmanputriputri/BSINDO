@@ -599,6 +599,8 @@ class MatchAnswerView extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         DropdownButtonFormField<String>(
+                          // Kunci memuat nilai agar tampilan ikut berubah saat pasangan ditukar.
+                          key: ValueKey('${left.id}-${pairs[left.id]}'),
                           initialValue: pairs[left.id],
                           isExpanded: true,
                           decoration: InputDecoration(

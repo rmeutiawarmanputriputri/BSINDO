@@ -1,0 +1,6 @@
+Analyzing bisindo_app...
+
+   info - lib/features/auth/data/fake_auth_repository.dart:20:8 - Use an initializing formal to assign a parameter to a field. Try using an initialing formal ('this._signedIn') to initialize the field. - prefer_initializing_formals
+   info - lib/features/reports/presentation/report_history_screen.dart:101:15 - Use the null-aware marker '?' rather than a null check via an 'if'. Try using '?'. - use_null_aware_elements
+
+2 issues found.

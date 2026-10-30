@@ -6,7 +6,7 @@ Dasar: `docs/AUDIT_v1.0.md`. Prinsip: **aditif**, tidak membangun ulang, aplikas
 
 | # | Keputusan | Jawaban |
 |---|---|---|
-| D-1 | Source dasar Flutter | **Source terbaru akan diunggah pengguna** (ZIP ≠ APK). Pekerjaan Flutter menunggu source tersebut |
+| D-1 | Source dasar Flutter | Awalnya "source terbaru akan dikirim"; **diperbarui pengguna: pakai source lama (ZIP)** karena desain APK 1.0.0 tidak sesuai dengan desain miliknya. Konsekuensi: fitur *Komunikasi* dari APK 1.0.0 tidak ikut |
 | D-2 | Signing | "Rekomendasi terbaik" → **keystore release baru**, dibuat di komputer pengguna dengan `tool/create_keystore.ps1`; disimpan di luar repo; `key.properties` di-*ignore* |
 | D-3 | CMS | **Web CMS statis (HTML/JS) + Supabase** — login Supabase Auth yang sama, keamanan ditegakkan di database (RLS + RPC `security definer` yang memeriksa `is_admin()`). Admin di dalam aplikasi **tetap dipertahankan** |
 | D-4 | Premium | **Struktur + diatur manual di CMS**; webhook RevenueCat disiapkan (Edge Function) tetapi nonaktif sampai kredensial ada |
@@ -47,7 +47,7 @@ Semua dalam `supabase/migrations/0110_*.sql …` + `supabase/rollback/*.sql`, di
 ### Fase 4 — Web CMS (dapat dikerjakan sekarang)
 Folder `cms/`: HTML/CSS/JS tanpa *build step*, `supabase-js` di-*vendor* (tanpa CDN). Modul A–L sesuai brief. Template impor kosong di `templates/import/`. Uji: Playwright terhadap klien Supabase tiruan (UI) + uji SQL untuk semua RPC yang dipanggil CMS.
 
-### Fase 5 — Flutter (menunggu source terbaru)
+### Fase 5 — Flutter (dasar: source ZIP, sesuai D-1)
 Home (banner, lanjutkan belajar, progres, rekomendasi), Alfabet (mode belajar A–Z), Angka (4 kelompok), Kosakata (kategori + cari + favorit), Percakapan (kalimat per bagian, audio, simulasi), Kuis (6 jenis, per kategori/campuran/kelemahan, riwayat), Profil & progres, pencarian global, kecepatan video 0,5/0,75/1×, cache media, notifikasi dalam aplikasi, FAQ, kunci Premium. State management & router tetap (Riverpod + go_router).
 
 ### Fase 6–8 — Uji & build

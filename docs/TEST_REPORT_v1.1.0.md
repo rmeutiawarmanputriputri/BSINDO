@@ -1,6 +1,6 @@
-# Laporan Uji BISINDO v1.1.0 (SEMENTARA)
+# Laporan Uji BISINDO v1.1.0
 
-Status dokumen: **sementara**. Bagian Database dan CMS sudah final. Bagian Aplikasi Flutter dan Build menunggu source Flutter terbaru dari pemilik.
+Status dokumen: final untuk sesi ini. Bagian yang butuh perangkat/SDK Android ditandai **Tidak bisa diuji** beserta alasannya.
 Lingkungan uji: sesi cloud Linux, PostgreSQL 16.15 lokal + stub Supabase, Node 22, Chromium (Playwright). **Tidak ada** Flutter/Android SDK (diblokir), tidak ada akses ke proyek Supabase asli, dan tidak ada perangkat Android.
 
 Bukti mentah ada di `docs/test-logs/`.
@@ -54,10 +54,44 @@ Cakupan 80 uji v1.1.0 meliputi:
 | Desain | Layar HP 390×844 tanpa scroll horizontal, menu lipat; konsol tanpa error JS | Lulus |
 | CMS vs Supabase asli | **Tidak bisa diuji** di sesi ini — emulator meniru subset PostgREST/Auth/Storage. Uji manual singkat di proyek DEV dianjurkan (lihat CMS_SETUP §9) | — |
 
-## 3. Aplikasi Flutter — MENUNGGU source terbaru
+## 3. Aplikasi Flutter
 
-Belum diuji. Akan diisi setelah source yang dipakai membangun APK 1.0.0 diterima.
+Lingkungan analisis: Dart SDK 3.13.7 (conda-forge) + sumber **Flutter 3.47.9** (GitHub) + sumber paket dari GitHub sesuai versi `pubspec` (supabase_flutter 2.18.3, riverpod 3.4.3, go_router 18.1.x, video_player 2.14.1, speech_to_text 7.3.0, file_picker 11.0.3, dst.). Paket tidak diambil dari pub.dev (diblokir), sehingga versi patch bisa sedikit berbeda.
 
-## 4. Build APK — MENUNGGU
+| # | Uji | Status | Bukti / alasan |
+|---|---|---|---|
+| F-1 | `dart format` | **Lulus** untuk semua berkas baru/diubah. Berkas lama tidak diformat ulang agar diff tetap bisa ditinjau; CI hanya memberi peringatan | `git diff` |
+| F-2 | `dart analyze` (setara `flutter analyze`) | **0 error, 0 warning**, 2 info lama | `docs/test-logs/flutter_analyze.txt` |
+| F-3 | Galat kompilasi di source lama | **Ditemukan & diperbaiki**: 2 galat parse `as String? :` di `conversation.dart` dan `learning.dart`. Kemungkinan inilah penyebab source ZIP gagal di-build | commit `f42252c` |
+| F-4 | Tes unit logika baru (model kuis, jawaban, kunci, hasil, progres, riwayat, Sign v1.1.0 + kompatibilitas JSON lama, rute, konfigurasi kuis, kecepatan video, Premium) | **Lulus 26/26** (dijalankan dengan Dart VM + shim `flutter_test` lokal) | `docs/test-logs/flutter_unit_pure.txt` |
+| F-5 | `flutter test` penuh (20 berkas lama + 4 baru, termasuk tes widget kuis & empty state) | **Tidak bisa diuji di sesi ini**: engine Flutter (flutter_tester) diblokir. Dijalankan otomatis oleh GitHub Actions / `tool\release.ps1` | — |
+| F-6 | Semua halaman terbuka, navigasi, video/audio diputar, login/logout, progres setelah login ulang, isolasi akun | **Tidak bisa diuji di sesi ini** (tidak ada emulator/perangkat). Isolasi akun & penilaian kuis sudah diuji di tingkat database (D-4 V-24/V-25/V-30) | — |
+| F-7 | Materi Published tampil, Draft tidak | Lulus di tingkat RLS (V-20). Uji UI menunggu perangkat. Kode aplikasi juga memfilter `status = published` | — |
+| F-8 | Layar kecil & tablet | **Tidak bisa diuji** (tanpa engine). Desain memakai `ContentWidth`, grid `maxCrossAxisExtent`, teks `ellipsis`, dan pola layout bawaan proyek | — |
+| F-9 | Uji perangkat (navigasi, video, audio, login, progres) | **Menunggu pemilik**. Daftar periksa ada di §5 | — |
 
-`flutter build apk --release` tidak dapat dijalankan di sesi ini (Flutter SDK, pub.dev, Android SDK, Maven diblokir). Build akan dilakukan di komputer pemilik dengan `tool/release.ps1`.
+## 4. Build APK
+
+| # | Uji | Status |
+|---|---|---|
+| B-1 | `flutter build apk --release` | **Tidak bisa diuji di sesi ini** (Flutter SDK, Android SDK, Maven diblokir). Disiapkan 2 jalur: GitHub Actions (`.github/workflows/android.yml`) dan `tool\release.ps1` |
+| B-2 | Logika signing Gradle (keystore ada / tidak ada / mode uji) | **Lulus**: logika Kotlin DSL yang sama dijalankan dengan Gradle 8.14.3 lokal di proyek uji tanpa plugin Android. Tanpa keystore → build release ditolak dengan pesan jelas; mode uji → lanjut; dengan `key.properties` → path & alias terbaca |
+| B-3 | Versi | `pubspec.yaml` `1.1.0+2` → versionName 1.1.0, versionCode 2 (> 1 milik APK 1.0.0) |
+
+## 5. Daftar periksa uji di HP (untuk pemilik)
+
+1. Uninstall APK lama, lalu pasang APK 1.1.0 dan login dengan akun lama. Akun harus tetap ada.
+2. **Beranda**: sapaan, banner (jika ada yang aktif di CMS), *Mulai Belajar*, kartu modul, ringkasan progres.
+3. **Alfabet** dan **Angka**:
+   - Saat materi belum ada, tampil "Materi belum tersedia".
+   - Setelah 1 huruf dipublikasikan dari CMS, huruf tampil.
+   - Video bisa diputar dengan kecepatan 0,5×, 0,75×, dan 1×.
+   - Tombol *Tandai sudah dipelajari*, sebelumnya/berikutnya, dan mode belajar berfungsi.
+4. **Kosakata**: cari kata, buka detail, tambah/hapus favorit, putar audio jika ada.
+5. **Percakapan**: tampil terjemahan dan penjelasan, audio bisa diputar, *Mulai simulasi percakapan* berjalan.
+6. **Belajar → Latihan & Kuis**: per kategori, campuran, *latihan yang belum dikuasai*, pembahasan, *ulangi soal yang salah*, dan riwayat kuis.
+7. **Profil**:
+   - Statistik dan riwayat belajar tampil.
+   - Notifikasi, FAQ, dan Premium bisa dibuka.
+   - Setelah logout lalu login lagi, progres masih ada.
+8. **Akun kedua**: tidak boleh melihat progres akun pertama.
