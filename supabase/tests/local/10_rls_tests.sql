@@ -18,6 +18,15 @@ create function t.fail(p_id text, p_detail text default '') returns void languag
 grant execute on all functions in schema t to anon, authenticated;
 
 -- ---------------------------------------------------------------- data uji
+-- v1.1.0: fixture ini meniru DATA LAMA (dibuat sebelum validasi publikasi 0118),
+-- jadi trigger guard_publish dimatikan sementara selama pengisian fixture.
+do $$ declare t text; begin
+  foreach t in array array['signs','conversation_modules','lessons','questions'] loop
+    if exists (select 1 from pg_trigger where tgname = 'guard_publish' and tgrelid = ('public.' || t)::regclass) then
+      execute format('alter table public.%I disable trigger guard_publish', t);
+    end if;
+  end loop;
+end $$;
 insert into auth.users (id, email, raw_user_meta_data) values
   ('aaaaaaaa-0000-0000-0000-00000000000a', 'user.a@test.local', '{"full_name":"User A","role":"admin"}'),
   ('bbbbbbbb-0000-0000-0000-00000000000b', 'user.b@test.local', '{"full_name":"User B"}'),
@@ -28,10 +37,11 @@ insert into public.categories (id, slug, name) values ('11111111-0000-0000-0000-
 insert into public.media_assets (id, kind, path, mime_type, size_bytes) values
   ('22222222-0000-0000-0000-000000000001', 'video', 'signs/pub/video-1.mp4', 'video/mp4', 1000),
   ('22222222-0000-0000-0000-000000000002', 'video', 'signs/draft/video-2.mp4', 'video/mp4', 1000);
-insert into public.signs (id, category_id, term, status, video_asset_id, validated_by, verified_at, source_note) values
-  ('33333333-0000-0000-0000-000000000001', '11111111-0000-0000-0000-000000000001', 'Terbit', 'published',
+-- v1.1.0: kolom meaning diisi karena validasi publikasi (0118) mewajibkan arti.
+insert into public.signs (id, category_id, term, meaning, status, video_asset_id, validated_by, verified_at, source_note) values
+  ('33333333-0000-0000-0000-000000000001', '11111111-0000-0000-0000-000000000001', 'Terbit', 'Arti uji', 'published',
    '22222222-0000-0000-0000-000000000001', 'Validator Uji', now(), 'Sumber uji'),
-  ('33333333-0000-0000-0000-000000000002', '11111111-0000-0000-0000-000000000001', 'Draf', 'draft',
+  ('33333333-0000-0000-0000-000000000002', '11111111-0000-0000-0000-000000000001', 'Draf', null, 'draft',
    '22222222-0000-0000-0000-000000000002', null, null, null);
 insert into storage.buckets (id, name) values ('bisindo-media', 'bisindo-media') on conflict do nothing;
 insert into storage.objects (bucket_id, name) values
@@ -62,6 +72,15 @@ insert into public.conversation_modules (id, slug, title, status, validated_by, 
 -- data pribadi milik B
 insert into public.favorites (user_id, sign_id) values ('bbbbbbbb-0000-0000-0000-00000000000b', '33333333-0000-0000-0000-000000000001');
 insert into public.user_progress (user_id, lesson_id) values ('bbbbbbbb-0000-0000-0000-00000000000b', '44444444-0000-0000-0000-000000000001');
+
+-- v1.1.0: hidupkan kembali trigger guard_publish
+do $$ declare t text; begin
+  foreach t in array array['signs','conversation_modules','lessons','questions'] loop
+    if exists (select 1 from pg_trigger where tgname = 'guard_publish' and tgrelid = ('public.' || t)::regclass) then
+      execute format('alter table public.%I enable trigger guard_publish', t);
+    end if;
+  end loop;
+end $$;
 
 -- Trigger profil: role dari metadata klien diabaikan
 do $$ begin
@@ -291,7 +310,10 @@ do $$ declare v uuid; n int; r jsonb; begin
     update public.signs set status = 'published' where id = v;
     perform t.fail('RLS-04', 'publish tanpa validator diterima');
   exception when check_violation then
-    update public.signs set status = 'published', validated_by = 'Validator', verified_at = now(), source_note = 'Sumber'
+    -- v1.1.0: publikasi juga mewajibkan kategori, arti, dan video (0118).
+    update public.signs set status = 'published', validated_by = 'Validator', verified_at = now(), source_note = 'Sumber',
+           category_id = '11111111-0000-0000-0000-000000000001', meaning = 'Arti uji',
+           video_asset_id = '22222222-0000-0000-0000-000000000001'
     where id = v;
     get diagnostics n = row_count;
     if n = 1 and (select created_by from public.signs where id = v) = auth.uid()
@@ -335,10 +357,11 @@ commit;
 
 -- ST-04: batas bucket (diperiksa pada konfigurasi bucket; penegakan oleh Storage API)
 do $$ begin
-  if (select file_size_limit from storage.buckets where id = 'bisindo-media') = 20971520
+  -- v1.1.0 (0111): batas keras bucket dinaikkan ke 50 MB; batas per jenis di app_settings.
+  if (select file_size_limit from storage.buckets where id = 'bisindo-media') = 52428800
      and not (select public from storage.buckets where id = 'bisindo-media')
      and 'video/mp4' = any (select unnest(allowed_mime_types) from storage.buckets where id = 'bisindo-media')
-  then perform t.pass('ST-04', 'bucket privat, 20 MB, MIME terbatas (penegakan aktual oleh Storage API — uji manual)');
+  then perform t.pass('ST-04', 'bucket privat, 50 MB, MIME terbatas (penegakan aktual oleh Storage API — uji manual)');
   else perform t.fail('ST-04'); end if;
 end $$;
 

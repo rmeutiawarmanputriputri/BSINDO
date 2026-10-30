@@ -2,6 +2,9 @@
 -- Data contoh untuk menguji alur aplikasi. BUKAN materi BISINDO:
 -- tidak ada gerakan, arti, deskripsi gerakan, atau video yang dikarang.
 -- validated_by diawali 'DEV-SAMPLE' → aplikasi menampilkan lencana "Materi contoh".
+-- v1.1.0: validasi publikasi (0118) mewajibkan video untuk materi published.
+-- Data contoh tidak punya video, jadi kini disimpan sebagai DRAFT (tidak tampil
+-- di aplikasi pengguna; terlihat oleh admin untuk uji alur CMS).
 -- Pemeriksaan pra-rilis: select count(*) from signs where validated_by like 'DEV-SAMPLE%';  -- harus 0 di produksi
 
 do $$
@@ -26,7 +29,7 @@ begin
             v_cat, 'Contoh ' || i,
             'Teks contoh pengembangan — bukan arti isyarat BISINDO.',
             null,
-            'Contoh pengembangan', 'DEV-SAMPLE (BUKAN VERIFIKASI)', now(), 'published')
+            'Contoh pengembangan', 'DEV-SAMPLE (BUKAN VERIFIKASI)', now(), 'draft')
     returning id into v_sign;
   end loop;
 
@@ -34,7 +37,7 @@ begin
                                            source_note, validated_by, verified_at, status)
   values ('contoh-percakapan', v_conv_cat, 'Contoh Percakapan',
           'Modul contoh pengembangan.', 'Konteks contoh — bukan materi asli.',
-          'Contoh pengembangan', 'DEV-SAMPLE (BUKAN VERIFIKASI)', now(), 'published')
+          'Contoh pengembangan', 'DEV-SAMPLE (BUKAN VERIFIKASI)', now(), 'draft')
   returning id into v_module;
 
   insert into public.conversation_items (module_id, position, speaker_label, text_id, sign_id)
@@ -44,7 +47,7 @@ begin
   insert into public.lessons (slug, title, description, sort_order,
                               source_note, validated_by, verified_at, status)
   values ('contoh-pelajaran', 'Contoh Pelajaran', 'Pelajaran contoh pengembangan.', 1,
-          'Contoh pengembangan', 'DEV-SAMPLE (BUKAN VERIFIKASI)', now(), 'published')
+          'Contoh pengembangan', 'DEV-SAMPLE (BUKAN VERIFIKASI)', now(), 'draft')
   returning id into v_lesson;
 
   insert into public.lesson_items (lesson_id, position, item_type, body_text)

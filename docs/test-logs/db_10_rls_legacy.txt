@@ -1,0 +1,54 @@
+   set_config    
+-----------------
+ {"role":"anon"}
+(1 row)
+
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}
+(1 row)
+
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"cccccccc-0000-0000-0000-00000000000c","role":"authenticated"}
+(1 row)
+
+                              set_config                               
+-----------------------------------------------------------------------
+ {"sub":"aaaaaaaa-0000-0000-0000-00000000000a","role":"authenticated"}
+(1 row)
+
+    id     | hasil |                                        detail                                        
+-----------+-------+--------------------------------------------------------------------------------------
+ ADM-READ  | LULUS | admin melihat draf & objeknya
+ ADM-RPC   | LULUS | non-admin ditolak
+ ADM-RPC2  | LULUS | {"drafts": 11, "in_review": 0, "open_reports": 9}
+ AUTH-06   | LULUS | trigger membuat profil role=user (metadata role diabaikan)
+ FAV-DRAFT | LULUS | favorit sign draf ditolak (0009)
+ PROG-RPC  | LULUS | pelajaran: 1 baris, completed tidak turun; modul: last_position lalu completed
+ REP-01-DB | LULUS | CHECK report_other_needs_text
+ REP-04    | LULUS | pelapor melihat status & pesan
+ RLS-01    | LULUS | ditolak privilege
+ RLS-02    | LULUS | hanya published
+ RLS-03    | LULUS | insert ditolak; update/delete 0 baris
+ RLS-04    | LULUS | tanpa validator ditolak CHECK; dengan validator berhasil; created_by otomatis
+ RLS-05    | LULUS | ditolak privilege kolom
+ RLS-06    | LULUS | ditolak
+ RLS-07    | LULUS | milik sendiri 1 baris; milik B 0 baris
+ RLS-08    | LULUS | 0 baris
+ RLS-09    | LULUS | ditolak
+ RLS-10    | LULUS | skor 100/0/0/0 benar; kuis draf ditolak; 4 attempt; pelajaran completed (QUIZ-03)
+ RLS-11    | LULUS | 0 baris milik B
+ RLS-12    | LULUS | upsert 1 baris; insert ganda ditolak unik
+ RLS-13    | LULUS | status palsu & reporter lain ditolak
+ RLS-14    | LULUS | update 0 baris
+ RLS-15    | LULUS | 10 diterima, ke-11 ditolak report_rate_limited
+ RLS-16    | LULUS | duplikat terbuka ditolak
+ RLS-17    | LULUS | admin ubah status + pesan
+ ST-01     | LULUS | objek draf tidak terlihat
+ ST-02     | LULUS | objek published terlihat
+ ST-03     | LULUS | upload ditolak; delete 0 baris
+ ST-04     | LULUS | bucket privat, 50 MB, MIME terbatas (penegakan aktual oleh Storage API — uji manual)
+ ST-05     | LULUS | 0 objek
+(30 rows)
+

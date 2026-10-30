@@ -1,0 +1,9 @@
+LULUS purchase aktif
+LULUS renewal kedaluwarsa
+LULUS cancel tetap akses s.d. expiry
+LULUS expiration mencabut
+LULUS expiration tidak mencabut premium manual tanpa batas
+LULUS app_user_id bukan UUID diabaikan
+LULUS entitlement lain diabaikan
+LULUS event TEST diabaikan
+8 uji LULUS
