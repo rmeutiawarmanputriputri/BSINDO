@@ -1,6 +1,6 @@
 # Laporan Akhir BISINDO v1.1.0
 
-Tanggal: 2026-10-30 · Cabang: `release/1.1.0-wip` (commit per fase) · Versi aplikasi: **1.1.0** (versionCode **2**)
+Tanggal: 2026-10-30 · Cabang: `release/1.1.0-wip` (commit per fase) · Versi aplikasi: **1.1.0** (versionCode **3**)
 
 ## 1. Ringkasan audit source lama
 Rincian ada di `docs/AUDIT_v1.0.md`. Poin utama:
@@ -58,6 +58,16 @@ Rincian ada di `docs/AUDIT_v1.0.md`. Poin utama:
   - pesan *akun dinonaktifkan*.
 - Fitur lama tetap ada: transkripsi, pelajaran + kuis pelajaran, laporan, admin dalam aplikasi, favorit, kosakata sulit.
 
+### 3a. Penyesuaian dengan daftar fitur A–L (2026-10-30)
+Pemetaan lengkap per butir ada di `docs/GAP_FITUR_v1.1.0.md`. Yang ditambahkan:
+- **Animasi GIF** untuk huruf/angka/kosakata/percakapan/soal (diputar + *Putar ulang*). MP4/WebM tetap bisa diperlambat.
+- **Penjelasan gerakan wajib** sebelum huruf/angka dipublikasikan.
+- **Bagian kalimat** percakapan (kosakata + arti tiap bagian) dan **latihan memahami percakapan** per topik.
+- **Banner perkenalan** + **konten beranda** yang diatur dari CMS.
+- **Materi offline** (video/gambar/audio disimpan di perangkat).
+- **Pengingat belajar** harian + **Pengaturan Notifikasi**.
+- Seed struktur disamakan dengan daftar: 12 kategori, 8 topik, 18 kosakata contoh sebagai Draft berisi nama saja.
+
 ## 4. CMS (Web, `cms/`) — modul A–L
 Dashboard (angka nyata), Kategori, Alfabet, Angka, Kosakata, Percakapan, **Media** (unggah dengan progres, pratinjau, ganti berkas, hapus aman beserta daftar pemakaian, validasi format/ukuran), Kuis (6 jenis), Pengguna, Premium, Banner, Pengumuman, FAQ, Laporan konten, Pengaturan, dan **Impor massal** CSV/JSON (hasilnya Draft, template kosong).
 Validasi publikasi menampilkan daftar kekurangan.
@@ -65,7 +75,7 @@ Validasi publikasi menampilkan daftar kekurangan.
 Akses hanya untuk admin. Pembatasan ini ditegakkan di database, bukan hanya disembunyikan di tampilan. Setup ada di `docs/CMS_SETUP.md`.
 
 ## 5. Database & migrasi
-- `supabase/migrations/0110–0120` (aditif) beserta `supabase/rollback/*.down.sql`. Seed struktur ada di `supabase/seed/20_v110_struktur.sql` (nama kategori dan 9 topik Draft kosong, tanpa materi).
+- `supabase/migrations/0110–0121` (aditif) beserta `supabase/rollback/*.down.sql`. Seed struktur ada di `supabase/seed/20_v110_struktur.sql` (12 kategori, 8 topik Draft, 18 kosakata Draft berisi nama saja — semuanya dari daftar fitur pemilik, tanpa materi).
 - Isi utama:
   - status `inactive`;
   - Alfabet/Angka di tabel `signs` (`content_module`, `symbol`, `number_group`);
@@ -95,11 +105,12 @@ Rincian ada di `docs/TEST_REPORT_v1.1.0.md`, log di `docs/test-logs/`.
 |---|---|
 | Uji database lama (kompatibilitas 1.0.0) | 30/30 lulus |
 | Uji database v1.1.0 | 80/80 lulus |
+| Uji database daftar fitur (0121) | 25/25 lulus |
 | Rollback | lulus |
-| CMS E2E (Chromium) | 36/36 lulus |
+| CMS E2E (Chromium) | 40/40 lulus |
 | RevenueCat (logika pemetaan) | 8/8 lulus |
 | `dart analyze` Flutter | 0 error, 0 warning |
-| Tes unit logika baru | 26/26 lulus |
+| Tes unit logika baru | 35/35 lulus |
 | Signing Gradle | lulus |
 
 **Tidak bisa diuji di sesi ini** karena Flutter/Android SDK diblokir dan tidak ada perangkat:
@@ -110,20 +121,20 @@ Rincian ada di `docs/TEST_REPORT_v1.1.0.md`, log di `docs/test-logs/`.
 Ketiganya dijalankan lewat GitHub Actions atau `tool\release.ps1`, dan daftar periksa HP ada di TEST_REPORT §5.
 
 ## 8. Yang belum selesai / butuh dari Anda
-1. **Jalankan kueri cek lalu migrasi 0110–0120** di Supabase, sesuai urutan di CMS_SETUP §1. Aplikasi 1.1.0 membutuhkan migrasi ini. Kirim dulu hasil kueri cek `supabase/checks/00_cek_sebelum_migrasi_v110.sql`.
+1. **Jalankan kueri cek lalu migrasi 0110–0121** di Supabase, sesuai urutan di CMS_SETUP §1. Aplikasi 1.1.0 membutuhkan migrasi ini. Kirim dulu hasil kueri cek `supabase/checks/00_cek_sebelum_migrasi_v110.sql`.
 2. **Push source ini ke GitHub** dan isi secret `SUPABASE_URL` + `SUPABASE_ANON_KEY` agar APK ter-build (`docs/BUILD_APK.md`).
 3. **Keystore release**: jalankan `tool\create_keystore.ps1` dan cadangkan. Isi secret `KEYSTORE_BASE64`/`KEYSTORE_PASSWORD` untuk APK resmi. Tanpa keystore, APK berlabel *debug-uji*.
 4. **Keputusan `applicationId`**: `com.example.bisindo` ditolak Play Store. Bila ingin diganti, sebaiknya dilakukan sekarang (pengguna toh harus uninstall sekali).
 5. **Materi BISINDO**: huruf, angka, kosakata, kalimat percakapan, soal, video, audio, gambar, dan teks FAQ/Premium. Isi lewat CMS atau impor CSV. Saat ini semua halaman menampilkan *Materi belum tersedia*.
 6. **Akun admin**: jalankan langkah 2 di CMS_SETUP bila akun Anda belum berperan admin.
 7. **RevenueCat**: kredensial dan product ID bila ingin pembayaran otomatis. Saat ini Premium diatur manual di CMS.
-8. Push notification (FCM) **tidak** dibuat; notifikasi hanya dalam aplikasi (pengumuman). Cache video offline tidak dibuat (butuh paket tambahan); yang ada adalah cache daftar materi selama sesi.
+8. Push notification dari server (FCM) **tidak** dibuat. Yang ada: pengingat belajar lokal di perangkat dan pengumuman dalam aplikasi. Impor CSV percakapan belum mengisi *bagian kalimat*; isi lewat editor topik di CMS.
 9. Kebijakan privasi dan halaman syarat (syarat Play Store) masih dari pemilik.
 
 ## 9. Lokasi hasil
 - **APK**: dibuat oleh GitHub Actions (tab Actions → Artifacts `bisindo-apk`) atau `build\app\outputs\flutter-apk\app-release.apk` bila build lokal. *APK tidak dapat dibuat di sesi cloud ini.*
 - Source dengan riwayat commit: ZIP/bundle yang dikirim bersama laporan ini.
-- Migrasi: `supabase/migrations/0110…0120`, rollback di `supabase/rollback/`.
+- Migrasi: `supabase/migrations/0110…0121`, rollback di `supabase/rollback/`.
 - CMS: `cms/` beserta petunjuk `docs/CMS_SETUP.md`.
 - Template impor kosong: `templates/import/`.
 

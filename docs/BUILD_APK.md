@@ -11,7 +11,7 @@
    - `SUPABASE_ANON_KEY` = publishable/anon key (**jangan** service_role)
    - *(disarankan)* `KEYSTORE_BASE64` dan `KEYSTORE_PASSWORD`. Lihat bagian Keystore di bawah.
 3. Buka tab **Actions → Android APK**. Workflow berjalan otomatis setiap ada push ke `main`, atau jalankan manual lewat **Run workflow**.
-4. Setelah selesai (± 10–15 menit), buka run tersebut, lalu di bagian **Artifacts** unduh `bisindo-apk`. Ekstrak ZIP-nya untuk mendapatkan `BISINDO-1.1.0+2-….apk`.
+4. Setelah selesai (± 10–15 menit), buka run tersebut, lalu di bagian **Artifacts** unduh `bisindo-apk`. Ekstrak ZIP-nya untuk mendapatkan `BISINDO-1.1.0+3-….apk`.
    - Nama berakhiran `-release` berarti ditandatangani keystore Anda (siap dibagikan).
    - Nama berakhiran `-debug-uji` berarti ditandatangani debug key acak milik server GitHub. Ini **khusus uji**: setiap build baru harus di-*uninstall* dulu sebelum dipasang.
 
@@ -39,4 +39,4 @@ APK: `build\app\outputs\flutter-apk\app-release.apk`. Log setiap langkah tersimp
 
 - APK 1.0.0 lama ditandatangani kunci lain, jadi **uninstall aplikasi lama dulu**. Akun dan progres tetap aman di server.
 - Izinkan *Install unknown apps* untuk aplikasi pengelola file atau browser.
-- Versi: `1.1.0` (versionCode `2`).
+- Versi: `1.1.0` (versionCode `3`).

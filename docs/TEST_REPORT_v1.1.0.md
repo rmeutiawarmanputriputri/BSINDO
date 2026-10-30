@@ -5,15 +5,16 @@ Lingkungan uji: sesi cloud Linux, PostgreSQL 16.15 lokal + stub Supabase, Node 2
 
 Bukti mentah ada di `docs/test-logs/`.
 
-## 1. Teknis — Database (migrasi 0110–0120)
+## 1. Teknis — Database (migrasi 0110–0121)
 
 | # | Uji | Status | Bukti |
 |---|---|---|---|
-| D-1 | Migrasi 0001–0120 diterapkan berurutan ke DB baru | **Lulus** | `run_v110.sh` §1 |
-| D-2 | Seed struktur `20_v110_struktur.sql` idempoten (27 kategori, 9 topik Draft) | **Lulus** | §1 |
+| D-1 | Migrasi 0001–0121 diterapkan berurutan ke DB baru | **Lulus** | `run_v110.sh` §1 |
+| D-2 | Seed struktur `20_v110_struktur.sql` idempoten (12 kategori + 18 kosakata Draft nama saja + 8 topik Draft sesuai daftar fitur) | **Lulus** | §1, F-01..F-03 |
 | D-3 | Kompatibilitas aplikasi 1.0.0: uji RLS lama `10_rls_tests.sql` pada skema v1.1.0 | **Lulus 30/30** | `db_10_rls_legacy.txt` |
 | D-4 | Uji v1.1.0 `20_v110_tests.sql` | **Lulus 80/80** | `db_20_v110.txt` |
-| D-5 | Rollback 0120→0110 mengembalikan skema setara 0001–0010 | **Lulus** (selisih hanya 2 nilai enum, terdokumentasi) | `db_rollback.diff` |
+| D-4b | Uji daftar fitur `21_feature_list_tests.sql` (migrasi 0121) | **Lulus 25/25** | `db_21_feature_list.txt` |
+| D-5 | Rollback 0121→0110 mengembalikan skema setara 0001–0010 | **Lulus** (selisih hanya 2 nilai enum, terdokumentasi) | `db_rollback.diff` |
 | D-6 | Pemetaan event webhook RevenueCat | **Lulus 8/8** | `revenuecat_mapping.txt` |
 | D-7 | Migrasi pada proyek Supabase asli | **Tidak bisa diuji** — proyek tidak terjangkau dari sesi; wajib dijalankan pemilik di DEV dulu | — |
 | D-8 | Edge Function `revenuecat-webhook` di runtime Deno | **Tidak bisa diuji** — Deno/Supabase CLI tidak tersedia; logika murni diuji (D-6) | — |
@@ -34,9 +35,19 @@ Cakupan 80 uji v1.1.0 meliputi:
 - hapus akun mandiri (admin terakhir dilindungi);
 - penolakan untuk anon.
 
+Cakupan 25 uji migrasi 0121 (daftar fitur A–L):
+- seed sesuai daftar, dan Draft tidak terlihat pengguna;
+- GIF diterima untuk animasi dan gambar, ditolak sebagai audio;
+- identitas media otomatis dari nama berkas, judul manual tidak ditimpa;
+- huruf/angka tanpa penjelasan gerakan ditolak saat publish;
+- bagian kalimat tersimpan berurutan, tidak berubah bila tidak dikirim, ikut terhapus bersama kalimat, dan tidak bisa ditulis pengguna;
+- soal per topik percakapan: validasi modul, filter RPC, kunci tetap tertutup, dan pemanggilan lama tetap jalan;
+- `home_layout` terbaca aplikasi tetapi tidak bisa diubah pengguna;
+- animasi GIF materi published bisa diputar.
+
 ## 2. CMS (E2E: Chromium → supabase-js 2.76.1 → emulator API lokal → PostgreSQL dengan migrasi asli)
 
-**36/36 Lulus** (`cms_e2e.txt`, tangkapan layar di `cms_screenshots/`).
+**40/40 Lulus** (`cms_e2e.txt`, tangkapan layar di `cms_screenshots/`).
 
 | Area | Uji | Status |
 |---|---|---|
@@ -44,8 +55,10 @@ Cakupan 80 uji v1.1.0 meliputi:
 | Dashboard | Angka dari query nyata; berubah setelah aksi | Lulus |
 | Media | Unggah video (progres), audio, gambar; format salah ditolak; batas ukuran dari Pengaturan; pratinjau (signed URL); ganti berkas (id tetap, berkas lama dihapus); hapus media terpakai → peringatan + daftar pemakaian; paksa hapus media wajib materi Published → ditolak server; hapus media tak terpakai | Lulus |
 | Alfabet / Angka / Kosakata | CRUD; publish tanpa video/field wajib → daftar kekurangan; publish lengkap; ubah status cepat | Lulus |
-| Percakapan | Topik + kalimat, ubah urutan, audio per kalimat, validasi & publish | Lulus |
-| Kuis | Tebak huruf (MC + video), susun kata, cocokkan gambar; kunci tersimpan | Lulus |
+| Percakapan | Topik + kalimat, ubah urutan, audio per kalimat, validasi & publish, **bagian kalimat** (kosakata + teks/arti) tersimpan dan termuat ulang | Lulus |
+| Animasi GIF | Unggah GIF sebagai Video/Animasi → `image/gif`, pratinjau `<img>` | Lulus |
+| Konten beranda | Teks perkenalan & bagian beranda tersimpan | Lulus |
+| Kuis | Tebak huruf (MC + video), susun kata, cocokkan gambar; kunci tersimpan; **soal per topik percakapan** (pilihan topik hanya untuk modul Percakapan) | Lulus |
 | Impor | CSV titik koma + BOM + kutip; pratinjau; validasi tanpa menyimpan; impor → Draft; error per baris; template kosong | Lulus |
 | Kategori | Tambah, slug otomatis, urutan, nonaktifkan | Lulus |
 | Pengguna / Premium | Detail, set Premium manual, nonaktifkan akun, admin tidak bisa menonaktifkan diri; info paket | Lulus |
@@ -61,10 +74,10 @@ Lingkungan analisis: Dart SDK 3.13.7 (conda-forge) + sumber **Flutter 3.47.9** (
 | # | Uji | Status | Bukti / alasan |
 |---|---|---|---|
 | F-1 | `dart format` | **Lulus** untuk semua berkas baru/diubah. Berkas lama tidak diformat ulang agar diff tetap bisa ditinjau; CI hanya memberi peringatan | `git diff` |
-| F-2 | `dart analyze` (setara `flutter analyze`) | **0 error, 0 warning**, 2 info lama | `docs/test-logs/flutter_analyze.txt` |
+| F-2 | `dart analyze` (setara `flutter analyze`), termasuk paket baru flutter_cache_manager 3.4.6, path_provider 2.1.6, flutter_local_notifications 22.3.3, timezone 0.11.0 (sumber GitHub) | **0 error, 0 warning**, 2 info lama | `docs/test-logs/flutter_analyze.txt` |
 | F-3 | Galat kompilasi di source lama | **Ditemukan & diperbaiki**: 2 galat parse `as String? :` di `conversation.dart` dan `learning.dart`. Kemungkinan inilah penyebab source ZIP gagal di-build | commit `f42252c` |
-| F-4 | Tes unit logika baru (model kuis, jawaban, kunci, hasil, progres, riwayat, Sign v1.1.0 + kompatibilitas JSON lama, rute, konfigurasi kuis, kecepatan video, Premium) | **Lulus 26/26** (dijalankan dengan Dart VM + shim `flutter_test` lokal) | `docs/test-logs/flutter_unit_pure.txt` |
-| F-5 | `flutter test` penuh (20 berkas lama + 4 baru, termasuk tes widget kuis & empty state) | **Tidak bisa diuji di sesi ini**: engine Flutter (flutter_tester) diblokir. Dijalankan otomatis oleh GitHub Actions / `tool\release.ps1` | — |
+| F-4 | Tes unit logika baru (model kuis, jawaban, kunci, hasil, progres, riwayat, Sign v1.1.0 + kompatibilitas JSON lama, rute, konfigurasi kuis, kecepatan video, Premium; **GIF, Sign offline toJson↔fromJson, bagian kalimat, kuis per topik, home_layout, pengingat & zona waktu**) | **Lulus 35/35** (dijalankan dengan Dart VM + shim `flutter_test` lokal) | `docs/test-logs/flutter_unit_pure.txt` |
+| F-5 | `flutter test` penuh (20 berkas lama + 5 baru, termasuk tes widget kuis & empty state) | **Tidak bisa diuji di sesi ini**: engine Flutter (flutter_tester) diblokir. Dijalankan otomatis oleh GitHub Actions / `tool\release.ps1` | — |
 | F-6 | Semua halaman terbuka, navigasi, video/audio diputar, login/logout, progres setelah login ulang, isolasi akun | **Tidak bisa diuji di sesi ini** (tidak ada emulator/perangkat). Isolasi akun & penilaian kuis sudah diuji di tingkat database (D-4 V-24/V-25/V-30) | — |
 | F-7 | Materi Published tampil, Draft tidak | Lulus di tingkat RLS (V-20). Uji UI menunggu perangkat. Kode aplikasi juga memfilter `status = published` | — |
 | F-8 | Layar kecil & tablet | **Tidak bisa diuji** (tanpa engine). Desain memakai `ContentWidth`, grid `maxCrossAxisExtent`, teks `ellipsis`, dan pola layout bawaan proyek | — |
@@ -76,7 +89,8 @@ Lingkungan analisis: Dart SDK 3.13.7 (conda-forge) + sumber **Flutter 3.47.9** (
 |---|---|---|
 | B-1 | `flutter build apk --release` | **Tidak bisa diuji di sesi ini** (Flutter SDK, Android SDK, Maven diblokir). Disiapkan 2 jalur: GitHub Actions (`.github/workflows/android.yml`) dan `tool\release.ps1` |
 | B-2 | Logika signing Gradle (keystore ada / tidak ada / mode uji) | **Lulus**: logika Kotlin DSL yang sama dijalankan dengan Gradle 8.14.3 lokal di proyek uji tanpa plugin Android. Tanpa keystore → build release ditolak dengan pesan jelas; mode uji → lanjut; dengan `key.properties` → path & alias terbaca |
-| B-3 | Versi | `pubspec.yaml` `1.1.0+2` → versionName 1.1.0, versionCode 2 (> 1 milik APK 1.0.0) |
+| B-3 | Versi | `pubspec.yaml` `1.1.0+3` → versionName 1.1.0, versionCode 3 (> 1 milik APK 1.0.0) |
+| B-4 | Gradle: desugaring + receiver notifikasi untuk flutter_local_notifications | **Tidak bisa diuji di sesi ini** (Android SDK diblokir). Konfigurasi mengikuti README paket v22.3.3; diverifikasi saat build GitHub Actions |
 
 ## 5. Daftar periksa uji di HP (untuk pemilik)
 
@@ -95,3 +109,8 @@ Lingkungan analisis: Dart SDK 3.13.7 (conda-forge) + sumber **Flutter 3.47.9** (
    - Notifikasi, FAQ, dan Premium bisa dibuka.
    - Setelah logout lalu login lagi, progres masih ada.
 8. **Akun kedua**: tidak boleh melihat progres akun pertama.
+9. **Animasi GIF**: unggah 1 GIF di CMS (Media → Video/Animasi), pasang di satu huruf, lalu buka di aplikasi. Animasi harus bergerak dan *Putar ulang* berfungsi.
+10. **Percakapan**: isi *Bagian kalimat* di CMS. Di aplikasi, bagian tampil berurutan dan kosakata bisa diketuk. Kaitkan 1 soal ke topik, lalu tombol *Latihan memahami percakapan* muncul.
+11. **Offline**: *Simpan offline* pada satu materi, matikan internet, lalu buka Profil → Materi Offline. Video harus bisa diputar.
+12. **Pengingat**: Profil → Pengaturan Notifikasi, aktifkan, izinkan notifikasi, lalu set jam 2–3 menit dari sekarang. Notifikasi harus muncul (bisa bergeser beberapa menit).
+13. **Beranda**: tanpa banner aktif, tampil banner perkenalan. Matikan *Rekomendasi* di CMS → Pengaturan, lalu tarik untuk memuat ulang. Bagian itu harus hilang.
