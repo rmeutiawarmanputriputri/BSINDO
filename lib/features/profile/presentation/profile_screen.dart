@@ -10,11 +10,14 @@ import '../../../core/widgets/confirm_dialog.dart';
 import '../../../core/widgets/content_page.dart';
 import '../../../core/widgets/section_header.dart';
 import '../../auth/data/auth_repository.dart';
+import '../../home_content/data/home_content_repository.dart';
+import '../../study/data/study_repository.dart';
+import '../../study/domain/study.dart';
 import '../data/profile_repository.dart';
 import '../domain/profile.dart';
 
 /// Versi aplikasi (sinkron dengan pubspec.yaml).
-const kAppVersion = '0.1.0';
+const kAppVersion = '1.1.0';
 
 /// S24 Profil & Pengaturan.
 class ProfileScreen extends ConsumerWidget {
@@ -55,9 +58,31 @@ class ProfileScreen extends ConsumerWidget {
     await auth.signOut();
   }
 
+  Future<void> _deleteAccount(BuildContext context, WidgetRef ref) async {
+    final repo = ref.read(profileRepositoryProvider);
+    final auth = ref.read(authRepositoryProvider);
+    final ok = await showConfirmDialog(
+      context,
+      title: 'Hapus akun?',
+      message: 'Akun, progres belajar, favorit, riwayat kuis, dan semua data pribadi Anda '
+          'akan dihapus permanen dan tidak dapat dikembalikan.',
+      confirmLabel: 'Hapus permanen',
+      destructive: true,
+    );
+    if (!ok) return;
+    try {
+      await repo.deleteMyAccount();
+      await auth.signOut();
+    } catch (error) {
+      if (context.mounted) showErrorSnackBar(context, error);
+    }
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(currentProfileProvider);
+    final isPremium = ref.watch(isPremiumProvider);
+    final unread = ref.watch(unreadAnnouncementsProvider);
     final email = ref.watch(authRepositoryProvider).currentEmail;
     return Scaffold(
       appBar: AppBar(title: const Text('Profil')),
@@ -80,7 +105,7 @@ class ProfileScreen extends ConsumerWidget {
                   ),
                 ),
                 title: Text(p?.fullName ?? '-', style: Theme.of(context).textTheme.titleMedium),
-                subtitle: Text(email ?? '-'),
+                subtitle: Text([email ?? '-', if (isPremium) 'Premium'].join(' · ')),
                 trailing: p == null
                     ? null
                     : IconButton(
@@ -90,15 +115,28 @@ class ProfileScreen extends ConsumerWidget {
                       ),
               ),
             ),
+            const SectionHeader(title: 'Statistik belajar'),
+            const _StatsCard(),
             const SectionHeader(title: 'Belajar saya'),
             _MenuTile(icon: Icons.favorite_border, label: 'Favorit',
                 onTap: () => context.push(AppRoutes.favorites)),
             _MenuTile(icon: Icons.flag_outlined, label: 'Kosakata Sulit',
                 onTap: () => context.push(AppRoutes.difficult)),
-            _MenuTile(icon: Icons.insights_outlined, label: 'Progres',
+            _MenuTile(icon: Icons.history_edu_outlined, label: 'Riwayat Belajar',
+                onTap: () => context.push(AppRoutes.history)),
+            _MenuTile(icon: Icons.quiz_outlined, label: 'Riwayat Kuis',
+                onTap: () => context.push(AppRoutes.quizHistory)),
+            _MenuTile(icon: Icons.insights_outlined, label: 'Progres Pelajaran',
                 onTap: () => context.push(AppRoutes.learnProgress)),
             _MenuTile(icon: Icons.outlined_flag, label: 'Riwayat Laporan',
                 onTap: () => context.push(AppRoutes.reports)),
+            const SectionHeader(title: 'Aplikasi'),
+            _MenuTile(icon: Icons.notifications_none, label: unread > 0 ? 'Notifikasi ($unread baru)' : 'Notifikasi',
+                onTap: () => context.push(AppRoutes.notifications)),
+            _MenuTile(icon: Icons.workspace_premium_outlined, label: isPremium ? 'Premium (aktif)' : 'Info Premium',
+                onTap: () => context.push(AppRoutes.premium)),
+            _MenuTile(icon: Icons.help_outline, label: 'FAQ & Bantuan',
+                onTap: () => context.push(AppRoutes.faq)),
             if (p?.isAdmin ?? false) ...[
               const SectionHeader(title: 'Pengelola'),
               _MenuTile(icon: Icons.admin_panel_settings_outlined, label: 'Admin',
@@ -126,9 +164,87 @@ class ProfileScreen extends ConsumerWidget {
               icon: const Icon(Icons.logout),
               label: const Text('Keluar'),
             ),
+            const SizedBox(height: AppSpacing.sm),
+            TextButton.icon(
+              onPressed: () => _deleteAccount(context, ref),
+              style: TextButton.styleFrom(foregroundColor: AppColors.error),
+              icon: const Icon(Icons.delete_forever_outlined),
+              label: const Text('Hapus akun'),
+            ),
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Statistik: keseluruhan, per modul, per kategori, kuis.
+class _StatsCard extends ConsumerWidget {
+  const _StatsCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final summary = ref.watch(progressSummaryProvider);
+    final theme = Theme.of(context);
+    return summary.when(
+      loading: () => const LinearProgressIndicator(),
+      error: (e, _) => Row(
+        children: [
+          Expanded(child: Text(errorMessageOf(e))),
+          TextButton(onPressed: () => ref.invalidate(progressSummaryProvider), child: const Text('Coba Lagi')),
+        ],
+      ),
+      data: (s) {
+        Widget bar(String label, ModuleProgress m) => Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+              child: Semantics(
+                label: '$label: ${m.learned} dari ${m.total}',
+                excludeSemantics: true,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(children: [
+                      Expanded(child: Text(label, style: theme.textTheme.bodyMedium)),
+                      Text('${m.learned}/${m.total}', style: theme.textTheme.labelMedium),
+                    ]),
+                    const SizedBox(height: 4),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(AppRadius.pill),
+                      child: LinearProgressIndicator(value: m.ratio, minHeight: 6),
+                    ),
+                  ],
+                ),
+              ),
+            );
+        return Card(
+          margin: EdgeInsets.zero,
+          child: Padding(
+            padding: const EdgeInsets.all(AppSpacing.lg),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('${s.overallPercent}% materi dipelajari', style: theme.textTheme.titleMedium),
+                Text('${s.totalLearned} dari ${s.totalMaterials} materi · '
+                    '${s.quizSessions} kuis${s.quizSessions > 0 ? ' · terbaik ${s.quizBest}' : ''}',
+                    style: theme.textTheme.bodySmall),
+                const SizedBox(height: AppSpacing.md),
+                bar('Alfabet', s.module('alphabet')),
+                bar('Angka', s.module('number')),
+                bar('Kosakata', s.module('vocabulary')),
+                bar('Percakapan', ModuleProgress(total: s.conversationsTotal, learned: s.conversationsCompleted)),
+                if (s.categories.isNotEmpty)
+                  ExpansionTile(
+                    tilePadding: EdgeInsets.zero,
+                    title: const Text('Progres per kategori'),
+                    children: [
+                      for (final c in s.categories) bar(c.name, ModuleProgress(total: c.total, learned: c.learned)),
+                    ],
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 }

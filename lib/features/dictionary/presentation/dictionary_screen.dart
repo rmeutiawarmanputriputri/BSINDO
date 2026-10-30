@@ -62,7 +62,7 @@ class _DictionaryScreenState extends ConsumerState<DictionaryScreen> {
     final categories = ref.watch(signCategoriesProvider);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Kamus'),
+        title: const Text('Kosakata'),
         actions: [
           IconButton(
             tooltip: 'Favorit',

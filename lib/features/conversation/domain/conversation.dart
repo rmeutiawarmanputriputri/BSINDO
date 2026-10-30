@@ -1,6 +1,6 @@
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/json.dart';
-import '../../../core/widgets/source_card.dart';
+import '../../../core/utils/sample.dart';
 
 class ConversationModule {
   const ConversationModule({
@@ -17,17 +17,19 @@ class ConversationModule {
     this.verifiedAt,
     this.status = 'published',
     this.slug,
+    this.isPremium = false,
   });
 
   static const listColumns =
-      'id, slug, title, description, category_id, status, validated_by, '
+      'id, slug, title, description, category_id, status, validated_by, is_premium, '
       'category:categories(name), items:conversation_items(count)';
 
   static const detailColumns =
-      'id, slug, title, description, context_note, category_id, status, '
+      'id, slug, title, description, context_note, category_id, status, is_premium, '
       'source_note, validated_by, verified_at, category:categories(name), '
       'items:conversation_items(id, position, speaker_label, text_id, '
-      'context_note, sign_id, video:media_assets!video_asset_id(path), '
+      'context_note, translation, explanation, sign_id, '
+      'video:media_assets!video_asset_id(path), audio:media_assets!audio_asset_id(path), '
       'sign:signs(id, term, sign_video:media_assets!video_asset_id(path)))';
 
   factory ConversationModule.fromJson(Json json) {
@@ -50,6 +52,7 @@ class ConversationModule {
       validatedBy: optString(json, 'validated_by'),
       verifiedAt: parseDate(json['verified_at']),
       status: optString(json, 'status') ?? 'published',
+      isPremium: optBool(json, 'is_premium'),
     );
   }
 
@@ -66,6 +69,7 @@ class ConversationModule {
   final String? validatedBy;
   final DateTime? verifiedAt;
   final String status;
+  final bool isPremium;
 
   bool get isSample => isSampleValidator(validatedBy);
 }
@@ -81,6 +85,9 @@ class ConversationItem {
     this.signTerm,
     this.videoPath,
     this.ownVideoPath,
+    this.translation,
+    this.explanation,
+    this.audioPath,
   });
 
   factory ConversationItem.fromJson(Json json) {
@@ -99,6 +106,9 @@ class ConversationItem {
       // Video milik baris diutamakan, lalu video kosakata terkait.
       videoPath: ownVideo ?? signVideo,
       ownVideoPath: ownVideo,
+      translation: optString(json, 'translation'),
+      explanation: optString(json, 'explanation'),
+      audioPath: optObject(json, 'audio')?['path'] as String?,
     );
   }
 
@@ -111,4 +121,11 @@ class ConversationItem {
   final String? signTerm;
   final String? videoPath;
   final String? ownVideoPath;
+
+  /// Terjemahan / susunan isyarat (v1.1.0).
+  final String? translation;
+
+  /// Penjelasan makna kalimat (v1.1.0).
+  final String? explanation;
+  final String? audioPath;
 }

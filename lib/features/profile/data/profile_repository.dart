@@ -10,6 +10,9 @@ import '../domain/profile.dart';
 abstract interface class ProfileRepository {
   Future<Profile> fetchCurrent();
   Future<void> updateFullName(String fullName);
+
+  /// Hapus akun beserta seluruh data pribadi (RPC `delete_my_account`).
+  Future<void> deleteMyAccount();
 }
 
 class SupabaseProfileRepository implements ProfileRepository {
@@ -26,7 +29,7 @@ class SupabaseProfileRepository implements ProfileRepository {
   Future<Profile> fetchCurrent() => guardRequest(() async {
         final row = await _client
             .from('profiles')
-            .select('id, full_name, role')
+            .select('id, full_name, role, is_active')
             .eq('id', _uid)
             .single();
         return Profile.fromJson(row);
@@ -37,6 +40,11 @@ class SupabaseProfileRepository implements ProfileRepository {
         await _client
             .from('profiles')
             .update({'full_name': fullName.trim()}).eq('id', _uid);
+      });
+
+  @override
+  Future<void> deleteMyAccount() => guardRequest(() async {
+        await _client.rpc('delete_my_account');
       });
 }
 

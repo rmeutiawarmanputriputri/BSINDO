@@ -1,6 +1,6 @@
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/json.dart';
-import '../../../core/widgets/source_card.dart';
+import '../../../core/utils/sample.dart';
 
 class Lesson {
   const Lesson({

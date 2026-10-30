@@ -4,15 +4,19 @@ import 'package:go_router/go_router.dart';
 
 import '../../../app/router/routes.dart';
 import '../../../app/theme/tokens.dart';
-import '../../../core/widgets/async_value_view.dart';
+import '../../../core/widgets/app_snackbar.dart';
+import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/content_page.dart';
 import '../../../core/widgets/source_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../data/learning_repository.dart';
 import '../data/progress_repository.dart';
+import '../../study/data/study_repository.dart';
+import '../../study/presentation/learn_module_grid.dart';
 import '../domain/learning.dart';
 
-/// S14 Daftar Pelajaran.
+/// Tab Belajar (v1.1.0): modul Alfabet, Angka, Kosakata, Percakapan, Kuis,
+/// lalu daftar Pelajaran (fitur lama tetap ada).
 class LessonsScreen extends ConsumerWidget {
   const LessonsScreen({super.key});
 
@@ -25,6 +29,11 @@ class LessonsScreen extends ConsumerWidget {
       appBar: AppBar(
         title: const Text('Belajar'),
         actions: [
+          IconButton(
+            tooltip: 'Cari materi',
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push(AppRoutes.search),
+          ),
           TextButton.icon(
             onPressed: () => context.push(AppRoutes.learnProgress),
             icon: const Icon(Icons.insights_outlined),
@@ -32,31 +41,46 @@ class LessonsScreen extends ConsumerWidget {
           ),
         ],
       ),
-      body: AsyncValueView<List<Lesson>>(
-        value: lessons,
-        onRetry: () => ref.invalidate(lessonsProvider),
-        isEmpty: (list) => list.isEmpty,
-        empty: const EmptyView(
-          icon: Icons.school_outlined,
-          title: 'Pelajaran akan segera hadir',
-          message: 'Materi pelajaran sedang divalidasi.',
-        ),
-        data: (list) {
-          final done = list.where((l) => byLesson[l.id]?.completed ?? false).length;
-          return ContentListView(
-            children: [
-              Text('$done dari ${list.length} pelajaran selesai',
-                  style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: AppSpacing.md),
-              for (final lesson in list)
-                LessonCard(
-                  lesson: lesson,
-                  progress: byLesson[lesson.id],
-                  onTap: () => context.push(AppRoutes.lesson(lesson.id)),
-                ),
-            ],
-          );
+      body: RefreshIndicator(
+        onRefresh: () async {
+          ref.invalidate(lessonsProvider);
+          ref.invalidate(progressSummaryProvider);
+          ref.invalidate(signProgressProvider);
         },
+        child: ContentListView(
+          children: [
+            const LearnModuleGrid(),
+            const SectionHeader(title: 'Pelajaran'),
+            lessons.when(
+              loading: () => const LoadingView(itemCount: 2),
+              error: (e, _) => ErrorView(
+                message: errorMessageOf(e),
+                onRetry: () => ref.invalidate(lessonsProvider),
+              ),
+              data: (list) {
+                if (list.isEmpty) {
+                  return Text('Pelajaran belum tersedia.',
+                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary));
+                }
+                final done = list.where((l) => byLesson[l.id]?.completed ?? false).length;
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Text('$done dari ${list.length} pelajaran selesai',
+                        style: Theme.of(context).textTheme.bodyMedium),
+                    const SizedBox(height: AppSpacing.md),
+                    for (final lesson in list)
+                      LessonCard(
+                        lesson: lesson,
+                        progress: byLesson[lesson.id],
+                        onTap: () => context.push(AppRoutes.lesson(lesson.id)),
+                      ),
+                  ],
+                );
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

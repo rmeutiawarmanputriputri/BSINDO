@@ -59,7 +59,9 @@ class SupabaseSignRepository implements SignRepository {
             .from('signs')
             .select(Sign.selectColumns)
             // Filter eksplisit sisi pengguna (RLS juga membatasi).
-            .eq('status', 'published');
+            .eq('status', 'published')
+            // v1.1.0: Kamus = kosakata; huruf & angka punya halaman sendiri.
+            .eq('content_module', ContentModule.vocabulary.value);
         final text = normalizeSearch(query.text);
         if (text.isNotEmpty) {
           filter = filter.ilike('term_normalized', containsPattern(text));

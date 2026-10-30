@@ -1,3 +1,6 @@
+import '../../features/dictionary/domain/sign.dart';
+import '../../features/quiz/domain/quiz_bank.dart';
+
 /// Path rute (UI_UX_SPECIFICATION.md §3).
 abstract final class AppRoutes {
   static const splash = '/splash';
@@ -22,6 +25,58 @@ abstract final class AppRoutes {
   static const reportNew = '/report/new';
   static const admin = '/admin';
   static const learnProgress = '/learn/progress';
+
+  // v1.1.0
+  static const alphabet = '/alphabet';
+  static const numbers = '/numbers';
+  static const quizHub = '/quiz';
+  static const quizHistory = '/quiz/history';
+  static const search = '/search';
+  static const notifications = '/notifications';
+  static const faq = '/faq';
+  static const premium = '/premium';
+  static const history = '/history';
+
+  /// Detail belajar huruf/angka/kosakata. [learnMode] = mode belajar berurutan.
+  static String study(ContentModule module, String id, {bool learnMode = false}) => Uri(
+        path: '/study/${module.value}/$id',
+        queryParameters: learnMode ? {'mode': 'learn'} : null,
+      ).toString();
+
+  /// Sesi kuis bank; konfigurasi di query agar aman dari kehilangan state.
+  static String quizPlay(QuizConfig config) => Uri(
+        path: '/quiz/play',
+        queryParameters: {
+          'mode': config.mode.value,
+          if (config.module != null) 'module': config.module!.value,
+          if (config.categoryId != null) 'category': config.categoryId!,
+          if (config.categoryName != null) 'categoryName': config.categoryName!,
+          if (config.difficulty != null) 'difficulty': config.difficulty!.value,
+          'limit': '${config.limit}',
+        },
+      ).toString();
+
+  static QuizConfig parseQuizConfig(Map<String, String> q) => QuizConfig(
+        mode: QuizMode.parse(q['mode']),
+        module: QuizModule.parse(q['module']),
+        categoryId: q['category'],
+        categoryName: q['categoryName'],
+        difficulty: q['difficulty'] == null ? null : QuizDifficulty.parse(q['difficulty']),
+        limit: (int.tryParse(q['limit'] ?? '') ?? 10).clamp(1, 50),
+      );
+
+  /// Rute aplikasi yang boleh dipakai banner CMS (target_type = route).
+  static String? bannerRoute(String value) => switch (value) {
+        '/alphabet' => alphabet,
+        '/numbers' => numbers,
+        '/vocabulary' => dictionary,
+        '/conversations' => conversations,
+        '/quiz' => quizHub,
+        '/profile' => profile,
+        '/premium' => premium,
+        '/faq' => faq,
+        _ => null,
+      };
 
   static String sign(String id) => '/dictionary/sign/$id';
   static String conversation(String id) => '/conversations/$id';

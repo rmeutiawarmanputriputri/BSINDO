@@ -10,9 +10,14 @@ import '../../../core/widgets/section_header.dart';
 import '../../auth/data/auth_repository.dart';
 import '../../difficult_vocab/data/difficult_repository.dart';
 import '../../difficult_vocab/domain/difficult_item.dart';
-import '../../learning/data/learning_repository.dart';
+import '../../dictionary/domain/sign.dart';
+import '../../home_content/data/home_content_repository.dart';
+import '../../home_content/presentation/banner_carousel.dart';
 import '../../learning/data/progress_repository.dart';
 import '../../profile/data/profile_repository.dart';
+import '../../study/data/study_repository.dart';
+import '../../study/presentation/history_and_search_screens.dart';
+import '../../study/presentation/learn_module_grid.dart';
 
 /// Blok "Latihan ulang" Beranda: maks 5 kosakata `learning`.
 final homeReviewProvider = FutureProvider.autoDispose<List<DifficultItem>>((ref) {
@@ -22,20 +27,15 @@ final homeReviewProvider = FutureProvider.autoDispose<List<DifficultItem>>((ref)
       .list(status: DifficultStatus.learning, limit: 5);
 });
 
-/// Blok ringkasan progres.
-final homeSummaryProvider =
-    FutureProvider.autoDispose<({int lessonsDone, int lessonsTotal, int difficult})>(
-        (ref) async {
-  final progress = await ref.watch(progressListProvider.future);
-  final total = await ref.watch(learningRepositoryProvider).publishedLessonCount();
-  final difficult = await ref.watch(homeReviewProvider.future);
-  return (
-    lessonsDone: progress
-        .where((p) => p.lessonId != null && p.completed && p.title != null)
-        .length,
-    lessonsTotal: total,
-    difficult: difficult.length,
-  );
+/// Rekomendasi: materi berikutnya yang belum dipelajari (alfabet → angka → kosakata).
+final homeRecommendationsProvider = FutureProvider.autoDispose<List<Sign>>((ref) async {
+  final learned = ref.watch(learnedIdsProvider);
+  final out = <Sign>[];
+  for (final module in ContentModule.values.reversed) {
+    final list = await ref.watch(studyListProvider(module).future);
+    out.addAll(list.where((s) => !learned.contains(s.id)).take(2));
+  }
+  return out.take(4).toList();
 });
 
 /// S07 Beranda: tiap blok memuat/gagal terpisah.
@@ -46,13 +46,43 @@ class HomeScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = Theme.of(context);
     final profile = ref.watch(currentProfileProvider).value;
+    final unread = ref.watch(unreadAnnouncementsProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('Beranda')),
+      appBar: AppBar(
+        title: const Text('Beranda'),
+        actions: [
+          IconButton(
+            tooltip: 'Cari materi',
+            icon: const Icon(Icons.search),
+            onPressed: () => context.push(AppRoutes.search),
+          ),
+          IconButton(
+            tooltip: unread > 0 ? 'Notifikasi, $unread belum dibaca' : 'Notifikasi',
+            icon: Badge(
+              isLabelVisible: unread > 0,
+              label: Text('$unread'),
+              child: const Icon(Icons.notifications_none),
+            ),
+            onPressed: () async {
+              await context.push(AppRoutes.notifications);
+              ref.invalidate(announcementsProvider);
+            },
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () async {
           ref.invalidate(progressListProvider);
           ref.invalidate(homeReviewProvider);
           ref.invalidate(currentProfileProvider);
+          ref.invalidate(progressSummaryProvider);
+          ref.invalidate(learningHistoryProvider);
+          ref.invalidate(bannersProvider);
+          ref.invalidate(signProgressProvider);
+          ref.invalidate(premiumStatusProvider);
+          for (final m in ContentModule.values) {
+            ref.invalidate(studyListProvider(m));
+          }
         },
         child: ContentListView(
           children: [
@@ -66,12 +96,32 @@ class HomeScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.xs),
             Text('Ayo lanjutkan belajar isyarat hari ini.',
                 style: theme.textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary)),
+            if (profile != null && !profile.isActive) ...[
+              const SizedBox(height: AppSpacing.md),
+              Container(
+                padding: const EdgeInsets.all(AppSpacing.md),
+                decoration: BoxDecoration(
+                  color: AppColors.errorContainer,
+                  borderRadius: BorderRadius.circular(AppRadius.contentCard),
+                ),
+                child: const Text(
+                  'Akun Anda sedang dinonaktifkan oleh pengelola, sehingga materi tidak dapat dibuka. '
+                  'Hubungi admin untuk mengaktifkannya kembali.',
+                ),
+              ),
+            ],
             const SizedBox(height: AppSpacing.lg),
+            const BannerCarousel(),
+            const SizedBox(height: AppSpacing.md),
             const _ContinueCard(),
-            const SectionHeader(title: 'Akses cepat'),
-            const _QuickGrid(),
+            const SectionHeader(title: 'Materi belajar'),
+            const LearnModuleGrid(),
             const SectionHeader(title: 'Ringkasan progres'),
             const _SummaryBlock(),
+            const _RecommendationBlock(),
+            const _PremiumBlock(),
+            const SectionHeader(title: 'Akses cepat'),
+            const _QuickGrid(),
             SectionHeader(
               title: 'Latihan ulang',
               actionLabel: 'Lihat semua',
@@ -106,19 +156,21 @@ class _BlockError extends StatelessWidget {
   }
 }
 
+/// "Mulai belajar" / materi terakhir dipelajari (riwayat lintas modul).
 class _ContinueCard extends ConsumerWidget {
   const _ContinueCard();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final progress = ref.watch(progressListProvider);
+    final history = ref.watch(learningHistoryProvider);
     final theme = Theme.of(context);
+    final white = theme.textTheme.bodyMedium?.copyWith(color: Colors.white);
     return Card(
       margin: EdgeInsets.zero,
       color: AppColors.primary,
       child: Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
-        child: progress.when(
+        child: history.when(
           loading: () => const SizedBox(
             height: 72,
             child: Center(child: CircularProgressIndicator(color: Colors.white)),
@@ -130,27 +182,25 @@ class _ContinueCard extends ConsumerWidget {
                 const Expanded(child: Text('Tidak dapat memuat materi terakhir.')),
                 TextButton(
                   style: TextButton.styleFrom(foregroundColor: Colors.white),
-                  onPressed: () => ref.invalidate(progressListProvider),
+                  onPressed: () => ref.invalidate(learningHistoryProvider),
                   child: const Text('Coba Lagi'),
                 ),
               ],
             ),
           ),
           data: (list) {
-            final latest = list.where((p) => p.title != null).firstOrNull;
-            final white = theme.textTheme.bodyMedium?.copyWith(color: Colors.white);
+            final latest = list.firstOrNull;
             if (latest == null) {
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Mulai belajar',
-                      style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
+                  Text('Mulai belajar', style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
                   const SizedBox(height: AppSpacing.xs),
-                  Text('Pilih pelajaran pertama Anda.', style: white),
+                  Text('Awali dengan mengenal huruf A–Z dalam BISINDO.', style: white),
                   const SizedBox(height: AppSpacing.md),
                   FilledButton.tonal(
-                    onPressed: () => context.go(AppRoutes.learn),
-                    child: const Text('Lihat pelajaran'),
+                    onPressed: () => context.push(AppRoutes.alphabet),
+                    child: const Text('Mulai Belajar'),
                   ),
                 ],
               );
@@ -158,22 +208,27 @@ class _ContinueCard extends ConsumerWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text('Lanjutkan belajar', style: white),
+                Text('Terakhir dipelajari · ${latest.moduleLabel}', style: white),
                 const SizedBox(height: AppSpacing.xs),
-                Text(latest.title!,
+                Text(latest.title,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: theme.textTheme.titleLarge?.copyWith(color: Colors.white)),
-                const SizedBox(height: AppSpacing.sm),
-                LinearProgressIndicator(
-                  value: latest.completed ? 1 : latest.percent / 100,
-                  color: Colors.white,
-                  backgroundColor: Colors.white24,
-                ),
                 const SizedBox(height: AppSpacing.md),
-                FilledButton.tonal(
-                  onPressed: () => context.push(latest.lessonId != null
-                      ? AppRoutes.lesson(latest.lessonId!)
-                      : AppRoutes.conversation(latest.moduleId!)),
-                  child: const Text('Lanjutkan'),
+                Wrap(
+                  spacing: AppSpacing.sm,
+                  runSpacing: AppSpacing.sm,
+                  children: [
+                    FilledButton.tonal(
+                      onPressed: () => openHistoryEntry(context, latest),
+                      child: const Text('Lanjutkan'),
+                    ),
+                    TextButton(
+                      style: TextButton.styleFrom(foregroundColor: Colors.white),
+                      onPressed: () => context.push(AppRoutes.history),
+                      child: const Text('Riwayat belajar'),
+                    ),
+                  ],
                 ),
               ],
             );
@@ -190,10 +245,10 @@ class _QuickGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final items = <(IconData, String, VoidCallback)>[
-      (Icons.menu_book_outlined, 'Kamus', () => context.go(AppRoutes.dictionary)),
-      (Icons.forum_outlined, 'Percakapan', () => context.go(AppRoutes.conversations)),
       (Icons.record_voice_over_outlined, 'Transkripsi', () => context.push(AppRoutes.transcribe)),
       (Icons.flag_outlined, 'Kosakata Sulit', () => context.push(AppRoutes.difficult)),
+      (Icons.favorite_border, 'Favorit', () => context.push(AppRoutes.favorites)),
+      (Icons.history_edu_outlined, 'Riwayat Belajar', () => context.push(AppRoutes.history)),
     ];
     return GridView.builder(
       shrinkWrap: true,
@@ -240,34 +295,122 @@ class _SummaryBlock extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final summary = ref.watch(homeSummaryProvider);
+    final summary = ref.watch(progressSummaryProvider);
+    final difficult = ref.watch(homeReviewProvider).value?.length ?? 0;
     final theme = Theme.of(context);
     return summary.when(
       loading: () => const LinearProgressIndicator(),
-      error: (e, _) => _BlockError(error: e, onRetry: () => ref.invalidate(homeSummaryProvider)),
-      data: (s) {
-        final percent =
-            s.lessonsTotal == 0 ? 0 : ((s.lessonsDone / s.lessonsTotal) * 100).round();
-        return Row(
+      error: (e, _) => _BlockError(error: e, onRetry: () => ref.invalidate(progressSummaryProvider)),
+      data: (s) => Column(
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  value: '${s.overallPercent}%',
+                  label: 'Materi dipelajari (${s.totalLearned}/${s.totalMaterials})',
+                  theme: theme,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _StatTile(
+                  value: s.quizSessions == 0 ? '–' : '${s.quizAverage}',
+                  label: 'Rata-rata skor kuis (${s.quizSessions}×)',
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: _StatTile(
+                  value: '${s.conversationsCompleted}/${s.conversationsTotal}',
+                  label: 'Percakapan selesai',
+                  theme: theme,
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: _StatTile(
+                  value: '$difficult${difficult >= 5 ? '+' : ''}',
+                  label: 'Kosakata perlu dilatih',
+                  theme: theme,
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Rekomendasi materi berikutnya (tidak tampil bila kosong).
+class _RecommendationBlock extends ConsumerWidget {
+  const _RecommendationBlock();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final recs = ref.watch(homeRecommendationsProvider).value ?? const <Sign>[];
+    if (recs.isEmpty) return const SizedBox.shrink();
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        const SectionHeader(title: 'Rekomendasi untuk Anda'),
+        Wrap(
+          spacing: AppSpacing.sm,
+          runSpacing: AppSpacing.sm,
           children: [
-            Expanded(
-              child: _StatTile(
-                value: '$percent%',
-                label: 'Pelajaran selesai (${s.lessonsDone}/${s.lessonsTotal})',
-                theme: theme,
+            for (final s in recs)
+              ActionChip(
+                avatar: Icon(
+                  switch (s.contentModule) {
+                    ContentModule.alphabet => Icons.abc_rounded,
+                    ContentModule.number => Icons.pin_outlined,
+                    ContentModule.vocabulary => Icons.menu_book_outlined,
+                  },
+                  size: 18,
+                ),
+                label: Text('${s.contentModule.label}: ${s.displayTitle}'),
+                onPressed: () => context.push(AppRoutes.study(s.contentModule, s.id)),
               ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: _StatTile(
-                value: '${s.difficult}${s.difficult >= 5 ? '+' : ''}',
-                label: 'Kosakata perlu dilatih',
-                theme: theme,
-              ),
-            ),
           ],
-        );
-      },
+        ),
+      ],
+    );
+  }
+}
+
+/// Info akun Premium (hanya bila pemilik mengaktifkan info Premium di CMS
+/// atau pengguna sudah Premium).
+class _PremiumBlock extends ConsumerWidget {
+  const _PremiumBlock();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final status = ref.watch(premiumStatusProvider).value;
+    final info = ref.watch(premiumInfoProvider).value;
+    final isPremium = status?.isPremium ?? false;
+    if (!isPremium && !(info?.enabled ?? false)) return const SizedBox.shrink();
+    return Padding(
+      padding: const EdgeInsets.only(top: AppSpacing.lg),
+      child: Card(
+        margin: EdgeInsets.zero,
+        color: isPremium ? const Color(0xFFDCFCE7) : const Color(0xFFFFF4E0),
+        child: ListTile(
+          leading: Icon(isPremium ? Icons.workspace_premium : Icons.lock_open_outlined,
+              color: isPremium ? AppColors.success : const Color(0xFF8A5300)),
+          title: Text(isPremium ? 'Akun Premium aktif' : (info?.title ?? 'Buka semua materi dengan Premium')),
+          subtitle: Text(isPremium
+              ? (status?.plan != null ? 'Paket ${status!.plan}' : 'Semua materi Premium terbuka.')
+              : 'Lihat informasi paket Premium.'),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.push(AppRoutes.premium),
+        ),
+      ),
     );
   }
 }

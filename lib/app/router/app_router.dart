@@ -15,20 +15,28 @@ import '../../features/auth/presentation/screens/splash_screen.dart';
 import '../../features/auth/presentation/screens/verify_email_screen.dart';
 import '../../features/conversation/presentation/conversation_detail_screen.dart';
 import '../../features/conversation/presentation/conversation_list_screen.dart';
+import '../../features/dictionary/domain/sign.dart';
 import '../../features/dictionary/presentation/dictionary_screen.dart';
 import '../../features/dictionary/presentation/sign_detail_screen.dart';
 import '../../features/difficult_vocab/presentation/difficult_list_screen.dart';
 import '../../features/difficult_vocab/presentation/difficult_review_screen.dart';
 import '../../features/favorites/presentation/favorites_screen.dart';
 import '../../features/home/presentation/home_screen.dart';
+import '../../features/home_content/presentation/info_screens.dart';
 import '../../features/learning/presentation/lesson_detail_screen.dart';
 import '../../features/learning/presentation/lessons_screen.dart';
 import '../../features/learning/presentation/progress_screen.dart';
 import '../../features/learning/presentation/quiz_screen.dart';
 import '../../features/profile/presentation/profile_screen.dart';
+import '../../features/quiz/presentation/quiz_history_screen.dart';
+import '../../features/quiz/presentation/quiz_hub_screen.dart';
+import '../../features/quiz/presentation/quiz_play_screen.dart';
 import '../../features/reports/domain/report.dart';
 import '../../features/reports/presentation/report_form_screen.dart';
 import '../../features/reports/presentation/report_history_screen.dart';
+import '../../features/study/presentation/history_and_search_screens.dart';
+import '../../features/study/presentation/module_grid_screen.dart';
+import '../../features/study/presentation/sign_study_screen.dart';
 import '../../features/transcription/presentation/transcription_screen.dart';
 import '../shell/app_shell.dart';
 import 'auth_router_notifier.dart';
@@ -135,6 +143,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           targetTitle: q['title'] ?? '',
         );
       }),
+      // ---------------------------------------------------------- v1.1.0
+      _route(AppRoutes.alphabet, (_) => const ModuleGridScreen(module: ContentModule.alphabet)),
+      _route(AppRoutes.numbers, (_) => const ModuleGridScreen(module: ContentModule.number)),
+      _route('/study/:module/:id', (s) => _withId(
+            s,
+            'id',
+            (id) => SignStudyScreen(
+              module: ContentModule.parse(s.pathParameters['module']),
+              signId: id,
+              learnMode: s.uri.queryParameters['mode'] == 'learn',
+            ),
+          )),
+      _route(AppRoutes.quizHub, (_) => const QuizHubScreen(), routes: [
+        _route('history', (_) => const QuizHistoryScreen()),
+        _route('play', (s) => QuizPlayScreen(config: AppRoutes.parseQuizConfig(s.uri.queryParameters))),
+      ]),
+      _route(AppRoutes.search, (_) => const GlobalSearchScreen()),
+      _route(AppRoutes.history, (_) => const LearningHistoryScreen()),
+      _route(AppRoutes.notifications, (_) => const NotificationsScreen()),
+      _route(AppRoutes.faq, (_) => const FaqScreen()),
+      _route(AppRoutes.premium, (_) => const PremiumScreen()),
       _route(AppRoutes.admin, (_) => const AdminDashboardScreen(), routes: [
         _route(':entity', (s) => adminEntityPage(s.pathParameters['entity'] ?? ''),
             routes: [

@@ -1,6 +1,6 @@
 import '../../../core/utils/date_format.dart';
 import '../../../core/utils/json.dart';
-import '../../../core/widgets/source_card.dart';
+import '../../../core/utils/sample.dart';
 
 enum SignEntryType {
   word('word', 'Kata'),
@@ -28,7 +28,43 @@ class Category {
   final String kind;
 }
 
-/// Kosakata atau frasa BISINDO (tabel `signs`, D-04).
+/// Modul materi pada tabel `signs` (v1.1.0, kolom `content_module`).
+enum ContentModule {
+  vocabulary('vocabulary', 'Kosakata'),
+  alphabet('alphabet', 'Alfabet'),
+  number('number', 'Angka');
+
+  const ContentModule(this.value, this.label);
+  final String value;
+  final String label;
+
+  static ContentModule parse(String? value) => switch (value) {
+        'alphabet' => ContentModule.alphabet,
+        'number' => ContentModule.number,
+        _ => ContentModule.vocabulary,
+      };
+}
+
+/// Kelompok angka (kolom `number_group`).
+enum NumberGroup {
+  zeroToNine('0-9', '0–9'),
+  tenToTwenty('10-20', '10–20'),
+  tens('tens', 'Puluhan'),
+  hundredPlus('100+', '100 ke atas');
+
+  const NumberGroup(this.value, this.label);
+  final String value;
+  final String label;
+
+  static NumberGroup? parse(String? value) {
+    for (final g in values) {
+      if (g.value == value) return g;
+    }
+    return null;
+  }
+}
+
+/// Materi isyarat BISINDO (tabel `signs`, D-04): kosakata, huruf, atau angka.
 class Sign {
   const Sign({
     required this.id,
@@ -45,15 +81,26 @@ class Sign {
     this.validatedBy,
     this.verifiedAt,
     this.status = 'published',
+    this.contentModule = ContentModule.vocabulary,
+    this.symbol,
+    this.numberGroup,
+    this.sortOrder = 0,
+    this.imagePath,
+    this.audioPath,
+    this.isPremium = false,
   });
 
-  /// Kolom select untuk daftar & detail.
+  /// Kolom select untuk daftar & detail. Relasi media yang tidak boleh dibaca
+  /// pengguna (mis. konten Premium) dikembalikan `null` oleh RLS.
   static const selectColumns =
       'id, term, entry_type, category_id, meaning, movement_description, '
       'usage_example, source_note, validated_by, verified_at, status, '
+      'content_module, symbol, number_group, sort_order, is_premium, '
       'category:categories(name), '
       'video:media_assets!video_asset_id(path), '
-      'thumb:media_assets!thumbnail_asset_id(path)';
+      'thumb:media_assets!thumbnail_asset_id(path), '
+      'image:media_assets!image_asset_id(path), '
+      'audio:media_assets!audio_asset_id(path)';
 
   factory Sign.fromJson(Json json) => Sign(
         id: reqString(json, 'id'),
@@ -70,6 +117,13 @@ class Sign {
         validatedBy: optString(json, 'validated_by'),
         verifiedAt: parseDate(json['verified_at']),
         status: optString(json, 'status') ?? 'published',
+        contentModule: ContentModule.parse(optString(json, 'content_module')),
+        symbol: optString(json, 'symbol'),
+        numberGroup: NumberGroup.parse(optString(json, 'number_group')),
+        sortOrder: optInt(json, 'sort_order'),
+        imagePath: optObject(json, 'image')?['path'] as String?,
+        audioPath: optObject(json, 'audio')?['path'] as String?,
+        isPremium: optBool(json, 'is_premium'),
       );
 
   final String id;
@@ -86,6 +140,21 @@ class Sign {
   final String? validatedBy;
   final DateTime? verifiedAt;
   final String status;
+  final ContentModule contentModule;
+
+  /// Huruf/angka yang ditampilkan besar (Alfabet & Angka).
+  final String? symbol;
+  final NumberGroup? numberGroup;
+  final int sortOrder;
+
+  /// Panduan visual gerakan tangan.
+  final String? imagePath;
+  final String? audioPath;
+  final bool isPremium;
+
+  /// Teks tampilan utama: simbol untuk huruf/angka, istilah untuk kosakata.
+  String get displayTitle =>
+      contentModule == ContentModule.vocabulary ? term : (symbol ?? term);
 
   bool get hasVideo => videoPath != null;
   bool get isSample => isSampleValidator(validatedBy);

@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../../app/theme/tokens.dart';
 import '../utils/date_format.dart';
 
-/// Penanda materi contoh dev (DATABASE_SCHEMA §4).
-bool isSampleValidator(String? validatedBy) =>
-    validatedBy != null && validatedBy.startsWith('DEV-SAMPLE');
+import '../utils/sample.dart';
+
+export '../utils/sample.dart' show isSampleValidator;
 
 /// Kartu "Sumber & validasi" (IMPLEMENTATION_BRIEF §8 butir 3).
 class SourceCard extends StatelessWidget {

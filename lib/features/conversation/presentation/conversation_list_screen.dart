@@ -6,6 +6,7 @@ import '../../../app/router/routes.dart';
 import '../../../app/theme/tokens.dart';
 import '../../../core/widgets/async_value_view.dart';
 import '../../../core/widgets/content_page.dart';
+import '../../../core/widgets/media_widgets.dart';
 import '../../../core/widgets/source_card.dart';
 import '../../../core/widgets/state_views.dart';
 import '../../learning/data/progress_repository.dart';
@@ -126,6 +127,7 @@ class _ModuleCard extends StatelessWidget {
                 children: [
                   Expanded(child: Text(module.title, style: theme.textTheme.titleMedium)),
                   if (module.isSample) const SampleBadge(),
+                  if (module.isPremium) const PremiumBadge(),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),

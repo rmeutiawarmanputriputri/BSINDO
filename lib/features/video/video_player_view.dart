@@ -7,10 +7,12 @@ import 'package:video_player/video_player.dart';
 import '../../app/theme/tokens.dart';
 import '../../core/errors/app_failure.dart';
 import '../../core/supabase/signed_url_cache.dart';
+import 'playback_speed.dart';
 
 /// Pemutar video isyarat (S10, DESIGN_SYSTEM §5): poster dulu, tanpa autoplay,
 /// buffering + "Memuat video…", error + "Coba Lagi" (signed URL baru),
-/// Play/Pause, Ulangi (loop), kecepatan 0,5×/1×, layar penuh, seekbar.
+/// Play/Pause, Ulangi (loop), kecepatan 0,5×/0,75×/1×, layar penuh, seekbar.
+
 class VideoPlayerView extends ConsumerStatefulWidget {
   const VideoPlayerView({
     super.key,
@@ -161,7 +163,7 @@ class _VideoPlayerViewState extends ConsumerState<VideoPlayerView> {
   }
 
   Future<void> _toggleSpeed() async {
-    _speed = _speed == 1.0 ? 0.5 : 1.0;
+    _speed = nextPlaybackSpeed(_speed);
     await _controller?.setPlaybackSpeed(_speed);
     if (mounted) setState(() {});
   }
@@ -377,9 +379,9 @@ class _Controls extends StatelessWidget {
                   onPressed: onToggleSpeed,
                   style: TextButton.styleFrom(foregroundColor: Colors.white),
                   child: Semantics(
-                    label: 'Kecepatan ${speed == 1.0 ? 'normal' : 'setengah'}, ketuk untuk mengubah',
+                    label: 'Kecepatan ${speedLabel(speed)}, ketuk untuk mengubah',
                     excludeSemantics: true,
-                    child: Text(speed == 1.0 ? '1×' : '0,5×'),
+                    child: Text(speedLabel(speed)),
                   ),
                 ),
                 const Spacer(),
@@ -460,7 +462,7 @@ class _FullscreenVideoPageState extends State<_FullscreenVideoPage> {
                 onTogglePlay: () => c.value.isPlaying ? c.pause() : c.play(),
                 onToggleLoop: () => c.setLooping(!c.value.isLooping),
                 onToggleSpeed: () =>
-                    c.setPlaybackSpeed(c.value.playbackSpeed == 1.0 ? 0.5 : 1.0),
+                    c.setPlaybackSpeed(nextPlaybackSpeed(c.value.playbackSpeed)),
                 onExitFullscreen: () => Navigator.of(context).pop(),
               ),
             ),

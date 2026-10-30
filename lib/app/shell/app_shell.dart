@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
-/// Shell dengan NavigationBar 5 tab (UI_UX §1): Beranda · Kamus ·
-/// Percakapan · Belajar · Profil.
+/// Shell dengan NavigationBar 5 tab (UI_UX §1): Beranda · Kosakata ·
+/// Percakapan · Belajar · Profil. (v1.1.0: label "Kamus" → "Kosakata".)
 class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.navigationShell});
 
@@ -27,7 +27,7 @@ class AppShell extends StatelessWidget {
           NavigationDestination(
             icon: Icon(Icons.menu_book_outlined),
             selectedIcon: Icon(Icons.menu_book),
-            label: 'Kamus',
+            label: 'Kosakata',
           ),
           NavigationDestination(
             icon: Icon(Icons.forum_outlined),
