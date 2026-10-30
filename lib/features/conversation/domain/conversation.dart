@@ -87,7 +87,7 @@ class ConversationItem {
     final sign = optObject(json, 'sign');
     final ownVideo = optObject(json, 'video')?['path'] as String?;
     final signVideo =
-        sign != null ? optObject(sign, 'sign_video')?['path'] as String? : null;
+        sign != null ? (optObject(sign, 'sign_video')?['path'] as String?) : null;
     return ConversationItem(
       id: reqString(json, 'id'),
       position: optInt(json, 'position'),

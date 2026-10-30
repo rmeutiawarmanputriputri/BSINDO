@@ -179,7 +179,7 @@ class Question {
       position: optInt(json, 'position'),
       prompt: reqString(json, 'prompt'),
       options: options,
-      videoPath: sign != null ? optObject(sign, 'video')?['path'] as String? : null,
+      videoPath: sign != null ? (optObject(sign, 'video')?['path'] as String?) : null,
       signTerm: sign != null ? optString(sign, 'term') : null,
     );
   }
