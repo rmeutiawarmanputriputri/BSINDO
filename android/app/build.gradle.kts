@@ -21,7 +21,10 @@ val allowDebugSigning = System.getenv("BISINDO_ALLOW_DEBUG_SIGNING") == "true"
 
 android {
     namespace = "com.example.bisindo"
-    compileSdk = flutter.compileSdkVersion
+    // permission_handler 13 (→ permission_handler_android 14) dikompilasi dengan
+    // Android API 37. compileSdk hanya menentukan API yang bisa dipakai saat
+    // kompilasi; minSdk/targetSdk (perangkat yang didukung) tidak berubah.
+    compileSdk = maxOf(flutter.compileSdkVersion, 37)
     ndkVersion = flutter.ndkVersion
 
     compileOptions {
